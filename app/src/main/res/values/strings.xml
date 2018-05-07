@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">ScavengerBuddies</string>
+
+
+    <string name="tab_game">Games</string>
+    <string name="tab_friends">Friends</string>
+    <string name="tab_messages">Messages</string>
+    <string name="tab_leaderboard">Leaderboard</string>
 </resources>

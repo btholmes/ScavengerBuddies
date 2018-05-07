@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.benholmes.scavengerbuddies.App.ScavengerFragment;
+import com.example.benholmes.scavengerbuddies.R;
 
 /**
  * Created by benholmes on 5/7/18.
@@ -14,15 +15,20 @@ import com.example.benholmes.scavengerbuddies.App.ScavengerFragment;
 
 public class GameFragment extends ScavengerFragment{
 
+    private View view;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
+        view = inflater.inflate(R.layout.fragment_game, container, false);
+
+        return view;
     }
 
     @Override

@@ -17,6 +17,8 @@
     <color name="grey_bg">#E6E6E6</color>
     <color name="grey_text">#222D31</color>
     <color name="tab_indicator_color">#FFFFFF</color>
+
+    <color name="white">#FFFFFF</color>
     <color name="me_chat_bg">#FFE0B2</color>
 
     <color name="darkOverlay">#80000000</color>
