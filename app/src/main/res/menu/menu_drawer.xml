@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_change_display_name"
+            android:title="Change Display Name" />
+        <item
+            android:id="@+id/nav_change_email"
+            android:title="Change Email"/>
+        <item
+            android:id="@+id/nav_change_password"
+            android:title="Change Password" />
+        <item
+                android:id="@+id/nav_data_collection"
+                android:title="Data Collection" />
+        <item
+            android:id="@+id/nav_delete_account"
+            android:title="Delete Account" />
+        <item
+            android:id="@+id/nav_sign_out"
+            android:title="Sign Out" />
+    </group>
+
+    <!--<item android:title="Sub items" android:checkableBehavior="none">-->
+        <!--<menu>-->
+            <!--<item-->
+                <!--android:icon="@drawable/ic_dashboard"-->
+                <!--android:title="Sub item 1" />-->
+            <!--<item-->
+                <!--android:icon="@drawable/ic_forum"-->
+                <!--android:title="Sub item 2" />-->
+        <!--</menu>-->
+    <!--</item>-->
+
+</menu>
