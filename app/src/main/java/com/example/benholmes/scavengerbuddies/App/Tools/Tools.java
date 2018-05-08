@@ -1,6 +1,7 @@
 package com.example.benholmes.scavengerbuddies.App.Tools;
 
 import android.app.Activity;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -30,7 +31,8 @@ public class Tools {
             Window window = act.getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            window.setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark));
+            if(Build.VERSION.SDK_INT >= 21)
+                window.setStatusBarColor(act.getResources().getColor(R.color.colorPrimaryDark));
         }
     }
 

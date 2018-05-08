@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "673930578447",
+    "firebase_url": "https://scavengerwithfriends.firebaseio.com",
+    "project_id": "scavengerwithfriends",
+    "storage_bucket": "scavengerwithfriends.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:673930578447:android:5a8cf444daf0ca24",
+        "android_client_info": {
+          "package_name": "com.example.benholmes.scavengerbuddies"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "673930578447-s0iqmousupem04cddss0lruqjunfgb6q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcfGcPBZ7l32hHjnM-rxwsZuAKiMbDTJw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:673930578447:android:510ac05ac0247590",
+        "android_client_info": {
+          "package_name": "com.example.btholmes.scavenger11"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "673930578447-s0iqmousupem04cddss0lruqjunfgb6q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcfGcPBZ7l32hHjnM-rxwsZuAKiMbDTJw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
