@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="200dp"
+    android:layout_height="250dp"
+    android:background="@color/black"
+    >
+
+
+    <LinearLayout
+        android:id="@+id/header_container"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/spacing_large"
+        >
+
+        <TextView
+            android:id="@+id/header_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Header"
+            android:textColor="@color/white"
+            android:textSize="15dp"
+            />
+
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_below="@+id/header_container"
+        android:id="@+id/banner_container"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/spacing_large"
+        android:background="@color/Red"
+        >
+
+        <TextView
+            android:id="@+id/banner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Banner Text"
+            android:textColor="@color/white"
+            android:textSize="15dp"
+            />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_below="@+id/banner_container"
+        android:layout_above="@+id/button_container"
+        android:id="@+id/mesage_container"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/spacing_large"
+        >
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="vertical"
+            >
+
+            <TextView
+                android:id="@+id/message_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This will be the message text to display"
+                android:textColor="@color/white"
+                />
+
+        </ScrollView>
+
+    </LinearLayout>
+
+
+
+
+    <View
+        android:id="@+id/header_border"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/Red"
+        android:layout_above="@id/button_container"
+        ></View>
+
+
+    <LinearLayout
+        android:id="@+id/button_container"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:weightSum="2"
+        >
+
+
+        <TextView
+            android:id="@+id/negative_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NO"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:padding="@dimen/spacing_large"
+            android:layout_weight="1"
+            android:gravity="center"
+            />
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:background="@color/Red"
+            ></View>
+
+        <TextView
+            android:id="@+id/affirmative_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="yes"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:padding="@dimen/spacing_large"
+            android:layout_weight="1"
+            android:gravity="center"
+            />
+
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/white"
+        />
+
+
+</RelativeLayout>

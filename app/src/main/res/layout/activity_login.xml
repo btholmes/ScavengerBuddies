@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/spacing_large"
-    android:background="@color/colorPrimary"
+    android:background="@color/brown"
     >
 
     <ImageView
@@ -29,6 +29,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             >
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/white"
+                android:layout_gravity="center"
+
+                />
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/emailLayout"
@@ -59,6 +70,8 @@
                     android:layout_height="wrap_content"
                     android:hint="Enter Password"
                     android:textColorHint="@color/white"
+                    android:password="true"
+                    android:inputType="textPassword"
                     />
 
             </android.support.design.widget.TextInputLayout>
@@ -75,33 +88,49 @@
                 <Button
                     android:id="@+id/signInButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="45dp"
                     android:background="@color/colorPrimary"
                     android:text="Register"
                     android:textColor="@color/white"
                     android:layout_margin="@dimen/spacing_small"
                     />
-                <Button
+                <!--<Button-->
+                    <!--android:id="@+id/facebookButton"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:background="@color/blue"-->
+                    <!--android:text="Continue With Facebook"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:layout_margin="@dimen/spacing_small"-->
+
+                    <!--/>-->
+
+                <com.facebook.login.widget.LoginButton
                     android:id="@+id/facebookButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/blue"
-                    android:text="Continue With Facebook"
-                    android:textColor="@color/white"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
                     android:layout_margin="@dimen/spacing_small"
-
                     />
 
-                <Button
+                <!--<Button-->
+                    <!--android:id="@+id/googleButton"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="50dp"-->
+                    <!--android:background="@color/green"-->
+                    <!--android:text="Continue With Google"-->
+                    <!--android:textColor="@color/white"-->
+                    <!--android:layout_margin="@dimen/spacing_small"-->
+
+                    <!--/>-->
+
+                <com.google.android.gms.common.SignInButton
                     android:id="@+id/googleButton"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/green"
-                    android:text="Continue With Google"
-                    android:textColor="@color/white"
-                    android:layout_margin="@dimen/spacing_small"
-
-                    />
+                    android:textAlignment="gravity"
+                    android:gravity="center"
+                    android:layout_height="45dp" />
 
 
             </LinearLayout>
@@ -140,5 +169,8 @@
 
 
     </ScrollView>
+
+
+
 
 </RelativeLayout>
