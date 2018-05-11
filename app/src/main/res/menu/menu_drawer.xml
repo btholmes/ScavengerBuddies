@@ -2,24 +2,35 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
+
         <item
             android:id="@+id/nav_change_display_name"
+            android:checkable="true"
             android:title="Change Display Name" />
         <item
             android:id="@+id/nav_change_email"
+            android:checkable="true"
             android:title="Change Email"/>
         <item
             android:id="@+id/nav_change_password"
+            android:checkable="true"
             android:title="Change Password" />
-        <item
-                android:id="@+id/nav_data_collection"
-                android:title="Data Collection" />
+
         <item
             android:id="@+id/nav_delete_account"
+            android:checkable="true"
             android:title="Delete Account" />
+
         <item
             android:id="@+id/nav_sign_out"
+            android:checkable="true"
             android:title="Sign Out" />
+
+        <item
+            android:id="@+id/make_contribution"
+            android:checkable="true"
+            android:title="Make a Contribution" />
+
     </group>
 
     <!--<item android:title="Sub items" android:checkableBehavior="none">-->
