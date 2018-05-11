@@ -1,9 +1,12 @@
 package ben.holmes.scavenger.buddies.Main;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -16,6 +19,7 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import ben.holmes.scavenger.buddies.App.Fragments.DrawerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.Analytics;
 import ben.holmes.scavenger.buddies.App.Tools.GooglePay;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
@@ -100,11 +104,22 @@ public class MainActivity extends ScavengerActivity {
     private void handleSelectedItem(MenuItem item){
 
         if(item.getTitle().equals("Make a Contribution")){
-            GooglePay googlePay = new GooglePay(this);
-            googlePay.connect();
+//            GooglePay googlePay = new GooglePay(this);
+//            googlePay.connect();
+         replaceFragment(new DrawerFragment());
 
         }
 
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.animator.fade_in, 0);
+        fragmentTransaction.replace(R.id.frame_layout, fragment);
+        fragmentTransaction.addToBackStack(fragment.toString());
+        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        fragmentTransaction.commit();
     }
 
     private void setUpAnalytics(){
