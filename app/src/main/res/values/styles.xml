@@ -46,4 +46,11 @@
         <item name="textAllCaps">true</item>
     </style>
 
+    <style name="sans" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:typeface">serif</item>
+    </style>
+
 </resources>

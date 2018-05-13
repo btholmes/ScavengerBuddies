@@ -7,9 +7,8 @@
     <string name="tab_messages">Messages</string>
     <string name="tab_leaderboard">Leaderboard</string>
 
-    <string name="facebook_app_id">2012169819101702</string>
-    <string name="fb_login_protocol_scheme">fb2012169819101702</string>
-    <!--<string name="default_web_client_id">673930578447-9ooh6ti40ng32q40aji8jvoeaqgjs7im.apps.googleusercontent.com</string>-->
+    <string name="facebook_app_id">773391412850639</string>
+    <string name="fb_login_protocol_scheme">fb773391412850639</string>
 
 
     <string-array name="in_app_products">

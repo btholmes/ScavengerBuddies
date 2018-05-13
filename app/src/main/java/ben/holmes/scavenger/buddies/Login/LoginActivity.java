@@ -14,11 +14,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
+import ben.holmes.scavenger.buddies.BuildConfig;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.EmailLogin;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.GoogleLogin;
 import ben.holmes.scavenger.buddies.Main.MainActivity;
+
+import com.facebook.FacebookSdk;
+import com.facebook.LoggingBehavior;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -63,8 +67,11 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        if (BuildConfig.DEBUG) {
+            FacebookSdk.setIsDebugEnabled(true);
+            FacebookSdk.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
+        }
         prefs = new Prefs(this);
-
         initializeViews();
         setOnClicks();
         setFacebookLogin();
@@ -88,10 +95,8 @@ public class LoginActivity extends AppCompatActivity {
             user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    if(user != null && user.isEmailVerified()){
+                    if(user != null){
                         goToMain();
-                    }else{
-                        showVerifyEmailDialog(user.getEmail());
                     }
                 }
             });
@@ -160,6 +165,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setFacebookLogin(){
         facebookLogin = new FacebookLogin(this, LoginActivity.this);
         facebookLogin.initalizeLoginButton(facebookButton);
+        facebookLogin.generateFBKeyHash();
     }
 
     private void setGoogleLogin(){
@@ -193,20 +199,20 @@ public class LoginActivity extends AppCompatActivity {
                             user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    if(user != null && user.isEmailVerified()){
+                                    if(user != null){
                                         goToMain();
                                     }else{
                                         boolean emailVerificationSent = prefs.getEmailVerificationSent();
                                         if(emailVerificationSent){
                                             progressBar.setVisibility(View.GONE);
-                                            showVerifyEmailDialog(email);
+//                                            showVerifyEmailDialog(email);
                                         }else{
                                             mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     prefs.setEmailVerificationSent(true);
                                                     progressBar.setVisibility(View.GONE);
-                                                    showVerifyEmailDialog(email);
+//                                                    showVerifyEmailDialog(email);
                                                 }
                                             });
                                         }
@@ -244,7 +250,7 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<Void> task) {
                                     prefs.setEmailVerificationSent(true);
                                     progressBar.setVisibility(View.GONE);
-                                    showVerifyEmailDialog(email);
+//                                    showVerifyEmailDialog(email);
                                 }
                             });
                         }
@@ -352,7 +358,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    private void goToMain(){
+    public void goToMain(){
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

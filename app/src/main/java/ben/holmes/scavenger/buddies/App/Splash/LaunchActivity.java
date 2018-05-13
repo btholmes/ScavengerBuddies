@@ -42,7 +42,7 @@ public class LaunchActivity extends AppCompatActivity{
             user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    if(user != null && user.isEmailVerified()){
+                    if(user != null){
                         goToMain();
                     }else{
                         animateLogo(logo);

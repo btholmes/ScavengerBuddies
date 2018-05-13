@@ -37,13 +37,11 @@
             ></activity>
 
 
+
+
+        <!-- Enables Facebook signon -->
         <meta-data android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"/>
-
-        <!-- Enables the Google Pay API -->
-        <meta-data
-            android:name="com.google.android.gms.wallet.api.enabled"
-            android:value="true" />
 
         <activity android:name="com.facebook.FacebookActivity"
             android:configChanges=
@@ -58,6 +56,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
+        </activity>
+
+
+
+        <activity android:name=".Games.Activities.NewGameActivity"
+            android:theme="@style/AppTheme"
+            >
+
         </activity>
 
 

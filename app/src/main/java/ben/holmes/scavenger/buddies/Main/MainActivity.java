@@ -1,7 +1,7 @@
 package ben.holmes.scavenger.buddies.Main;
 
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -12,19 +12,26 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.facebook.login.LoginManager;
+import com.google.firebase.auth.FirebaseAuth;
 
 import ben.holmes.scavenger.buddies.App.Fragments.DrawerFragment;
+import ben.holmes.scavenger.buddies.App.Splash.LaunchActivity;
 import ben.holmes.scavenger.buddies.App.Tools.Analytics;
-import ben.holmes.scavenger.buddies.App.Tools.GooglePay;
+import ben.holmes.scavenger.buddies.App.Tools.Tools;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
-import ben.holmes.scavenger.buddies.Games.GameFragment;
+import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
 import ben.holmes.scavenger.buddies.LeaderBoard.LeaderBoardFragment;
+import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Messages.MessagesFragment;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
@@ -51,6 +58,13 @@ public class MainActivity extends ScavengerActivity {
     private LeaderBoardFragment leaderBoardFragment;
 
     private Analytics analytics;
+
+    public int[] tab_icons = {
+            R.drawable.tab_feed,
+            R.drawable.tab_friend,
+            R.drawable.tab_chat,
+            R.drawable.ic_form_people
+    };
 
 
     @Override
@@ -98,7 +112,14 @@ public class MainActivity extends ScavengerActivity {
         setupTabIcons();
         setupTabClick();
 
+        getFacebookFriends();
+
 //        Tools.systemBarLolipop(this);
+    }
+
+    private void getFacebookFriends(){
+        FacebookLogin facebookLogin = new FacebookLogin(this, this);
+        facebookLogin.getUserFriends();
     }
 
     private void handleSelectedItem(MenuItem item){
@@ -108,6 +129,8 @@ public class MainActivity extends ScavengerActivity {
 //            googlePay.connect();
          replaceFragment(new DrawerFragment());
 
+        }else if(item.getTitle().equals("Sign Out")){
+            signOut();
         }
 
     }
@@ -141,11 +164,35 @@ public class MainActivity extends ScavengerActivity {
         viewPager.setAdapter(adapter);
     }
 
+    private void setTabNotification(int value, int tabIcon){
+        FrameLayout tabTwo = (FrameLayout) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        DisplayMetrics dm = tabTwo.getResources().getDisplayMetrics();
+
+
+        TextView text = (TextView) tabTwo.findViewById(R.id.text1);
+        text.setText("2");
+
+        ImageView icon = (ImageView) tabTwo.findViewById(R.id.icon);
+        icon.setBackgroundResource(tabIcon);
+        tabLayout.getTabAt(1).setCustomView(tabTwo);
+
+    }
+
+
     private void setupTabIcons() {
-        tabLayout.getTabAt(0).setIcon(R.drawable.tab_feed);
-        tabLayout.getTabAt(1).setIcon(R.drawable.tab_friend);
-        tabLayout.getTabAt(2).setIcon(R.drawable.tab_chat);
-        tabLayout.getTabAt(3).setIcon(R.drawable.ic_form_people);
+        tabLayout.getTabAt(0).setIcon(tab_icons[0]);
+
+        /**
+         * Tab Two
+         */
+        setTabNotification(2, tab_icons[1]);
+
+
+//        tabLayout.getTabAt(2).setCustomView(tabThree);
+        tabLayout.getTabAt(2).setIcon(tab_icons[2]);
+
+        tabLayout.getTabAt(3).setIcon(tab_icons[3]);
+
     }
 
     private void setupTabClick() {
@@ -181,6 +228,22 @@ public class MainActivity extends ScavengerActivity {
                 return true;
             }
         });
+    }
+
+    private void signOut(){
+        FirebaseAuth.getInstance().signOut();
+        if(LoginManager.getInstance() != null)
+            LoginManager.getInstance().logOut();
+
+        goToLaunch();
+
+    }
+
+    private void goToLaunch(){
+        Intent intent = new Intent(this, LaunchActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
 }

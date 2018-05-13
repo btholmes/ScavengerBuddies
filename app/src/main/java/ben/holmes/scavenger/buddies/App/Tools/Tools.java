@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
@@ -46,4 +47,10 @@ public class Tools {
         float cellWidth = activity.getResources().getDimension(R.dimen.recycler_item_size);
         return Math.round(screenWidth / cellWidth);
     }
+
+    public static int convertDpToPx(int dp, DisplayMetrics displayMetrics) {
+        float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displayMetrics);
+        return Math.round(pixels);
+    }
+
 }
