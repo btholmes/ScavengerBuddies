@@ -22,6 +22,9 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 
 public class GameFragment extends ScavengerFragment{
 
+    public static final String TAG_NAME = "Games";
+    public static final int TOOLBAR_COLOR = R.color.colorPrimary;
+
     private View view;
     private ShadowButton gameButton;
 
@@ -69,6 +72,13 @@ public class GameFragment extends ScavengerFragment{
         startActivity(intent);
     }
 
+    @Override
+    public String getToolbarTitle() {
+        return TAG_NAME;
+    }
 
-
+    @Override
+    public int getToolbarColor() {
+        return TOOLBAR_COLOR;
+    }
 }

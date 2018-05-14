@@ -2,6 +2,7 @@ package ben.holmes.scavenger.buddies.LeaderBoard;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,9 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
  */
 
 public class LeaderBoardFragment extends ScavengerFragment {
+
+    public static final String TAG_NAME = "LeaderBoard";
+    public static final int TOOLBAR_COLOR = R.color.colorPrimary;
 
     private View view;
 
@@ -35,5 +39,15 @@ public class LeaderBoardFragment extends ScavengerFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public String getToolbarTitle() {
+        return TAG_NAME;
+    }
+
+    @Override
+    public int getToolbarColor() {
+        return TOOLBAR_COLOR;
     }
 }

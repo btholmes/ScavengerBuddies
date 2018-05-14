@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_below="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:id="@+id/opponent_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Opponent"
+        android:textSize="20dp"
+        style="@style/sans"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:padding="@dimen/spacing_large"
+        />
+
+    <LinearLayout
+        android:id="@+id/opponent_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        >
+
+
+        <ben.holmes.scavenger.buddies.Model.ShadowButton
+            android:id="@+id/friend_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/spacing_large"
+            >
+
+        </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+        <ben.holmes.scavenger.buddies.Model.ShadowButton
+            android:id="@+id/opponent_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:layout_marginRight="@dimen/spacing_large"
+            >
+
+        </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/word_count_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Word Count"
+        android:textSize="20dp"
+        style="@style/sans"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:padding="@dimen/spacing_large"
+        />
+
+    <LinearLayout
+        android:id="@+id/word_count_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        >
+
+
+        <ben.holmes.scavenger.buddies.Model.ShadowButton
+            android:id="@+id/word_count_five"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/spacing_large"
+            >
+
+        </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+        <ben.holmes.scavenger.buddies.Model.ShadowButton
+            android:id="@+id/word_count_ten"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:layout_marginRight="@dimen/spacing_large"
+            >
+        </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+    </LinearLayout>
+
+    <ben.holmes.scavenger.buddies.Model.ShadowButton
+        android:id="@+id/play_now"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/spacing_large"
+        >
+    </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+
+</LinearLayout>
+
+

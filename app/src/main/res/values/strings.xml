@@ -11,6 +11,9 @@
     <string name="fb_login_protocol_scheme">fb773391412850639</string>
 
 
+    <string name="clarifai_api_key">fa5adeda47ab48449ea2c9eac2fa7346</string>
+
+
     <string-array name="in_app_products">
         <item name="in_app_donation">in_app_donation</item>
     </string-array>

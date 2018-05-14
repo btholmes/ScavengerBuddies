@@ -39,5 +39,8 @@
 
     <dimen name="toolbar_height">60dp</dimen>
 
+    <dimen name="spin_wheel_dimension">300dp</dimen>
+    <dimen name="spin_wheel_border">5dp</dimen>
+
 
 </resources>

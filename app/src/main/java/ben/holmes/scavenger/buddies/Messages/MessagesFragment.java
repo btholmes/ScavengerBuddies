@@ -17,6 +17,8 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 
 public class MessagesFragment extends ScavengerFragment {
 
+    public static final String TAG_NAME = "Messages";
+    public static final int TOOLBAR_COLOR = R.color.colorPrimary;
     private View view;
 
     @Override
@@ -32,4 +34,13 @@ public class MessagesFragment extends ScavengerFragment {
         return view;
     }
 
+    @Override
+    public int getToolbarColor() {
+        return TOOLBAR_COLOR;
+    }
+
+    @Override
+    public String getToolbarTitle() {
+        return TAG_NAME;
+    }
 }

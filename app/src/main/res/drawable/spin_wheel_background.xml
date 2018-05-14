@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval"
+    >
+
+    <solid android:color="@color/grey_bg"></solid>
+
+    <stroke android:color="@color/black"
+        android:width="@dimen/spin_wheel_border"></stroke>
+
+    <gradient
+        android:startColor="@color/OrangeRed"
+        android:centerY="0.5"
+        android:endColor="@color/white"
+        android:centerX="0.5"
+        android:type="radial"
+        android:gradientRadius="70%p"
+        ></gradient>
+
+    <size android:width="@dimen/spin_wheel_dimension"
+        android:height="@dimen/spin_wheel_dimension">
+
+    </size>
+
+</shape>
