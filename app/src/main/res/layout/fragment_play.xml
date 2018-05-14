@@ -76,7 +76,6 @@
                 android:layout_width="@dimen/spin_wheel_dimension"
                 android:layout_height="@dimen/spin_wheel_dimension"
                 android:layout_gravity="center"
-                android:background="@drawable/spin_wheel_background"
 
                 ></ben.holmes.scavenger.buddies.Model.SpinWheel>
 

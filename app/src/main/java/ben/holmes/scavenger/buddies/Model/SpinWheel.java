@@ -1,11 +1,15 @@
 package ben.holmes.scavenger.buddies.Model;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
@@ -80,20 +84,61 @@ public class SpinWheel extends View {
         return ContextCompat.getDrawable(getContext(), R.drawable.check_mark);
     }
 
+    /**
+     * Rotates drawable through a matrix
+     * @param canvas
+     * @param d
+     * @param rotation
+     * @param cX
+     * @param cY
+     */
+    private void rotateDrawable(Canvas canvas, Drawable d, int rotation, int cX, int cY){
+        Matrix matrix = new Matrix();
+        Rect bounds = d.getBounds();
+        int width = (int)Math.abs(bounds.right -bounds.left);
+        int height = (int)Math.abs(bounds.top -bounds.bottom);
+        rotation += 90;
+
+//        Rotation occurs in bitmap space
+        matrix.postRotate(rotation, width/2,height/2);
+//        Translate to position on canvas
+        matrix.postTranslate(cX-width/2, cY-height/2);
+        Bitmap bitmap = drawableToBitmap(d);
+        bitmap = Bitmap.createScaledBitmap(bitmap, width,  height, true);
+
+        canvas.drawBitmap(bitmap, matrix, null);
+    }
+
     private void setDrawable(Canvas canvas, int i, int sweepAngle, int startAngle){
         Drawable d = getDrawable(i);
-        int[] midPoint = midPointOfPieSegment(sweepAngle);
-        int[] arcMidPoint = getMidPointOfArc(midPoint[0], midPoint[1], startAngle);
-        d.setBounds(arcMidPoint[0] - d.getIntrinsicWidth()/2,
-                arcMidPoint[1]-d.getIntrinsicHeight()/2,
-                arcMidPoint[0]+ d.getIntrinsicWidth()/2,
-                arcMidPoint[1] + d.getIntrinsicHeight()/2);
+        int width = 100;
+        int[] arcMidPoint = getCenterOfSegment( startAngle + (sweepAngle/2), getWidth()/3);
+        d.setBounds(arcMidPoint[0] - width/2,
+                arcMidPoint[1] - width/2,
+                arcMidPoint[0]  + width/2,
+                arcMidPoint[1] + width/2);
 
-//        canvas.rotate(sweepAngle * i);
-        d.draw(canvas);
-//        canvas.rotate(-sweepAngle * i);
+        rotateDrawable(canvas, d, startAngle + sweepAngle/2, d.getBounds().centerX(), d.getBounds().centerY());
+    }
 
+    /**
+     * Converts from polar coordinates to cartesian coordinates
+     * @param angle   the angle of the pie segment
+     * @param r  the radius, usually getWidth/4
+     * @return
+     */
+    private int[] getCenterOfSegment(int angle, int r){
+        int[] result = new int[2];
+        int cX = getWidth()/2;
+        int cY = getHeight()/2;
 
+        //Convert angle to radians
+        double trad = angle * (Math.PI/180);
+
+        result[0] = cX + (int)(r * Math.cos(trad));
+        result[1] = cY + (int)(r * Math.sin(trad));
+
+        return result;
     }
 
     private void setBackground(Canvas canvas){
@@ -104,7 +149,7 @@ public class SpinWheel extends View {
 
     private void drawSegments(RectF rectF, Canvas canvas, Paint p){
         //        Segment border color
-        p.setStyle(Paint.Style.FILL);
+//        p.setStyle(Paint.Style.FILL);
         int sweepAngle = 360/dividers;
         int startAngle = sweepAngle;
         for(int i = 0; i < dividers; i++){
@@ -125,30 +170,11 @@ public class SpinWheel extends View {
         }
     }
 
-    private int[] midPointOfPieSegment(float sweepAngle){
-        int[] result = new int[2];
-        result[0] = (int)((calculateRadius()/2)*Math.cos(Math.toRadians(sweepAngle/2))+(getWidth()/2));
-        result[1] = (int)((calculateRadius()/2)*Math.sin(Math.toRadians(sweepAngle/2))+(getHeight()/2));
-
-        return result;
-    }
-
-    private int[] getMidPointOfArc(int cX,int cY, int theta)
-    {
-        int[] result = new int[2];
-        float rX = (float)(cX + calculateRadius()*(Math.cos(Math.PI/theta)));
-        float rY = (float)(cY + calculateRadius()*(Math.sin(Math.PI/theta)));
-
-        result[0] = (int)(rX+cX)/2;
-        result[1] = (int)(rY+cY)/2;
-
-        return  result;
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {
 
-        setBackground(canvas);
+//        setBackground(canvas);
 
         Paint p = new Paint();
         // smooths
@@ -165,5 +191,33 @@ public class SpinWheel extends View {
         canvas.drawOval(rectF, p);
 
         drawSegments(rectF, canvas, p);
+    }
+
+
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap = null;
+        Rect bounds = drawable.getBounds();
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                bitmap = bitmapDrawable.getBitmap();
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+//        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+//            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+//        } else {
+//            bitmap = Bitmap.createBitmap(Math.abs(bounds.left - bounds.right), Math.abs(bounds.top - bounds.bottom), Bitmap.Config.ARGB_8888);
+//        }
+//
+//        bitmap = Bitmap.createBitmap(Math.abs(bounds.left - bounds.right), Math.abs(bounds.top - bounds.bottom), Bitmap.Config.ARGB_8888);
+//
+//        Canvas canvas = new Canvas(bitmap);
+//        drawable.setBounds(bounds.left, bounds.top, bounds.right, bounds.bottom);
+//        drawable.draw(canvas);
+        return bitmap;
     }
 }
