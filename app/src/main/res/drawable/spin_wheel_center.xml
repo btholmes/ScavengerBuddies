@@ -7,8 +7,8 @@
 
     <stroke android:color="@color/black" android:width="@dimen/button_border_width"></stroke>
 
-    <size android:width="20dp"
-        android:height="20dp"></size>
+    <size android:width="@dimen/spin_wheel_center_width"
+        android:height="@dimen/spin_wheel_center_width"></size>
 
 
 

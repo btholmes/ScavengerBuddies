@@ -42,5 +42,7 @@
     <dimen name="spin_wheel_dimension">300dp</dimen>
     <dimen name="spin_wheel_border">5dp</dimen>
 
+    <dimen name="spin_wheel_center_width">20dp</dimen>
+
 
 </resources>

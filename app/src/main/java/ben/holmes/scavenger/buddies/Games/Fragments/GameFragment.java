@@ -31,7 +31,21 @@ public class GameFragment extends ScavengerFragment{
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     @Nullable
@@ -81,4 +95,5 @@ public class GameFragment extends ScavengerFragment{
     public int getToolbarColor() {
         return TOOLBAR_COLOR;
     }
+
 }

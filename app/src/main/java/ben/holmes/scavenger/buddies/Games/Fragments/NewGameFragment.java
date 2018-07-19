@@ -39,8 +39,38 @@ public class NewGameFragment extends ScavengerFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_new_game, container, false);
-        displayHomeBackButton();
+        return  rootView;
+    }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setUp();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void setUp(){
+        displayHomeBackButton();
         initViews();
 
         setOpponentButtonDesign();
@@ -51,8 +81,6 @@ public class NewGameFragment extends ScavengerFragment {
 
         setPlayNowDesign();
         setPlayNowClicks();
-
-        return  rootView;
     }
 
 
@@ -77,16 +105,7 @@ public class NewGameFragment extends ScavengerFragment {
 
 
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
-            case android.R.id.home:
-                getActivity().onBackPressed();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
 
 
@@ -208,7 +227,18 @@ public class NewGameFragment extends ScavengerFragment {
     }
 
     private void goToGame(){
-        ((ScavengerActivity)getActivity()).replaceFragment(new PlayFragment(), PlayFragment.TAG_NAME, R.anim.slide_in_right, R.anim.slide_out_right);
+        PlayFragment fragment = new PlayFragment();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
+        bundle.putBoolean(FIVE_WORD_KEY, wordCountFIve.isChecked());
+        fragment.setArguments(bundle);
+        ((ScavengerActivity)getActivity())
+                .replaceFragment(fragment,
+                PlayFragment.TAG_NAME,
+                R.anim.slide_in_right,
+                R.anim.slide_out_right);
+
+
     }
 
 

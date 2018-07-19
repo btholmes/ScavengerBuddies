@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toolbar;
@@ -21,6 +22,8 @@ import ben.holmes.scavenger.buddies.R;
 
 public abstract class ScavengerFragment extends Fragment {
 
+    public static String FRIEND_KEY = "friend is checked?";
+    public static String FIVE_WORD_KEY = "five words is checked";
 
     private Toolbar toolbar;
     private ActionBar actionBar;
@@ -28,7 +31,6 @@ public abstract class ScavengerFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setToolbar();
     }
 
 
@@ -47,13 +49,19 @@ public abstract class ScavengerFragment extends Fragment {
 
     private void setToolbar(){
         actionBar = ((ScavengerActivity)getActivity()).getSupportActionBar();
-        actionBar.setTitle(getToolbarTitle());
-        actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(getToolbarColor())));
+        if(actionBar != null){
+            actionBar.setTitle(getToolbarTitle());
+            actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(getToolbarColor())));
+        }
+
     }
 
     public void displayHomeBackButton(){
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
+        if(actionBar != null){
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
+
     }
 
     public void setDarkTheme(){

@@ -33,6 +33,10 @@ public class LaunchActivity extends AppCompatActivity{
         mAuth = FirebaseAuth.getInstance();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
 
     @Override
     protected void onResume() {
@@ -54,10 +58,27 @@ public class LaunchActivity extends AppCompatActivity{
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+
     private void goToMain(){
         Intent intent = new Intent(LaunchActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        //Destroys this activity, to save memory.
         finish();
     }
 

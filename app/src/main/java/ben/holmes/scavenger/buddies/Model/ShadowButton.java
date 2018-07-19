@@ -28,6 +28,7 @@ public class ShadowButton extends RelativeLayout{
     private RelativeLayout buttonContainer;
     private FrameLayout shadow;
     private boolean isElevated;
+    private boolean isChecked;
 
     private View checkMark;
 
@@ -54,6 +55,7 @@ public class ShadowButton extends RelativeLayout{
         this.shadow = findViewById(R.id.shadow);
         this.checkMark = findViewById(R.id.check_mark);
         this.isElevated = true;
+        isChecked = false;
     }
 
     public void setText(String value){
@@ -112,11 +114,17 @@ public class ShadowButton extends RelativeLayout{
 
     public void setUnChecked(){
         this.checkMark.setVisibility(GONE);
+        isChecked = false;
     }
 
     public void setChecked(){
         this.checkMark.setVisibility(VISIBLE);
         this.checkMark.bringToFront();
+        isChecked = true;
+    }
+
+    public boolean isChecked(){
+        return isChecked;
     }
 
     public void toggleElevation(){

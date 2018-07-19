@@ -21,6 +21,9 @@ public class SpinWheel extends View {
 
     private Context ctx;
     private int dividers;
+    private Canvas canvas;
+    private Paint p;
+    private int sweepAngle;
 
     // CONSTRUCTOR
     public SpinWheel(Context context) {
@@ -76,23 +79,60 @@ public class SpinWheel extends View {
             case 9:
                 color = R.color.DarkGray;
                 break;
+            default:
+                break;
         }
         return color;
     }
 
     private Drawable getDrawable(int place){
-        return ContextCompat.getDrawable(getContext(), R.drawable.check_mark);
+        Drawable result = null;
+        switch (place){
+            case 0:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                break;
+            case 1:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_two);
+                break;
+            case 2:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                break;
+            case 3:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_four);
+                break;
+            case 4:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                break;
+            case 5:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);
+                break;
+            case 6:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);
+                break;
+            case 7:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);
+                break;
+            case 8:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);
+                break;
+            case 9:
+                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);
+                break;
+            default:
+                break;
+
+        }
+        return result;
     }
 
     /**
      * Rotates drawable through a matrix
-     * @param canvas
      * @param d
      * @param rotation
      * @param cX
      * @param cY
      */
-    private void rotateDrawable(Canvas canvas, Drawable d, int rotation, int cX, int cY){
+    private void rotateDrawable( Drawable d, int rotation, int cX, int cY){
         Matrix matrix = new Matrix();
         Rect bounds = d.getBounds();
         int width = (int)Math.abs(bounds.right -bounds.left);
@@ -109,7 +149,7 @@ public class SpinWheel extends View {
         canvas.drawBitmap(bitmap, matrix, null);
     }
 
-    private void setDrawable(Canvas canvas, int i, int sweepAngle, int startAngle){
+    private void setDrawable(int i, int startAngle){
         Drawable d = getDrawable(i);
         int width = 100;
         int[] arcMidPoint = getCenterOfSegment( startAngle + (sweepAngle/2), getWidth()/3);
@@ -118,7 +158,7 @@ public class SpinWheel extends View {
                 arcMidPoint[0]  + width/2,
                 arcMidPoint[1] + width/2);
 
-        rotateDrawable(canvas, d, startAngle + sweepAngle/2, d.getBounds().centerX(), d.getBounds().centerY());
+        rotateDrawable(d, startAngle + sweepAngle/2, d.getBounds().centerX(), d.getBounds().centerY());
     }
 
     /**
@@ -147,17 +187,34 @@ public class SpinWheel extends View {
         d.draw(canvas);
     }
 
-    private void drawSegments(RectF rectF, Canvas canvas, Paint p){
-        //        Segment border color
-//        p.setStyle(Paint.Style.FILL);
-        int sweepAngle = 360/dividers;
+    private void drawSegments(RectF rectF, Paint p){
+
+        sweepAngle = 360/dividers;
         int startAngle = sweepAngle;
         for(int i = 0; i < dividers; i++){
             int angle = startAngle * i;
             p.setColor(ContextCompat.getColor(getContext(), getColor(i)));
-            canvas.drawArc (rectF, angle, sweepAngle, true, p);
-            setDrawable(canvas, i, sweepAngle, angle);
+            canvas.drawArc(rectF, angle, sweepAngle, true, p);
+            setDrawable(i, angle);
         }
+    }
+
+    public int getDividers(){
+        return  dividers;
+    }
+
+    public int getSweepAngle(){
+        return sweepAngle;
+    }
+
+    public void fillSegment(int angle){
+        invalidate();
+        p.setStyle(Paint.Style.FILL);
+        angle = angle % 360;
+        int place = angle-sweepAngle;
+        p.setColor(ContextCompat.getColor(getContext(), getColor(place)));
+        RectF rectF = new RectF(0, 0, getWidth(), getHeight());
+        canvas.drawArc(rectF, angle, sweepAngle, true, p);
     }
 
     private float calculateRadius(){
@@ -172,11 +229,14 @@ public class SpinWheel extends View {
 
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvasA) {
 
 //        setBackground(canvas);
 
-        Paint p = new Paint();
+        this.canvas = canvasA;
+        p = new Paint();
+
+        this.p = p;
         // smooths
         p.setAntiAlias(true);
 
@@ -190,9 +250,25 @@ public class SpinWheel extends View {
         RectF rectF = new RectF(0, 0, getWidth(), getHeight());
         canvas.drawOval(rectF, p);
 
-        drawSegments(rectF, canvas, p);
+        drawSegments(rectF, p);
+//        addArrow(canvas);
     }
 
+
+    private void addArrow(Canvas canvas){
+        Drawable d = ContextCompat.getDrawable(getContext(), R.drawable.ic_up_arrow);
+        int centerX = getWidth()/2;
+        int centerY = getHeight()/2;
+
+        int spinWheelWidth = getResources().getDimensionPixelSize(R.dimen.spin_wheel_center_width);
+
+        d.setBounds(centerX-50,
+                centerY+spinWheelWidth+50,
+                centerX+50,
+                centerY);
+
+        d.draw(canvas);
+    }
 
 
     public static Bitmap drawableToBitmap(Drawable drawable) {

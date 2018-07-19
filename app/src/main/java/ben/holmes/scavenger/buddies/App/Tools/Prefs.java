@@ -12,6 +12,7 @@ public class Prefs {
     public static final String EMAIL_VERIFICATION_SENT = "boolean stores if email verification has been sent";
     public static final String FACEBOOK_LOGIN_RESULT = "Json String Login Result from Facebook Login ";
     public static final String HAS_FACEBOOK_LOGIN = "boolean stores if they have logged in with facebook ";
+    public static final String SELECTED_WHEEL_FRAGMENT = "int stores current state of wheel";
 
     private Context ctx;
     private SharedPreferences prefs;
@@ -46,6 +47,14 @@ public class Prefs {
 
     public boolean getHasLoggedInFacebook(){
         return prefs.getBoolean(HAS_FACEBOOK_LOGIN, false);
+    }
+
+    public void storeSelectedWheel(int selected){
+        prefs.edit().putInt(SELECTED_WHEEL_FRAGMENT, selected).commit();
+    }
+
+    public int getSelectedWheel(){
+        return prefs.getInt(SELECTED_WHEEL_FRAGMENT, -1);
     }
 
 }

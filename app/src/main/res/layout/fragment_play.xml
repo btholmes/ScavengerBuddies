@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/spacing_small"
-    android:weightSum="2"
     >
 
     <FrameLayout
@@ -79,29 +78,58 @@
 
                 ></ben.holmes.scavenger.buddies.Model.SpinWheel>
 
-
-            <TextView
-                android:id="@+id/spin_wheel_center"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:background="@drawable/spin_wheel_center"
+            <RelativeLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:layout_gravity="center"
-                android:text="Spin"
-                android:textAlignment="center"
-                android:gravity="center"
-                android:textStyle="bold"
-                ></TextView>
+                >
 
 
+                <ImageView
+                    android:id="@+id/up_arrow"
+                    android:layout_width="35dp"
+                    android:layout_height="45dp"
+                    android:background="@drawable/ic_up_arrow"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentTop="true"
+                    />
 
+                <TextView
+                    android:id="@+id/spin_wheel_center"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/spin_wheel_center"
+                    android:layout_centerInParent="true"
+                    android:text="Spin"
+                    android:textAlignment="center"
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    ></TextView>
+
+            </RelativeLayout>
 
         </FrameLayout>
 
 
-
-
-
     </RelativeLayout>
+
+    <ben.holmes.scavenger.buddies.Model.ShadowButton
+        android:id="@+id/take_picture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+    </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+    <!--<ben.holmes.scavenger.buddies.Model.Preview-->
+        <!--android:id="@+id/preview"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="visible"-->
+        <!--&gt;-->
+
+
+    <!--</ben.holmes.scavenger.buddies.Model.Preview>-->
 
 
 </LinearLayout>

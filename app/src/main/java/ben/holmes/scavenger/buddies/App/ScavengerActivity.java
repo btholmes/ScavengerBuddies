@@ -9,6 +9,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -30,8 +32,6 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scavenger_base);
-        setUpToolbar();
-
 
         fragmentManager = getSupportFragmentManager();
         fragmentLayout = findViewById(R.id.fragment_frame);
@@ -64,6 +64,7 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     public void replaceFragmentDontAdd(Fragment fragment, String title){
         replaceFragmentDontAdd(fragment, title, 0, 0);
     }
+
 
     public void replaceFragmentDontAdd(Fragment fragment, String title, int enterAnimation, int exitAnimation){
         fragmentTransaction = fragmentManager.beginTransaction();
