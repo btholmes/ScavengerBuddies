@@ -12,11 +12,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Model.FriendItem;
+import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
 public class NewGameFragment extends ScavengerFragment {
@@ -105,11 +113,6 @@ public class NewGameFragment extends ScavengerFragment {
     public int getToolbarColor(){
         return TOOLBAR_COLOR;
     }
-
-
-
-
-
 
 
     private void setOpponentButtonDesign(){
@@ -230,7 +233,6 @@ public class NewGameFragment extends ScavengerFragment {
     }
 
 
-
     private void handleSelectFriend(){
         if(friendButton.isChecked()){
             View friendPage = getLayoutInflater().inflate(R.layout.select_friend, (ViewGroup) rootView, false);
@@ -257,13 +259,41 @@ public class NewGameFragment extends ScavengerFragment {
                         PlayFragment.TAG_NAME,
                         R.anim.slide_in_right,
                         R.anim.slide_out_right);
+
+
+    }
+
+    private User getOpponent(){
+        User opponent = null;
+        if(friendButton.isChecked()){
+
+        }
+
+        return new User("mhwZoOnxESO4no3xTRhQMtIjxfG2", "sixpackers49@aol.com");
+    }
+
+    private ArrayList<String> getWords(){
+        return new ArrayList<>(Arrays.asList("computer", "class", "fan"));
+    }
+
+    private void createGame(){
+        User opponent;
+        opponent = getOpponent();
+
+        ArrayList<String> words = getWords();
+
+        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        Database database = ((ScavengerActivity)getActivity()).getDatabase();
+
+        Game game = new Game(user.getUid(),opponent.getUid(), words );
+        database.addGameToFirebase(game);
     }
 
     private void goToGame(){
 
-        handleSelectFriend();
-
-//        moveOn();
+//        handleSelectFriend();
+        createGame();
+        moveOn();
 
     }
 

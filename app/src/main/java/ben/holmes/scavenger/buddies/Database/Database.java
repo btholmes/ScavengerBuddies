@@ -35,10 +35,8 @@ public class Database {
 
 
     public static void addGameToFirebase(Game gameObj){
-
         databaseReference.child("userList").child(gameObj.getChallenger()).child("games").child(gameObj.getGameID()).setValue(gameObj);
         databaseReference.child("userList").child(gameObj.getOpponent()).child("games").child(gameObj.getGameID()).setValue(gameObj);
-
     }
 
 

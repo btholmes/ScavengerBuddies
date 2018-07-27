@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/spacing_large"
-    >
+    android:padding="@dimen/spacing_large">
 
     <TextView
         android:id="@+id/text"
@@ -16,11 +17,69 @@
 
     <ben.holmes.scavenger.buddies.Model.ShadowButton
         android:id="@+id/game_button"
+        app:text="New Game"
+        app:text_color="@color/white"
+        app:right_icon="@drawable/ic_add"
+        app:right_icon_tint="@color/white"
+        app:shadow_color="@color/black"
+        app:border_color="@color/colorPrimary"
+        app:background_color="@color/colorPrimary"
         android:layout_below="@id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
 
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_below="@id/game_button"
+        android:visibility="visible"
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:cardCornerRadius="6dp"
+        app:cardBackgroundColor="@color/grey_bg"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+            <LinearLayout
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="@color/colorPrimary"
+                android:padding="@dimen/spacing_small"
+                >
+
+                <TextView
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="Current Games"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="normal"
+                    android:typeface="normal"
+                    />
+            </LinearLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_below="@+id/title"
+                android:overScrollMode="never"
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+            </android.support.v7.widget.RecyclerView>
+
+
+        </RelativeLayout>
+
+
+    </android.support.v7.widget.CardView>
 
 
 </RelativeLayout>

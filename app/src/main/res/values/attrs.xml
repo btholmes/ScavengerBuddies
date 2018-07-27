@@ -2,10 +2,14 @@
 <resources>
     <declare-styleable name="ShadowButton">
         <attr name="text" format="string"></attr>
-        <attr name="background_color" format="color"></attr>
-        <attr name="text_color" format="color"></attr>
-        <attr name="right_icon" format="integer"></attr>
-        <attr name="left_icon" format="integer"></attr>
+        <attr name="background_color" format="reference"></attr>
+        <attr name="text_color" format="reference"></attr>
+        <attr name="shadow_color" format="reference"></attr>
+        <attr name="border_color" format="reference"></attr>
+        <attr name="right_icon" format="reference"></attr>
+        <attr name="right_icon_tint" format="reference"></attr>
+        <attr name="left_icon" format="reference"></attr>
+        <attr name="left_icon_tint" format="reference"></attr>
     </declare-styleable>
 
 </resources>

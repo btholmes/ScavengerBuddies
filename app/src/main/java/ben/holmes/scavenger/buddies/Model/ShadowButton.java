@@ -50,6 +50,10 @@ public class ShadowButton extends RelativeLayout{
         sharedConstructor(ctx, attrs);
     }
 
+    public ShadowButton(Context ctx, @Nullable AttributeSet attrs, int style){
+        super(ctx, attrs, style);
+    }
+
 
     private void sharedConstructor(Context ctx, @Nullable AttributeSet attrs){
         this.ctx = ctx;
@@ -69,10 +73,32 @@ public class ShadowButton extends RelativeLayout{
 
             TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.ShadowButton);
             String text = ta.getString(R.styleable.ShadowButton_text);
-            int textColor = ta.getColor(R.styleable.ShadowButton_text_color, ContextCompat.getColor(getContext(), R.color.white));
-            int backgroundColor = ta.getColor(R.styleable.ShadowButton_background_color, ContextCompat.getColor(getContext(), R.color.white));
-            int rightIcon = ta.getInteger(R.styleable.ShadowButton_right_icon, R.drawable.ic_add);
-            int leftIcon = ta.getInteger(R.styleable.ShadowButton_left_icon, R.drawable.ic_add);
+            setText(text);
+
+            int textColor = ta.getResourceId(R.styleable.ShadowButton_text_color, R.color.white);
+            if(textColor != -1) setTextColor(textColor);
+
+            int shadowColor = ta.getResourceId(R.styleable.ShadowButton_shadow_color, R.color.black);
+            if(shadowColor != -1) setShadowColor(shadowColor);
+
+            int borderColor = ta.getResourceId(R.styleable.ShadowButton_border_color, -1);
+            if(borderColor != -1) setBorderColor(borderColor);
+
+            int backgroundColor = ta.getResourceId(R.styleable.ShadowButton_background_color, R.color.colorPrimary);
+            if(backgroundColor != -1) setButtonBackgroundColor(backgroundColor);
+
+            int rightIcon = ta.getResourceId(R.styleable.ShadowButton_right_icon,-1);
+            if(rightIcon != -1) setRightIcon(rightIcon);
+
+            int rightIconTint = ta.getResourceId(R.styleable.ShadowButton_right_icon_tint, R.color.white);
+            if(rightIconTint != -1) setRightIconColor(rightIconTint);
+
+            int leftIcon = ta.getResourceId(R.styleable.ShadowButton_left_icon, -1);
+            if(leftIcon != -1) setLeftIcon(leftIcon);
+
+            int leftIconTint = ta.getResourceId(R.styleable.ShadowButton_left_icon_tint, R.color.white);
+            if(leftIconTint != -1) setLeftIconColor(leftIconTint);
+
             ta.recycle();
         }
     }
@@ -83,6 +109,7 @@ public class ShadowButton extends RelativeLayout{
 
     public void setTextColor(int color){
         this.text.setTextColor(ContextCompat.getColor(ctx, color));
+//        this.text.setTextColor(color);
     }
 
     public void setLeftIcon(int resource){
@@ -90,7 +117,9 @@ public class ShadowButton extends RelativeLayout{
     }
 
     public void setLeftIconColor(int color){
-        this.leftIcon.setColorFilter(ContextCompat.getColor(ctx, color));
+        this.leftIcon.setColorFilter(ContextCompat.getColor(getContext(), color), PorterDuff.Mode.MULTIPLY);
+//        this.leftIcon.setColorFilter(color);
+//        this.leftIcon.setBackgroundColor(color);
 
     }
 
@@ -99,7 +128,9 @@ public class ShadowButton extends RelativeLayout{
     }
 
     public void setRightIconColor(int color){
-        this.rightIcon.setColorFilter(ContextCompat.getColor(ctx, color));
+        this.rightIcon.setColorFilter(ContextCompat.getColor(getContext(), color), PorterDuff.Mode.MULTIPLY);
+//        this.rightIcon.setColorFilter(color);
+//        this.rightIcon.setBackgroundColor(color);
 
     }
 
@@ -156,18 +187,22 @@ public class ShadowButton extends RelativeLayout{
     public void setShadowColor(int color){
         Drawable background = this.shadow.getBackground();
         ((GradientDrawable)background).setColor(ContextCompat.getColor(ctx, color));
+        ((GradientDrawable)background).setStroke(ctx.getResources().getDimensionPixelSize(R.dimen.button_border_width), ContextCompat.getColor(ctx, color));
+
     }
 
     public void setButtonBackgroundColor(int color){
         Drawable background = this.buttonContainer.getBackground();
         GradientDrawable gradientDrawable = (GradientDrawable)background;
         gradientDrawable.setColor(ContextCompat.getColor(ctx, color));
+//        gradientDrawable.setColor(color);
     }
 
     public void setBorderColor(int color){
         Drawable background = this.buttonContainer.getBackground();
         GradientDrawable gradientDrawable = (GradientDrawable)background;
-        gradientDrawable.setStroke(ctx.getResources().getDimensionPixelSize(R.dimen.button_border_width), ContextCompat.getColor(ctx, color));
+//        gradientDrawable.setStroke(ctx.getResources().getDimensionPixelSize(R.dimen.button_border_width), ContextCompat.getColor(getContext(), R.color.Red));
+        gradientDrawable.setStroke(ctx.getResources().getDimensionPixelSize(R.dimen.button_border_width), ContextCompat.getColor(getContext(), color));
 
     }
 

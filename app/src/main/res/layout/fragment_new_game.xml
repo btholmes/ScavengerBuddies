@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_below="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/opponent_text"
@@ -34,6 +33,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="@dimen/spacing_large"
+            app:text="Friend"
+            app:text_color="@color/white"
+            app:background_color="@color/colorPrimary"
             >
 
         </ben.holmes.scavenger.buddies.Model.ShadowButton>
@@ -46,6 +48,9 @@
             android:layout_marginTop="@dimen/spacing_large"
             android:layout_marginBottom="@dimen/spacing_large"
             android:layout_marginRight="@dimen/spacing_large"
+            app:text="Random"
+            app:text_color="@color/white"
+            app:background_color="@color/colorPrimary"
             >
 
         </ben.holmes.scavenger.buddies.Model.ShadowButton>
@@ -80,6 +85,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="@dimen/spacing_large"
+            app:text="5 Words"
+            app:text_color="@color/white"
+            app:background_color="@color/colorPrimary"
             >
 
         </ben.holmes.scavenger.buddies.Model.ShadowButton>
@@ -92,6 +100,9 @@
             android:layout_marginTop="@dimen/spacing_large"
             android:layout_marginBottom="@dimen/spacing_large"
             android:layout_marginRight="@dimen/spacing_large"
+            app:text="10 Words"
+            app:text_color="@color/white"
+            app:background_color="@color/colorPrimary"
             >
         </ben.holmes.scavenger.buddies.Model.ShadowButton>
 
@@ -103,6 +114,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/spacing_large"
+        app:text="Play Game"
+        app:text_color="@color/white"
+        app:background_color="@color/colorPrimary"
         >
     </ben.holmes.scavenger.buddies.Model.ShadowButton>
 

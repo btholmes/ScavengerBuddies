@@ -14,6 +14,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.R;
 
 
@@ -27,11 +31,15 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     private FrameLayout fragmentLayout;
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
+    private Database database;
+    private FirebaseUser firebaseUser;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scavenger_base);
+        database = Database.getInstance(this);
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         fragmentManager = getSupportFragmentManager();
         fragmentLayout = findViewById(R.id.fragment_frame);
@@ -86,6 +94,11 @@ public abstract class ScavengerActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    public FirebaseUser getFirebaseUser() {
+        return firebaseUser;
+    }
 
-
+    public Database getDatabase() {
+        return database;
+    }
 }
