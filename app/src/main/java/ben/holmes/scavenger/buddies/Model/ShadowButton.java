@@ -1,13 +1,17 @@
 package ben.holmes.scavenger.buddies.Model;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -32,20 +36,22 @@ public class ShadowButton extends RelativeLayout{
 
     private View checkMark;
 
+    private Paint mPaint;
+    private Rect mRect;
 
 
     public ShadowButton(Context ctx){
         super(ctx);
-        sharedConstructor(ctx);
+        sharedConstructor(ctx, null);
     }
 
-    public ShadowButton(Context ctx, AttributeSet attrs){
+    public ShadowButton(Context ctx, @Nullable AttributeSet attrs){
         super(ctx, attrs);
-        sharedConstructor(ctx);
+        sharedConstructor(ctx, attrs);
     }
 
 
-    private void sharedConstructor(Context ctx){
+    private void sharedConstructor(Context ctx, @Nullable AttributeSet attrs){
         this.ctx = ctx;
         inflate(ctx, R.layout.button_shadow, this);
         this.text = findViewById(R.id.text);
@@ -56,6 +62,19 @@ public class ShadowButton extends RelativeLayout{
         this.checkMark = findViewById(R.id.check_mark);
         this.isElevated = true;
         isChecked = false;
+
+        if(attrs != null){
+            mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            mRect = new Rect();
+
+            TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.ShadowButton);
+            String text = ta.getString(R.styleable.ShadowButton_text);
+            int textColor = ta.getColor(R.styleable.ShadowButton_text_color, ContextCompat.getColor(getContext(), R.color.white));
+            int backgroundColor = ta.getColor(R.styleable.ShadowButton_background_color, ContextCompat.getColor(getContext(), R.color.white));
+            int rightIcon = ta.getInteger(R.styleable.ShadowButton_right_icon, R.drawable.ic_add);
+            int leftIcon = ta.getInteger(R.styleable.ShadowButton_left_icon, R.drawable.ic_add);
+            ta.recycle();
+        }
     }
 
     public void setText(String value){
@@ -167,7 +186,7 @@ public class ShadowButton extends RelativeLayout{
                 toggleElevation();
                 callback.onSuccess();
             }
-        }, 75);
+        }, 50);
     }
 
 }

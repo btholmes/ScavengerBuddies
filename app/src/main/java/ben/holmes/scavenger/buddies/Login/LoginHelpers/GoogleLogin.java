@@ -22,7 +22,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
 
@@ -81,7 +83,9 @@ public class GoogleLogin implements View.OnClickListener {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
+                            Database.getInstance(ctx).addUser(user);
                             ((LoginActivity)activity).goToMain();
 
 //                            updateUI(user);

@@ -3,14 +3,6 @@ apply plugin: 'realm-android'
 apply plugin: 'io.fabric'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'android'
-            keyPassword 'Cloudatlas743'
-            storeFile file('$HOMES/keystores/android.jks')
-            storePassword 'Cloudatlas743'
-        }
-    }
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {

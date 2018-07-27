@@ -29,7 +29,9 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
+import ben.holmes.scavenger.buddies.Model.User;
 
 public class FacebookLogin {
 
@@ -86,7 +88,9 @@ public class FacebookLogin {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
+                            Database.getInstance(ctx).addUser(user);
                             ((LoginActivity)activity).goToMain();
 
                         } else {

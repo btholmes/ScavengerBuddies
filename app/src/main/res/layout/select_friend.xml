@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:id="@+id/select_friend"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/spacing_large"
+    android:paddingRight="@dimen/spacing_large"
+    android:background="#CC000000"
+    android:layout_gravity="center"
+    android:scrollbars="none"
+    android:overScrollMode="never"
+    >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@color/Yellow"
+            android:layout_marginTop="500dp"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@color/Yellow"
+                android:layout_alignParentBottom="true"
+                >
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Select Friend"
+                        android:typeface="monospace"
+                        android:textSize="30sp"
+                        android:layout_alignParentTop="true"
+                        />
+                    <LinearLayout
+                        android:id="@+id/friend_list"
+                        android:layout_below="@id/title"
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                    </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+</ScrollView>

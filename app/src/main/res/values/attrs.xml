@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ShadowButton">
+        <attr name="text" format="string"></attr>
+        <attr name="background_color" format="color"></attr>
+        <attr name="text_color" format="color"></attr>
+        <attr name="right_icon" format="integer"></attr>
+        <attr name="left_icon" format="integer"></attr>
+    </declare-styleable>
+
+</resources>

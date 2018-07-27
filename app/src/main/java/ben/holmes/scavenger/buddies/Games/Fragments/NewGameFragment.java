@@ -10,9 +10,12 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
+import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
+import ben.holmes.scavenger.buddies.Model.FriendItem;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.R;
 
@@ -226,7 +229,24 @@ public class NewGameFragment extends ScavengerFragment {
 
     }
 
-    private void goToGame(){
+
+
+    private void handleSelectFriend(){
+        if(friendButton.isChecked()){
+            View friendPage = getLayoutInflater().inflate(R.layout.select_friend, (ViewGroup) rootView, false);
+            friendPage.setVisibility(View.VISIBLE);
+            LinearLayout friendList = friendPage.findViewById(R.id.friend_list);
+            for(int i = 0; i < 100; i++){
+                FriendItem friend = new FriendItem(getContext());
+                friend.setName(i + " someone");
+                friendList.addView(friend);
+            }
+            ((ViewGroup) getActivity().findViewById(android.R.id.content) ).addView(friendPage);
+            ((NewGameActivity)getActivity()).setSelectFriendShown(true);
+        }
+    }
+
+    private void moveOn(){
         PlayFragment fragment = new PlayFragment();
         Bundle bundle = new Bundle();
         bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
@@ -234,10 +254,16 @@ public class NewGameFragment extends ScavengerFragment {
         fragment.setArguments(bundle);
         ((ScavengerActivity)getActivity())
                 .replaceFragment(fragment,
-                PlayFragment.TAG_NAME,
-                R.anim.slide_in_right,
-                R.anim.slide_out_right);
+                        PlayFragment.TAG_NAME,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_right);
+    }
 
+    private void goToGame(){
+
+        handleSelectFriend();
+
+//        moveOn();
 
     }
 

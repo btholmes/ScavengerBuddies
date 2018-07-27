@@ -1,5 +1,6 @@
 package ben.holmes.scavenger.buddies.Login;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.BuildConfig;
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.EmailLogin;
@@ -33,6 +35,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
 
@@ -60,12 +63,14 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser user;
     private FirebaseAuth.AuthStateListener authStateListener;
+    private Database database;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        database = Database.getInstance(this);
 
         if (BuildConfig.DEBUG) {
             FacebookSdk.setIsDebugEnabled(true);
@@ -266,6 +271,9 @@ public class LoginActivity extends AppCompatActivity {
                                     prefs.setEmailVerificationSent(true);
                                     progressBar.setVisibility(View.GONE);
 //                                    showVerifyEmailDialog(email);
+                                    User user = new User(mAuth.getCurrentUser().getUid(), email);
+                                    database.addUser(user);
+                                    goToMain();
                                 }
                             });
                         }

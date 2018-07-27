@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.Games.Fragments.NewGameFragment;
@@ -16,6 +17,8 @@ import ben.holmes.scavenger.buddies.R;
 
 public class NewGameActivity extends ScavengerActivity {
 
+
+    private boolean selectFriendShown = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,6 +41,23 @@ public class NewGameActivity extends ScavengerActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    public void setSelectFriendShown(boolean isShown){
+        selectFriendShown = isShown;
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if(selectFriendShown){
+            ViewGroup view = findViewById(android.R.id.content);
+            View selectFriend = view.findViewById(R.id.select_friend);
+            view.removeView(selectFriend);
+            selectFriendShown = false;
+        }else{
+            super.onBackPressed();
+        }
     }
 
     @Override
