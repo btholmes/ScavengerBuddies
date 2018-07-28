@@ -52,7 +52,10 @@
                 style="@style/MyCustomTabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPrimary" />
+                android:background="@color/colorPrimary"
+                app:tabIndicatorHeight="0dp"
+                app:tabIndicatorColor="@color/colorPrimary"
+                />
 
         <!--</android.support.design.widget.AppBarLayout>-->
 

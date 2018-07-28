@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:alpha="1"
+    >
+
+    <ben.holmes.scavenger.buddies.App.Views.ListHeaderView
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:text="All Users"
+        app:text_color="@color/white"
+        app:background_color="@color/com_facebook_blue"
+        >
+    </ben.holmes.scavenger.buddies.App.Views.ListHeaderView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_below="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="friend search view"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:textSize="20sp"
+        />
+
+
+</RelativeLayout>
