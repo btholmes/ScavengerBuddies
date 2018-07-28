@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,8 @@ import android.widget.FrameLayout;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.R;
@@ -32,7 +35,16 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
     private Database database;
+    private DatabaseReference reference;
     private FirebaseUser firebaseUser;
+
+    private static final int READ_CONTACTS = 1000;
+    private static final int WRITE_EXTERNAL_STORAGE = 1001;
+    private static final int READ_EXTERNAL_STORAGE = 1002;
+
+    public static boolean CAN_READ_CONTACTS = false;
+    public static boolean CAN_WRITE_EXTERNAL_STORAGE = false;
+    public static boolean CAN_READ_EXTERNAL_STORAGE = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +52,7 @@ public abstract class ScavengerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scavenger_base);
         database = Database.getInstance(this);
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
+        reference = FirebaseDatabase.getInstance().getReference();
         fragmentManager = getSupportFragmentManager();
         fragmentLayout = findViewById(R.id.fragment_frame);
     }
@@ -65,6 +77,10 @@ public abstract class ScavengerActivity extends AppCompatActivity {
 
     public void replaceFragment(Fragment fragment, String title){
         replaceFragment(fragment, title, 0, 0);
+    }
+
+    public int convertDpToPixels(int dp){
+        return Math.round(dp*(getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
     }
 
 
@@ -100,5 +116,9 @@ public abstract class ScavengerActivity extends AppCompatActivity {
 
     public Database getDatabase() {
         return database;
+    }
+
+    public DatabaseReference getDatabaseReference() {
+        return reference;
     }
 }

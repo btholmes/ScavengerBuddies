@@ -35,6 +35,8 @@ import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Messages.MessagesFragment;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
+import ben.holmes.scavenger.buddies.Train.dataCollectionActivity;
+
 
 import ben.holmes.scavenger.buddies.R;
 
@@ -157,6 +159,9 @@ public class MainActivity extends ScavengerActivity {
 
         }else if(item.getTitle().equals("Sign Out")){
             signOut();
+        }else if(item.getTitle().equals("Train")){
+            Intent intent = new Intent(MainActivity.this, dataCollectionActivity.class);
+            startActivity(intent);
         }
 
     }

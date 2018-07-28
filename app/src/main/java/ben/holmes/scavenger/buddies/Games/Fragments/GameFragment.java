@@ -4,10 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +31,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.GameButton;
@@ -47,18 +52,20 @@ public class GameFragment extends ScavengerFragment{
 
     private View view;
     private ShadowButton gameButton;
+    private RelativeLayout recyclerHolder;
     private RecyclerView recyclerView;
     private CardView cardView;
+    private static Context ctx;
+    private FirebaseRecyclerAdapter adapter;
     private DatabaseReference reference;
     private FirebaseUser user;
-    private static Context ctx;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        reference = FirebaseDatabase.getInstance().getReference();
-        user = FirebaseAuth.getInstance().getCurrentUser();
         this.ctx = getContext();
+        reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+        user = ((ScavengerActivity)getActivity()).getFirebaseUser();
     }
 
     @Override
@@ -86,12 +93,18 @@ public class GameFragment extends ScavengerFragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_game, container, false);
         gameButton = view.findViewById(R.id.game_button);
+        recyclerHolder = view.findViewById(R.id.recycler_holder);
         recyclerView = view.findViewById(R.id.recycler_view);
         cardView = view.findViewById(R.id.card_view);
         cardView.setVisibility(View.GONE);
         setUpGameButton();
-        setUpCardView();
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setAdapter();
     }
 
     public interface BasicCallback{
@@ -100,7 +113,6 @@ public class GameFragment extends ScavengerFragment{
 
     private boolean hasGames(final BasicCallback callback){
         boolean result = false;
-
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -121,7 +133,7 @@ public class GameFragment extends ScavengerFragment{
 
     private void setAdapter(){
         Query query = reference.child("userList").child(user.getUid()).child("games");
-        FirebaseRecyclerAdapter adapter = new FirebaseRecyclerAdapter(Game.class, R.layout.item_game, GameHolder.class, query) {
+        adapter = new FirebaseRecyclerAdapter(Game.class, R.layout.item_game, GameHolder.class, query) {
             @Override
             protected void populateViewHolder(RecyclerView.ViewHolder viewHolder, Object model, int position) {
                 Game game = (Game)model;
@@ -145,6 +157,9 @@ public class GameFragment extends ScavengerFragment{
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+        decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recycler_divider));
+        recyclerView.addItemDecoration(decoration);
         recyclerView.setAdapter(adapter);
         adapter.startListening();
     }
@@ -155,6 +170,7 @@ public class GameFragment extends ScavengerFragment{
             public void onComplete(boolean result) {
                 if(result){
                     cardView.setVisibility(View.VISIBLE);
+                    adjustSize();
                 }else{
                     cardView.setVisibility(View.GONE);
                 }
@@ -162,9 +178,27 @@ public class GameFragment extends ScavengerFragment{
         });
     }
 
-    private void setUpCardView(){
-        setAdapter();
+    /**
+     * Hard programs the height of item_game into this
+     */
+    private void adjustSize(){
+        if(cardView.getVisibility() == View.GONE) return;
+        if(adapter == null) return;
+
+        int totalHeight = 0;
+        if(isAdded()){
+            int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(90);
+            totalHeight += adapter.getItemCount() * dp;
+        }
+
+        if(totalHeight > 0 && isAdded()){
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) recyclerHolder.getLayoutParams();
+            int height = ((ScavengerActivity)getActivity()).convertDpToPixels(2);
+            params.height = totalHeight + (recyclerView.getItemDecorationCount() * height );
+            recyclerHolder.setLayoutParams(params);
+        }
     }
+
 
     private void setUpGameButton(){
         gameButton.setOnClickListener(new View.OnClickListener() {

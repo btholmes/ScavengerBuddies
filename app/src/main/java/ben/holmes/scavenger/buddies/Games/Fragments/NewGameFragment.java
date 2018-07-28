@@ -16,9 +16,11 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
+import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Model.FriendItem;
@@ -272,21 +274,37 @@ public class NewGameFragment extends ScavengerFragment {
         return new User("mhwZoOnxESO4no3xTRhQMtIjxfG2", "sixpackers49@aol.com");
     }
 
-    private ArrayList<String> getWords(){
-        return new ArrayList<>(Arrays.asList("computer", "class", "fan"));
+    public interface WordCallback{
+        void onComplete(List<String> list);
+    }
+
+    private void getWords(final WordCallback callback, int count){
+        Database database = ((ScavengerActivity)getActivity()).getDatabase();
+
+        database.getTags(new Database.TagCallback() {
+            @Override
+            public void onComplete(List<String> list) {
+                callback.onComplete(list);
+            }
+        }, count);
     }
 
     private void createGame(){
-        User opponent;
-        opponent = getOpponent();
+        int wordCount = 5;
+        if(!wordCountFIve.isChecked()) wordCount = 10;
 
-        ArrayList<String> words = getWords();
+        getWords(new WordCallback() {
+            @Override
+            public void onComplete(List<String> list) {
+                User opponent = getOpponent();
+                FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+                Game game = new Game(user.getUid(),opponent.getUid(), list );
+                Database database = ((ScavengerActivity)getActivity()).getDatabase();
+                database.addGameToFirebase(game);
 
-        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
-        Database database = ((ScavengerActivity)getActivity()).getDatabase();
+            }
+        }, wordCount);
 
-        Game game = new Game(user.getUid(),opponent.getUid(), words );
-        database.addGameToFirebase(game);
     }
 
     private void goToGame(){

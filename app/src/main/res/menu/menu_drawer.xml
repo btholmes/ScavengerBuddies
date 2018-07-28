@@ -31,6 +31,11 @@
             android:checkable="true"
             android:title="Make a Contribution" />
 
+        <item
+            android:id="@+id/train"
+            android:checkable="true"
+            android:title="Train" />
+
     </group>
 
     <!--<item android:title="Sub items" android:checkableBehavior="none">-->
