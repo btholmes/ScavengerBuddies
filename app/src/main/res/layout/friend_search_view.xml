@@ -12,9 +12,9 @@
         android:id="@+id/headerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:text="All Users"
-        app:text_color="@color/white"
-        app:background_color="@color/com_facebook_blue"
+        app:text_a="All Users"
+        app:text_color_a="@color/white"
+        app:background_color_a="@color/colorPrimary"
         >
     </ben.holmes.scavenger.buddies.App.Views.ListHeaderView>
 
@@ -22,7 +22,9 @@
         android:id="@+id/recycler_view"
         android:layout_below="@+id/headerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        >
 
     </android.support.v7.widget.RecyclerView>
 
@@ -33,6 +35,7 @@
         android:gravity="center"
         android:layout_centerInParent="true"
         android:textSize="20sp"
+        android:visibility="gone"
         />
 
 

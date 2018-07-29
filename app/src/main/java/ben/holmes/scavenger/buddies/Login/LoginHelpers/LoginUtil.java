@@ -10,4 +10,6 @@ public class LoginUtil {
         if(com.facebook.login.LoginManager.getInstance() != null)
             com.facebook.login.LoginManager.getInstance().logOut();
     }
+
+
 }

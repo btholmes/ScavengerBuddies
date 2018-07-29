@@ -41,19 +41,19 @@ public class ListHeaderView extends RelativeLayout {
         text = root.findViewById(R.id.text);
 
         if(attrs != null){
-            TypedArray ta = ctx.obtainStyledAttributes(attrs, R.styleable.ShadowButton);
+            TypedArray ta = ctx.obtainStyledAttributes(attrs, R.styleable.ListHeaderView);
             for(int i = 0; i < ta.getIndexCount(); i++){
-                int type = ta.getType(i);
+                int type = ta.getIndex(i);
                 switch (type){
-                    case R.styleable.ShadowButton_text:
+                    case R.styleable.ListHeaderView_text_a:
                         String text = ta.getString(i);
                         setText(text);
                         break;
-                    case R.styleable.ShadowButton_text_color:
+                    case R.styleable.ListHeaderView_text_color_a:
                         int color = ta.getResourceId(i, R.color.black);
                         setTextColor(color);
                         break;
-                    case R.styleable.ShadowButton_background_color:
+                    case R.styleable.ListHeaderView_background_color_a:
                         int backgroundColor = ta.getResourceId(i, R.color.colorPrimary);
                         setBackgroundColor(backgroundColor);
                         break;

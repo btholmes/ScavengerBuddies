@@ -51,9 +51,14 @@ public class FacebookUtil {
 //        request.executeAsync();
     }
 
-    public void getUserFriends(){
-//        boolean hasLoggedInFacebook = prefs.getHasLoggedInFacebook();
-//        if(!hasLoggedInFacebook) return;
+    public interface FacebookFriendsCallback{
+        void onComplete(GraphResponse response);
+    }
+
+    /**
+     * Get Facebook friends who have signed into this app
+     */
+    public void getUserFriends(final FacebookFriendsCallback callback){
 
         LoginResult loginResult = prefs.getFacebookLoginResult();
         AccessToken accessToken = loginResult.getAccessToken();
@@ -68,6 +73,7 @@ public class FacebookUtil {
                     public void onCompleted(GraphResponse response) {
                         // Insert your code here
                         GraphResponse copy = response;
+                        callback.onComplete(response);
 
                     }
                 });
@@ -76,7 +82,11 @@ public class FacebookUtil {
 
     }
 
-    public void linkFacebookCredential(AuthCredential credential, Activity activity){
+    public interface FacebookCredentialCallback{
+        void onComplete(boolean isSuccessful);
+    }
+
+    public void linkFacebookCredential(AuthCredential credential, Activity activity, final FacebookCredentialCallback callback){
         FirebaseAuth.getInstance().getCurrentUser().linkWithCredential(credential)
                 .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -84,9 +94,10 @@ public class FacebookUtil {
                         if (task.isSuccessful()) {
                             Log.d("Success", "linkWithCredential:success");
                             FirebaseUser user = task.getResult().getUser();
+                            callback.onComplete(true);
                         } else {
                             Log.w("Failure", "linkWithCredential:failure", task.getException());
-
+                            callback.onComplete(false);
                         }
                     }
                 });

@@ -21,7 +21,7 @@
 
         <LinearLayout
             android:layout_marginLeft="10dp"
-            android:layout_width="match_parent"
+            android:layout_width="190dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
             >
@@ -42,6 +42,18 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/challengeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Challenge"
+            android:background="@drawable/challenge_button_background"
+            android:textSize="20sp"
+            android:textColor="@color/colorAccent"
+            android:textStyle="bold"
+            android:padding="@dimen/spacing_medium"
+            android:layout_gravity="center_vertical"
+            />
 
     </LinearLayout>
 

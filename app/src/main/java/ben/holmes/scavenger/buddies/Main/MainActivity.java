@@ -67,7 +67,7 @@ public class MainActivity extends ScavengerActivity {
             R.drawable.tab_feed,
             R.drawable.tab_friend,
             R.drawable.tab_chat,
-            R.drawable.ic_form_people
+            R.drawable.tab_profile
     };
 
     private CustomBottomView customBottomView;

@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.facebook.GraphResponse;
 import com.facebook.login.widget.LoginButton;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -21,6 +22,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
+import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
@@ -51,6 +54,7 @@ public class FriendsFragment extends ScavengerFragment{
 
     private FriendSearchView friendSearchView;
 
+    private FrameLayout facebookButtonHolder;
     private LoginButton facebookButton;
     private ShadowButton facebookButtonImposter;
 
@@ -73,12 +77,61 @@ public class FriendsFragment extends ScavengerFragment{
         closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
+        facebookButtonHolder = view.findViewById(R.id.facebookButtonHolder);
         facebookButton = view.findViewById(R.id.facebookButton);
         facebookButtonImposter = view.findViewById(R.id.facebookButtonImposter);
         setFriendsList();
         init();
-        setUpFacebookConnect();
+
+        if(!facebookConnected()){
+            setUpFacebookConnect();
+        }else{
+            facebookButtonHolder.setVisibility(View.GONE);
+            showFriendPage();
+        }
+
+//        facebookConnected(new FacebookConnectedCallback() {
+//            @Override
+//            public void onComplete(boolean isConnected) {
+//                if(!isConnected)
+//                    setUpFacebookConnect();
+//                else{
+//                    facebookButtonHolder.setVisibility(View.GONE);
+//                    showUserList();
+//                }
+//            }
+//        });
+
         return view;
+    }
+
+    private void showFriendPage(){
+
+    }
+
+    //HIde facebook button, show users
+    private void showUserList(){
+        Database database = ((ScavengerActivity)getActivity()).getDatabase();
+        FacebookUtil facebookUtil = ((ScavengerActivity)getActivity()).getFacebookUtil();
+        friendSearchView.setVisibility(View.VISIBLE);
+        friendSearchView.populateUserList(database, facebookUtil);
+    }
+
+    public interface FacebookConnectedCallback{
+        void onComplete(boolean isConnected);
+    }
+    private boolean facebookConnected(){
+        return ((ScavengerActivity)getActivity()).getPrefs().getFacebookConnected();
+//        FacebookUtil facebookUtil = ((ScavengerActivity)getActivity()).getFacebookUtil();
+//        facebookUtil.getUserFriends(new FacebookUtil.FacebookFriendsCallback() {
+//            @Override
+//            public void onComplete(GraphResponse response) {
+//                if(response != null)
+//                    callback.onComplete(true);
+//                else
+//                    callback.onComplete(false);
+//            }
+//        });
     }
 
     @Override
@@ -98,9 +151,10 @@ public class FriendsFragment extends ScavengerFragment{
                     closeHolder.animate().translationXBy(-dp).setDuration(250).setInterpolator(new LinearInterpolator());
                     underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
                     LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
-                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(2);
+                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(3);
                     underLine.setLayoutParams(params);
                     friendSearchView.setVisibility(View.VISIBLE);
+                    showUserList();
                 }else{
                     closeHolder.animate().translationXBy(dp).setDuration(250).setInterpolator(new LinearInterpolator());
                     underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
@@ -167,6 +221,7 @@ public class FriendsFragment extends ScavengerFragment{
 
     private void setUpFacebookConnect(){
         facebookLogin = new FacebookLogin(getContext(), getActivity());
+        ((ScavengerActivity)getActivity()).setFacebookLogin(facebookLogin);
         facebookLogin.initalizeLoginButton(facebookButton);
         facebookButtonImposter.setOnClickListener(new View.OnClickListener() {
             @Override

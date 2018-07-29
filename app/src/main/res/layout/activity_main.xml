@@ -54,8 +54,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/colorPrimary"
                 android:elevation="4dp"
-                app:tabIndicatorHeight="0dp"
-                app:tabIndicatorColor="@color/colorPrimary"
+                app:tabIndicatorColor="@color/white"
                 />
 
             <View

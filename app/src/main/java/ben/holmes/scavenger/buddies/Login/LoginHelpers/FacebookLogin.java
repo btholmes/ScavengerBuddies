@@ -32,6 +32,7 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
+import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.Database.Database;
@@ -97,14 +98,17 @@ public class FacebookLogin {
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
                             Database.getInstance(ctx).addUser(user);
+                            prefs.setFacebookConnected(true);
                             ((LoginActivity)activity).goToMain();
 
                         } else {
                             Log.e("Facebook signin failed", "signInWithCredential:failure", task.getException());
                             if(task.getException().toString().contains("FirebaseAuthUserCollisionException")){
 //                            An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated
-//                                showErrorDialog(credential);
-                                showUserCollisionError();
+                                if(activity instanceof ScavengerActivity)
+                                    showErrorDialog(credential);
+                                else if(activity instanceof LoginActivity)
+                                    showUserCollisionError();
                             }
                         }
                     }
@@ -144,11 +148,21 @@ public class FacebookLogin {
                     @Override
                     public void onComplete(String email, String firstName, String lastName, String profileUrl) {
                         if(email.length() <= 0 || email == null){
-//                            failedToHandleUserCollision(dialog, facebookUtil, credential);
+                            failedToHandleUserCollision(dialog, facebookUtil, credential);
                         }else{
 //                            Successfully retrieved the email
-//                            FacebookProfile facebookProfile = new FacebookProfile(email, firstName, lastName, profileUrl);
-//                            prefs.saveFacebookProfile(facebookProfile);
+                            FacebookProfile facebookProfile = new FacebookProfile(email, firstName, lastName, profileUrl);
+                            prefs.saveFacebookProfile(facebookProfile);
+                            facebookUtil.linkFacebookCredential(credential, activity, new FacebookUtil.FacebookCredentialCallback() {
+                                @Override
+                                public void onComplete(boolean isSuccessful) {
+                                    if(isSuccessful){
+                                        dialog.dismiss();
+                                    }else{
+                                        failedToHandleUserCollision(dialog, facebookUtil, credential);
+                                    }
+                                }
+                            });
                         }
                     }
                 });
@@ -171,8 +185,6 @@ public class FacebookLogin {
                 }
             });
         }
-        else
-            facebookUtil.linkFacebookCredential(credential, activity);
     }
 
 

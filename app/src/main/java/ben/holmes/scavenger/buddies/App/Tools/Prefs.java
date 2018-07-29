@@ -16,6 +16,7 @@ public class Prefs {
     public static final String HAS_FACEBOOK_LOGIN = "boolean stores if they have logged in with facebook ";
     public static final String SELECTED_WHEEL_FRAGMENT = "int stores current state of wheel";
     public static final String FACEBOOK_PROFILE = "FacebookProfile model stores facebook users email name and profile pic";
+    public static final String FACEBOOK_CONNECTED = "Boolean stores if facebook is connected";
 
     private Context ctx;
     private SharedPreferences prefs;
@@ -55,6 +56,14 @@ public class Prefs {
         return facebookProfile;
     }
 
+
+    public void setFacebookConnected(boolean isConnected){
+        prefs.edit().putBoolean(FACEBOOK_CONNECTED, isConnected).commit();
+    }
+
+    public boolean getFacebookConnected(){
+        return prefs.getBoolean(FACEBOOK_CONNECTED, false);
+    }
 
     public void putHasLoggedInFacebook(boolean loggedIn){
         prefs.edit().putBoolean(HAS_FACEBOOK_LOGIN, loggedIn).commit();

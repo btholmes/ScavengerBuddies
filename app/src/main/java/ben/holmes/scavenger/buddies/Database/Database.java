@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import ben.holmes.scavenger.buddies.Model.Friend;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.Train.Tag;
@@ -47,6 +48,28 @@ public class Database {
     public static void addGameToFirebase(Game gameObj){
         databaseReference.child("userList").child(gameObj.getChallenger()).child("games").child(gameObj.getGameID()).setValue(gameObj);
         databaseReference.child("userList").child(gameObj.getOpponent()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+    }
+
+
+    public interface GameUserListCallback{
+        void onComplete(List<User> gameUserList);
+    }
+
+    public void getGameUserList(final GameUserListCallback callback){
+        databaseReference.child("userList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<HashMap<String, User>> ta = new GenericTypeIndicator<HashMap<String, User>>(){};
+                HashMap<String, User> map = dataSnapshot.getValue(ta);
+                List<User> list = new ArrayList<>(map.values());
+                callback.onComplete(list);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public interface TagCallback{
