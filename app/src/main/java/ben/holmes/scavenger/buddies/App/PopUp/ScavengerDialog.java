@@ -2,7 +2,9 @@ package ben.holmes.scavenger.buddies.App.PopUp;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -13,6 +15,10 @@ public class ScavengerDialog extends Dialog {
 
     private Context ctx;
     private Dialog dialog;
+    private LinearLayout headerContainer;
+    private LinearLayout bannerContainer;
+    private LinearLayout singleOkButton;
+    private LinearLayout buttonContainer;
 
 
     private TextView headerText;
@@ -33,6 +39,12 @@ public class ScavengerDialog extends Dialog {
     private void createDialog(){
         dialog = new Dialog(ctx);
         dialog.setContentView(R.layout.scavenger_dialog);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        headerContainer = dialog.findViewById(R.id.header_container);
+        bannerContainer = dialog.findViewById(R.id.banner_container);
+        singleOkButton = dialog.findViewById(R.id.single_ok_button);
+        buttonContainer = dialog.findViewById(R.id.button_container);
 
         headerText = dialog.findViewById(R.id.header_text);
         bannerText = dialog.findViewById(R.id.banner_text);
@@ -95,6 +107,30 @@ public class ScavengerDialog extends Dialog {
     public void setAffirmativeButtonClick(View.OnClickListener listener){
         affirmativeButton.setOnClickListener(listener);
     }
+
+    public void hideHeader(){
+        headerContainer.setVisibility(View.GONE);
+        bannerContainer.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.dialog_banner_border));
+    }
+
+    public void hideBanner(){
+        bannerContainer.setVisibility(View.GONE);
+    }
+
+    public void showSingleOkButton(){
+        singleOkButton.setVisibility(View.VISIBLE);
+        buttonContainer.setVisibility(View.GONE);
+    }
+
+    public void hideSingleOkButton(){
+        singleOkButton.setVisibility(View.GONE);
+        buttonContainer.setVisibility(View.VISIBLE);
+    }
+
+    public void setSingleOkButtonClick(View.OnClickListener listener){
+        singleOkButton.setOnClickListener(listener);
+    }
+
 
     public void showProgressBar(){
         progressBar.setVisibility(View.VISIBLE);

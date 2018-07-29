@@ -9,7 +9,6 @@
     >
 
     <ImageView
-        android:layout_marginTop="20dp"
         android:padding="@dimen/spacing_large"
         android:id="@+id/logo"
         android:layout_width="match_parent"
@@ -48,6 +47,7 @@
                 app:errorEnabled="true"
                 >
                 <android.support.design.widget.TextInputEditText
+                    style="@style/EditTextStyle"
                     android:id="@+id/userEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -65,6 +65,7 @@
                 app:errorEnabled="true"
                 >
                 <android.support.design.widget.TextInputEditText
+                    style="@style/EditTextStyle"
                     android:id="@+id/userPass"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,13 +86,12 @@
                 android:layout_below="@id/userInputLayer"
                 >
 
-                <Button
+                <ben.holmes.scavenger.buddies.Model.ShadowButton
                     android:id="@+id/signInButton"
                     android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:background="@color/colorPrimary"
-                    android:text="Register"
-                    android:textColor="@color/white"
+                    android:layout_height="wrap_content"
+                    app:text="Register"
+                    app:background_color="@color/colorPrimary"
                     android:layout_margin="@dimen/spacing_small"
                     />
                 <!--<Button-->
@@ -105,14 +105,35 @@
 
                     <!--/>-->
 
-                <com.facebook.login.widget.LoginButton
-                    android:id="@+id/facebookButton"
+                <!--Awesome workaround to facebook button-->
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"
-                    android:layout_margin="@dimen/spacing_small"
-                    />
+                    android:layout_height="wrap_content">
+
+                    <com.facebook.login.widget.LoginButton
+                        android:id="@+id/facebookButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp"
+                        android:paddingTop="10dp"
+                        android:layout_margin="@dimen/spacing_small"
+                        android:visibility="gone"
+                        />
+
+                    <ben.holmes.scavenger.buddies.Model.ShadowButton
+                        android:id="@+id/facebookButtonImposter"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:text_color="@color/white"
+                        app:text="Facebook"
+                        app:background_color="@color/com_facebook_blue"
+                        >
+
+
+                    </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+                </FrameLayout>
+
 
                 <!--<Button-->
                     <!--android:id="@+id/googleButton"-->
@@ -125,12 +146,34 @@
 
                     <!--/>-->
 
-                <com.google.android.gms.common.SignInButton
-                    android:id="@+id/googleButton"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:textAlignment="gravity"
-                    android:gravity="center"
-                    android:layout_height="45dp" />
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.gms.common.SignInButton
+                        android:id="@+id/googleButton"
+                        android:layout_width="match_parent"
+                        android:textAlignment="gravity"
+                        android:gravity="center"
+                        android:layout_height="45dp"
+                        android:visibility="gone"
+                        />
+
+                    <ben.holmes.scavenger.buddies.Model.ShadowButton
+                        android:id="@+id/googleButtonImposter"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:text="Google"
+                        app:text_color="@color/white"
+                        app:background_color="@color/Green"
+                        >
+
+
+                    </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+
+                </FrameLayout>
+
 
 
             </LinearLayout>

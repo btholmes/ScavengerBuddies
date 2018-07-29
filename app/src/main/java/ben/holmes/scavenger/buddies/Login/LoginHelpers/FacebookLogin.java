@@ -8,6 +8,8 @@ import android.content.pm.Signature;
 import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -15,6 +17,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,9 +31,12 @@ import com.google.firebase.auth.FirebaseUser;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
+import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
+import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
+import ben.holmes.scavenger.buddies.Model.FacebookProfile;
 import ben.holmes.scavenger.buddies.Model.User;
 
 public class FacebookLogin {
@@ -82,7 +88,7 @@ public class FacebookLogin {
     private void handleFacebookAccessToken(AccessToken token) {
 //        Log.d(TAG, "handleFacebookAccessToken:" + token);
 
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -95,41 +101,81 @@ public class FacebookLogin {
 
                         } else {
                             Log.e("Facebook signin failed", "signInWithCredential:failure", task.getException());
-
+                            if(task.getException().toString().contains("FirebaseAuthUserCollisionException")){
+//                            An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated
+//                                showErrorDialog(credential);
+                                showUserCollisionError();
+                            }
                         }
-
-                        // ...
                     }
                 });
     }
 
+    private void showUserCollisionError(){
+        final ScavengerDialog dialog = new ScavengerDialog(ctx);
+        dialog.setHeaderText("Error");
+        dialog.setBannerText("User Collision");
+        dialog.setMessageText("An account already exists with the same email address but different sign-in credentials. Please " +
+                "sign in with the provider you used previously. We can link your account to facebook from inside the app.");
+        dialog.showSingleOkButton();
+        dialog.setSingleOkButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LoginUtil.logOut();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
 
-    public void getUserFriends(){
+    }
 
 
-//        boolean hasLoggedInFacebook = prefs.getHasLoggedInFacebook();
-//        if(!hasLoggedInFacebook) return;
-
-        LoginResult loginResult = prefs.getFacebookLoginResult();
-        AccessToken accessToken = loginResult.getAccessToken();
-        String userId = loginResult.getAccessToken().getUserId();
-        String path = "/" + userId + "/friends";
-
-        GraphRequest request = GraphRequest.newGraphPathRequest(
-                accessToken,
-                path,
-                new GraphRequest.Callback() {
+    private void showErrorDialog(final AuthCredential credential){
+        final ScavengerDialog dialog = new ScavengerDialog(ctx);
+        dialog.setHeaderText("Error");
+        dialog.setBannerText("User Collision");
+        dialog.setMessageText("An account already exists with the same email address but different sign-in credentials. Would" +
+                " you like to add Facebook as a sign in provider?");
+        dialog.setAffirmativeButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final FacebookUtil facebookUtil = new FacebookUtil(ctx);
+                facebookUtil.getBasicInfoFromFacebook(new FacebookUtil.FacebookBasicInfoCallback() {
                     @Override
-                    public void onCompleted(GraphResponse response) {
-                        // Insert your code here
-                        GraphResponse copy = response;
-
+                    public void onComplete(String email, String firstName, String lastName, String profileUrl) {
+                        if(email.length() <= 0 || email == null){
+//                            failedToHandleUserCollision(dialog, facebookUtil, credential);
+                        }else{
+//                            Successfully retrieved the email
+//                            FacebookProfile facebookProfile = new FacebookProfile(email, firstName, lastName, profileUrl);
+//                            prefs.saveFacebookProfile(facebookProfile);
+                        }
                     }
                 });
-
-        request.executeAsync();
-
+            }
+        });
+        dialog.show();
     }
+
+
+    private void failedToHandleUserCollision(final ScavengerDialog dialog, FacebookUtil facebookUtil, AuthCredential credential){
+        if(FirebaseAuth.getInstance().getCurrentUser() == null) {
+            dialog.showSingleOkButton();
+            dialog.setMessageText("We could not link your account with the facebook provider. Try signing " +
+                    "in with the provider you used previously. We can link you from inside the app.");
+            dialog.setSingleOkButtonClick(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    LoginUtil.logOut();
+                    dialog.dismiss();
+                }
+            });
+        }
+        else
+            facebookUtil.linkFacebookCredential(credential, activity);
+    }
+
+
 
     /**
      * For some reason, generating the key hash through a terminal only works on first login,

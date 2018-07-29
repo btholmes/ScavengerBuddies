@@ -12,7 +12,7 @@
     <FrameLayout
         android:id="@+id/searchHolder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="50dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,15 +34,17 @@
                     android:id="@+id/searchIcon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:tint="@color/black"
+                    android:tint="@color/grey_medium"
                     android:src="@drawable/ic_menu_search"
                     />
 
                 <EditText
+                    style="@style/EditTextStyle"
                     android:id="@+id/findUsersTextView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="Find users"
+                    android:textColorHint="@color/grey_medium"
                     android:background="@null"
                     android:layout_marginTop="2dp"
                     />
@@ -54,8 +56,8 @@
             <View
                 android:id="@+id/underline"
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:background="@color/black"
+                android:layout_height="1dp"
+                android:background="@color/grey_medium"
                 ></View>
 
         </LinearLayout>
@@ -116,20 +118,53 @@
         android:textAlignment="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/facebookButton"
+        android:layout_above="@+id/facebookButtonHolder"
         android:layout_margin="@dimen/spacing_large"
         />
 
-    <ben.holmes.scavenger.buddies.Model.ShadowButton
-        android:id="@+id/facebookButton"
+    <FrameLayout
+        android:id="@+id/facebookButtonHolder"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/spacing_medium"
-        app:text="Connect"
-        app:background_color="@color/com_facebook_blue"
-        app:left_icon="@drawable/ic_feed_dark"
         >
-    </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/facebookButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:layout_margin="@dimen/spacing_small"
+            android:visibility="gone"
+            />
+
+        <ben.holmes.scavenger.buddies.Model.ShadowButton
+            android:id="@+id/facebookButtonImposter"
+            android:layout_width="match_parent"
+            android:layout_margin="@dimen/spacing_medium"
+            android:layout_height="wrap_content"
+            app:text_color="@color/white"
+            app:text="Connect"
+            app:background_color="@color/com_facebook_blue"
+            app:border_color="@color/com_facebook_blue"
+            >
+        </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+        <!--<ben.holmes.scavenger.buddies.Model.ShadowButton-->
+            <!--android:id="@+id/facebookButton"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:layout_margin="@dimen/spacing_medium"-->
+            <!--app:text="Connect"-->
+            <!--app:background_color="@color/com_facebook_blue"-->
+            <!--app:left_icon="@drawable/ic_feed_dark"-->
+            <!--&gt;-->
+        <!--</ben.holmes.scavenger.buddies.Model.ShadowButton>-->
+
+    </FrameLayout>
+
+
 
 </RelativeLayout>

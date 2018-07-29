@@ -21,10 +21,12 @@ import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.EmailLogin;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.GoogleLogin;
+import ben.holmes.scavenger.buddies.Login.LoginHelpers.LoginUtil;
 import ben.holmes.scavenger.buddies.Main.MainActivity;
 
 import com.facebook.FacebookSdk;
 import com.facebook.LoggingBehavior;
+import com.facebook.login.LoginManager;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -35,6 +37,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
@@ -45,9 +48,12 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputLayout passwordLayout;
     private TextInputEditText userEmail;
     private TextInputEditText userPass;
-    private Button signInButton;
+    private ShadowButton signInButton;
+
+    private ShadowButton facebookButtonImposter;
     private LoginButton facebookButton;
     private SignInButton googleButton;
+    private ShadowButton googleButtonImposter;
 
     private TextView memberText;
     private TextView signInText;
@@ -69,6 +75,9 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        LoginUtil.logOut();
+
         setContentView(R.layout.activity_login);
         database = Database.getInstance(this);
 
@@ -102,6 +111,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
+
+
 
     @Override
     protected void onDestroy() {
@@ -151,7 +162,9 @@ public class LoginActivity extends AppCompatActivity {
         userPass = findViewById(R.id.userPass);
         signInButton = findViewById(R.id.signInButton);
         facebookButton = findViewById(R.id.facebookButton);
+        facebookButtonImposter = findViewById(R.id.facebookButtonImposter);
         googleButton = findViewById(R.id.googleButton);
+        googleButtonImposter = findViewById(R.id.googleButtonImposter);
         memberText = findViewById(R.id.memberText);
         signInText = findViewById(R.id.signInText);
 
@@ -185,12 +198,35 @@ public class LoginActivity extends AppCompatActivity {
     private void setFacebookLogin(){
         facebookLogin = new FacebookLogin(this, LoginActivity.this);
         facebookLogin.initalizeLoginButton(facebookButton);
-        facebookLogin.generateFBKeyHash();
+        facebookButtonImposter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                facebookButtonImposter.quickClick(new ShadowButton.QuickClick() {
+                    @Override
+                    public void onSuccess() {
+                        facebookButton.performClick();
+                    }
+                });
+            }
+        });
+//        facebookLogin.generateFBKeyHash();
     }
 
     private void setGoogleLogin(){
         googleLogin = new GoogleLogin(this, LoginActivity.this);
-        googleLogin.initializeLoginButton(googleButton);
+//        googleLogin.initializeLoginButton(googleButton);
+        googleButtonImposter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                googleButtonImposter.quickClick(new ShadowButton.QuickClick() {
+                    @Override
+                    public void onSuccess() {
+//                        googleButton.performClick();
+                        googleLogin.signIn();
+                    }
+                });
+            }
+        });
 
     }
 
@@ -207,48 +243,52 @@ public class LoginActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String email = userEmail.getText().toString();
-                String pass = userPass.getText().toString();
-                handleInvalidInput(email, pass);
-                if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
-                    progressBar.setVisibility(View.VISIBLE);
-                    emailLogin.signInUser(email, pass, new EmailLogin.SignInCallback() {
-                        @Override
-                        public void onSuccess() {
-                            final FirebaseUser user = mAuth.getCurrentUser();
-                            user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
+                signInButton.quickClick(new ShadowButton.QuickClick() {
+                    @Override
+                    public void onSuccess() {
+                        final String email = userEmail.getText().toString();
+                        String pass = userPass.getText().toString();
+                        handleInvalidInput(email, pass);
+                        if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
+                            progressBar.setVisibility(View.VISIBLE);
+                            emailLogin.signInUser(email, pass, new EmailLogin.SignInCallback() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(user != null){
-                                        goToMain();
-                                    }else{
-                                        boolean emailVerificationSent = prefs.getEmailVerificationSent();
-                                        if(emailVerificationSent){
-                                            progressBar.setVisibility(View.GONE);
-//                                            showVerifyEmailDialog(email);
-                                        }else{
-                                            mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    prefs.setEmailVerificationSent(true);
+                                public void onSuccess() {
+                                    final FirebaseUser user = mAuth.getCurrentUser();
+                                    user.reload().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if(user != null){
+                                                goToMain();
+                                            }else{
+                                                boolean emailVerificationSent = prefs.getEmailVerificationSent();
+                                                if(emailVerificationSent){
                                                     progressBar.setVisibility(View.GONE);
+//                                            showVerifyEmailDialog(email);
+                                                }else{
+                                                    mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            prefs.setEmailVerificationSent(true);
+                                                            progressBar.setVisibility(View.GONE);
 //                                                    showVerifyEmailDialog(email);
+                                                        }
+                                                    });
                                                 }
-                                            });
+                                            }
                                         }
-                                    }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String message) {
+                                    handleError(message);
+                                    progressBar.setVisibility(View.GONE);
                                 }
                             });
                         }
-
-                        @Override
-                        public void onError(String message) {
-                            handleError(message);
-                            progressBar.setVisibility(View.GONE);
-                        }
-                    });
-                }
-
+                    }
+                });
             }
         });
     }
@@ -257,34 +297,40 @@ public class LoginActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String email = userEmail.getText().toString();
-                String pass = userPass.getText().toString();
-                handleInvalidInput(email, pass);
-                if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
-                    progressBar.setVisibility(View.VISIBLE);
-                    emailLogin.createUser(email, pass, new EmailLogin.SignInCallback() {
-                        @Override
-                        public void onSuccess() {
-                            mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                signInButton.quickClick(new ShadowButton.QuickClick() {
+                    @Override
+                    public void onSuccess() {
+                        final String email = userEmail.getText().toString();
+                        String pass = userPass.getText().toString();
+                        handleInvalidInput(email, pass);
+                        if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
+                            progressBar.setVisibility(View.VISIBLE);
+                            emailLogin.createUser(email, pass, new EmailLogin.SignInCallback() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    prefs.setEmailVerificationSent(true);
-                                    progressBar.setVisibility(View.GONE);
+                                public void onSuccess() {
+                                    mAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            prefs.setEmailVerificationSent(true);
+                                            progressBar.setVisibility(View.GONE);
 //                                    showVerifyEmailDialog(email);
-                                    User user = new User(mAuth.getCurrentUser().getUid(), email);
-                                    database.addUser(user);
-                                    goToMain();
+                                            User user = new User(mAuth.getCurrentUser().getUid(), email);
+                                            database.addUser(user);
+                                            goToMain();
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String message) {
+                                    progressBar.setVisibility(View.GONE);
+                                    handleError(message);
                                 }
                             });
                         }
+                    }
+                });
 
-                        @Override
-                        public void onError(String message) {
-                            progressBar.setVisibility(View.GONE);
-                            handleError(message);
-                        }
-                    });
-                }
             }
         });
     }

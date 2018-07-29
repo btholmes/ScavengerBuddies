@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import com.facebook.login.LoginResult;
 import com.google.gson.Gson;
 
+import ben.holmes.scavenger.buddies.Model.FacebookProfile;
+
 public class Prefs {
 
     public static final String DEFAULT_SHARED_PREFS = "Default directory where prefs are stored";
@@ -13,6 +15,7 @@ public class Prefs {
     public static final String FACEBOOK_LOGIN_RESULT = "Json String Login Result from Facebook Login ";
     public static final String HAS_FACEBOOK_LOGIN = "boolean stores if they have logged in with facebook ";
     public static final String SELECTED_WHEEL_FRAGMENT = "int stores current state of wheel";
+    public static final String FACEBOOK_PROFILE = "FacebookProfile model stores facebook users email name and profile pic";
 
     private Context ctx;
     private SharedPreferences prefs;
@@ -40,6 +43,18 @@ public class Prefs {
         LoginResult loginResult = new Gson().fromJson(json, LoginResult.class);
         return  loginResult;
     }
+
+    public void saveFacebookProfile(FacebookProfile facebookProfile){
+        prefs.edit().putString(FACEBOOK_PROFILE, new Gson().toJson(facebookProfile)).commit();
+    }
+
+    public FacebookProfile getFacebookProfile(){
+        String json = prefs.getString(FACEBOOK_PROFILE, null);
+        if(json == null) return null;
+        FacebookProfile facebookProfile = new Gson().fromJson(json, FacebookProfile.class);
+        return facebookProfile;
+    }
+
 
     public void putHasLoggedInFacebook(boolean loggedIn){
         prefs.edit().putBoolean(HAS_FACEBOOK_LOGIN, loggedIn).commit();

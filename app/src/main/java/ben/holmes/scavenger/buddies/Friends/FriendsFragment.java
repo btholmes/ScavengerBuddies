@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.facebook.login.widget.LoginButton;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,6 +22,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView;
+import ben.holmes.scavenger.buddies.Login.LoginActivity;
+import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
+import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.R;
 
 
@@ -47,6 +51,11 @@ public class FriendsFragment extends ScavengerFragment{
 
     private FriendSearchView friendSearchView;
 
+    private LoginButton facebookButton;
+    private ShadowButton facebookButtonImposter;
+
+    private FacebookLogin facebookLogin;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,8 +73,11 @@ public class FriendsFragment extends ScavengerFragment{
         closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
+        facebookButton = view.findViewById(R.id.facebookButton);
+        facebookButtonImposter = view.findViewById(R.id.facebookButtonImposter);
         setFriendsList();
         init();
+        setUpFacebookConnect();
         return view;
     }
 
@@ -85,10 +97,16 @@ public class FriendsFragment extends ScavengerFragment{
                 if(hasFocus){
                     closeHolder.animate().translationXBy(-dp).setDuration(250).setInterpolator(new LinearInterpolator());
                     underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(2);
+                    underLine.setLayoutParams(params);
                     friendSearchView.setVisibility(View.VISIBLE);
                 }else{
                     closeHolder.animate().translationXBy(dp).setDuration(250).setInterpolator(new LinearInterpolator());
                     underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(1);
+                    underLine.setLayoutParams(params);
                     hideKeyboard();
                     friendSearchView.setVisibility(View.GONE);
                 }
@@ -145,6 +163,22 @@ public class FriendsFragment extends ScavengerFragment{
 
     private void showFriends(){
 
+    }
+
+    private void setUpFacebookConnect(){
+        facebookLogin = new FacebookLogin(getContext(), getActivity());
+        facebookLogin.initalizeLoginButton(facebookButton);
+        facebookButtonImposter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                facebookButtonImposter.quickClick(new ShadowButton.QuickClick() {
+                    @Override
+                    public void onSuccess() {
+                        facebookButton.performClick();
+                    }
+                });
+            }
+        });
     }
 
 

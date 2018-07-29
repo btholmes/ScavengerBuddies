@@ -36,6 +36,11 @@
             android:checkable="true"
             android:title="Train" />
 
+        <item
+            android:id="@+id/inviteFriends"
+            android:checkable="true"
+            android:title="Invite Friends"/>
+
     </group>
 
     <!--<item android:title="Sub items" android:checkableBehavior="none">-->

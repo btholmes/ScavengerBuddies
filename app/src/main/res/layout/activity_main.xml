@@ -8,7 +8,6 @@
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start"
     >
 
     <android.support.design.widget.CoordinatorLayout
@@ -34,6 +33,7 @@
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
                     android:paddingRight="5dp"
+                    android:elevation="4dp"
                     app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
                 <!--<android.support.v7.widget.Toolbar-->
@@ -53,9 +53,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/colorPrimary"
+                android:elevation="4dp"
                 app:tabIndicatorHeight="0dp"
                 app:tabIndicatorColor="@color/colorPrimary"
                 />
+
+            <View
+                android:id="@+id/tab_shadow"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:layout_marginTop="?attr/actionBarSize"
+                android:background="@drawable/tab_shadow"
+                android:elevation="3dp"
+                ></View>
+
+
+
 
         <!--</android.support.design.widget.AppBarLayout>-->
 
@@ -73,7 +86,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <android.support.v4.view.ViewPager
+                <ben.holmes.scavenger.buddies.App.Model.CustomViewPager
                     android:id="@+id/viewpager"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -99,6 +112,13 @@
         app:itemTextColor="@color/nav_selector"
         app:menu="@menu/menu_drawer"/>
 
+    <ben.holmes.scavenger.buddies.App.Views.CustomBottomView
+        android:id="@+id/custom_bottom_view"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </ben.holmes.scavenger.buddies.App.Views.CustomBottomView>
 
 
 </android.support.v4.widget.DrawerLayout>

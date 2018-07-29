@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="200dp"
-    android:layout_height="250dp"
+    android:layout_height="wrap_content"
     android:background="@drawable/dialog_border"
     >
 
@@ -57,20 +57,18 @@
 
     <LinearLayout
         android:layout_below="@+id/banner_container"
-        android:layout_above="@+id/button_container"
         android:id="@+id/mesage_container"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:padding="@dimen/spacing_large"
         >
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="vertical"
-            >
+        <!--<ScrollView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:scrollbars="vertical"-->
+            <!--&gt;-->
 
             <TextView
                 android:id="@+id/message_text"
@@ -80,7 +78,7 @@
                 android:textColor="@color/white"
                 />
 
-        </ScrollView>
+        <!--</ScrollView>-->
 
     </LinearLayout>
 
@@ -92,7 +90,7 @@
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="@color/Red"
-        android:layout_above="@id/button_container"
+        android:layout_below="@+id/mesage_container"
         ></View>
 
 
@@ -101,8 +99,9 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/mesage_container"
         android:weightSum="2"
+        android:visibility="visible"
         >
 
 
@@ -135,7 +134,29 @@
             android:layout_weight="1"
             android:gravity="center"
             />
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/single_ok_button"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mesage_container"
+        android:visibility="gone"
+        >
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ok"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:padding="@dimen/spacing_large"
+            android:layout_weight="1"
+            android:gravity="center"
+            />
 
     </LinearLayout>
 

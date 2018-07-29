@@ -52,21 +52,21 @@ public class GoogleLogin implements View.OnClickListener {
     }
 
 
-    public void initializeLoginButton(SignInButton signInButton){
-        for(int i =0; i <signInButton.getChildCount(); i++){
-            View v = signInButton.getChildAt(i);
-            if(v instanceof TextView){
-                ((TextView) v).setText("Continue with Google");
-                ((TextView)v).setTextColor(ContextCompat.getColor(ctx, R.color.black));
-                break;
-            }
-        }
+//    public void initializeLoginButton(SignInButton signInButton){
+//        for(int i =0; i <signInButton.getChildCount(); i++){
+//            View v = signInButton.getChildAt(i);
+//            if(v instanceof TextView){
+//                ((TextView) v).setText("Continue with Google");
+//                ((TextView)v).setTextColor(ContextCompat.getColor(ctx, R.color.black));
+//                break;
+//            }
+//        }
+//
+//        signInButton.setOnClickListener(this);
+//
+//    }
 
-        signInButton.setOnClickListener(this);
-
-    }
-
-    private void signIn() {
+    public void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         activity.startActivityForResult(signInIntent, RC_SIGN_IN);
     }

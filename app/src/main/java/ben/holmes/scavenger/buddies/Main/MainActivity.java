@@ -25,9 +25,11 @@ import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import ben.holmes.scavenger.buddies.App.Fragments.DrawerFragment;
+import ben.holmes.scavenger.buddies.App.Model.CustomViewPager;
 import ben.holmes.scavenger.buddies.App.Splash.LaunchActivity;
 import ben.holmes.scavenger.buddies.App.Tools.Analytics;
 import ben.holmes.scavenger.buddies.App.Tools.Tools;
+import ben.holmes.scavenger.buddies.App.Views.CustomBottomView;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
 import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
 import ben.holmes.scavenger.buddies.LeaderBoard.LeaderBoardFragment;
@@ -45,7 +47,7 @@ public class MainActivity extends ScavengerActivity {
 
     private View parentView;
     private DrawerLayout drawerLayout;
-    private ViewPager viewPager;
+    private CustomViewPager viewPager;
     private TabLayout tabLayout;
     private ActionBar actionBar;
     private Toolbar toolbar;
@@ -68,6 +70,7 @@ public class MainActivity extends ScavengerActivity {
             R.drawable.ic_form_people
     };
 
+    private CustomBottomView customBottomView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class MainActivity extends ScavengerActivity {
 
         setUpAnalytics();
 
+        customBottomView = findViewById(R.id.custom_bottom_view);
         parentView = findViewById(android.R.id.content);
         drawerLayout = findViewById(R.id.drawer_layout);
         drawerLayout.openDrawer(Gravity.LEFT);
@@ -104,8 +108,7 @@ public class MainActivity extends ScavengerActivity {
                     public void run() {
                         drawerLayout.closeDrawer(Gravity.LEFT);
                     }
-                },200);
-
+                },100);
                 return true;
             }
         });
@@ -114,7 +117,6 @@ public class MainActivity extends ScavengerActivity {
         setupTabIcons();
         setupTabClick();
 
-        getFacebookFriends();
 
 //        Tools.systemBarLolipop(this);
     }
@@ -145,10 +147,6 @@ public class MainActivity extends ScavengerActivity {
         super.onDestroy();
     }
 
-    private void getFacebookFriends(){
-        FacebookLogin facebookLogin = new FacebookLogin(this, this);
-        facebookLogin.getUserFriends();
-    }
 
     private void handleSelectedItem(MenuItem item){
 
@@ -162,6 +160,15 @@ public class MainActivity extends ScavengerActivity {
         }else if(item.getTitle().equals("Train")){
             Intent intent = new Intent(MainActivity.this, dataCollectionActivity.class);
             startActivity(intent);
+        }else if(item.getTitle().equals("Invite Friends")){
+            item.setChecked(false);
+            customBottomView.show(MainActivity.this);
+//            String message = "Text I want to share.";
+//            Intent share = new Intent(Intent.ACTION_SEND);
+//            share.setType("text/plain");
+//            share.putExtra(Intent.EXTRA_TEXT, message);
+//
+//            startActivity(Intent.createChooser(share, "Title of the dialog the system will open"));
         }
 
     }
@@ -223,7 +230,24 @@ public class MainActivity extends ScavengerActivity {
         tabLayout.getTabAt(2).setIcon(tab_icons[2]);
 
         tabLayout.getTabAt(3).setIcon(tab_icons[3]);
+    }
 
+    public void setViewpagerCanSwipe(boolean canSwipe){
+//        if(!canSwipe){
+//            viewPager.setCanSwipe(canSwipe);
+//        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(customBottomView.getVisibility() == View.VISIBLE){
+            customBottomView.hide(this);
+            navigationView.bringToFront();
+            drawerLayout.requestLayout();
+            navigationView.getMenu().findItem(R.id.inviteFriends).setChecked(false);
+        }else{
+            super.onBackPressed();
+        }
     }
 
     private void setupTabClick() {
