@@ -209,6 +209,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
             public void onClick(View v) {
                 ((MainActivity)getActivity()).setViewPagerHeightNormal();
                 mainContent.setY(startingPosition);
+                ((MainActivity)getActivity()).setViewPagerHeightNormal();
                 findUsersTextView.clearFocus();
             }
         });
@@ -372,14 +373,13 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
                 }
             }else{
 //                Downward swipe
-                ((MainActivity)getActivity()).setViewPagerHeightNormal();
-
                 if(mainContent.getY() + difference <= startingPosition){
                     float newY = mainContent.getY() + difference;
                     mainContent.setY(newY);
                 }else{
                     if(mainContent.getY() != startingPosition){
                         mainContent.setY(startingPosition);
+                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
                     }
                 }
             }
