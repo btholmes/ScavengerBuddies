@@ -17,6 +17,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -61,6 +62,7 @@ public class MainActivity extends ScavengerActivity {
     private MessagesFragment messagesFragment;
     private LeaderBoardFragment leaderBoardFragment;
 
+    private int defaultHeight = -1;
     private Analytics analytics;
 
     public int[] tab_icons = {
@@ -76,7 +78,6 @@ public class MainActivity extends ScavengerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         setUpAnalytics();
 
         customBottomView = findViewById(R.id.custom_bottom_view);
@@ -90,6 +91,8 @@ public class MainActivity extends ScavengerActivity {
         actionBar.setDisplayHomeAsUpEnabled(false);
 
         viewPager = findViewById(R.id.viewpager);
+        setDefaultHeight();
+        setPageListener();
         setUpViewPager(viewPager);
         tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -119,6 +122,69 @@ public class MainActivity extends ScavengerActivity {
 
 
 //        Tools.systemBarLolipop(this);
+    }
+
+
+    private void setDefaultHeight(){
+        if(defaultHeight != -1) return;
+
+        viewPager.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if(defaultHeight == -1)
+                    defaultHeight = viewPager.getMeasuredHeight();
+                viewPager.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+    }
+
+    public CustomViewPager getViewPager() {
+        return viewPager;
+    }
+
+    public boolean isNormalHeight(){
+        CustomViewPager viewPager = getViewPager();
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) viewPager.getLayoutParams();
+        return params.height == defaultHeight;
+    }
+
+    public void setViewPagerHeightNormal(){
+        if(defaultHeight == -1 ) return;
+
+        CustomViewPager viewPager = getViewPager();
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) viewPager.getLayoutParams();
+        params.height = defaultHeight;
+        viewPager.setLayoutParams(params);
+    }
+
+    public void adjustViewPagerHeight(int amount){
+        CustomViewPager viewPager = getViewPager();
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) viewPager.getLayoutParams();
+        params.height = params.height + amount;
+        viewPager.setLayoutParams(params);
+    }
+
+    private void setPageListener(){
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position != 1){
+                    if(!isNormalHeight()){
+                        setViewPagerHeightNormal();
+                    }
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Override

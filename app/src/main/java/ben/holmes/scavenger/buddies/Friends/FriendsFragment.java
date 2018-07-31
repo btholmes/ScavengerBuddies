@@ -1,16 +1,21 @@
 package ben.holmes.scavenger.buddies.Friends;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.facebook.GraphResponse;
@@ -21,12 +26,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import ben.holmes.scavenger.buddies.App.Model.CustomViewPager;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
+import ben.holmes.scavenger.buddies.Main.MainActivity;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.R;
 
@@ -38,15 +45,16 @@ import clarifai2.dto.prediction.Frame;
  * Created by benholmes on 5/7/18.
  */
 
-public class FriendsFragment extends ScavengerFragment{
+public class FriendsFragment extends ScavengerFragment implements View.OnTouchListener{
 
     public static final String TAG_NAME = "Friends";
     public static final int TOOLBAR_COLOR = R.color.colorPrimary;
-    private DatabaseReference reference;
-    private FirebaseUser user;
+//    private DatabaseReference reference;
+//    private FirebaseUser user;
     private View view;
     private TextView friendsText;
 
+    private RelativeLayout mainContent;
     private FrameLayout searchHolder;
     private FrameLayout closeHolder;
     private EditText findUsersTextView;
@@ -64,19 +72,21 @@ public class FriendsFragment extends ScavengerFragment{
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        user = ((ScavengerActivity)getActivity()).getFirebaseUser();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_friends, container, false);
+        mainContent = view.findViewById(R.id.main_content);
         friendsText = view.findViewById(R.id.friendsText);
+        searchHolder = view.findViewById(R.id.searchHolder);
+        setSearchHolderInitialY();
         findUsersTextView = view.findViewById(R.id.findUsersTextView);
         closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
+        friendSearchView.getRecyclerView().setOnTouchListener(this);
         facebookButtonHolder = view.findViewById(R.id.facebookButtonHolder);
         facebookButton = view.findViewById(R.id.facebookButton);
         facebookButtonImposter = view.findViewById(R.id.facebookButtonImposter);
@@ -140,7 +150,21 @@ public class FriendsFragment extends ScavengerFragment{
     }
 
 
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
 
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
 
     private void init(){
         findUsersTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -162,6 +186,7 @@ public class FriendsFragment extends ScavengerFragment{
                     params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(1);
                     underLine.setLayoutParams(params);
                     hideKeyboard();
+                    findUsersTextView.setText("");
                     friendSearchView.setVisibility(View.GONE);
                 }
             }
@@ -175,6 +200,8 @@ public class FriendsFragment extends ScavengerFragment{
         });
     }
 
+
+
     private void hideKeyboard(){
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -185,6 +212,8 @@ public class FriendsFragment extends ScavengerFragment{
     }
 
     private void hasFriends(final FriendCallback callback){
+        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -245,5 +274,73 @@ public class FriendsFragment extends ScavengerFragment{
     @Override
     public String getToolbarTitle() {
         return TAG_NAME;
+    }
+
+
+
+    public void setSearchHolderInitialY(){
+        if(startingPosition == -1){
+            searchHolder.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if(startingPosition == -1){
+                        startingPosition = searchHolder.getY();
+                        hiddenPosition = startingPosition - searchHolder.getMeasuredHeight();
+                        searchHolderHeight = searchHolder.getMeasuredHeight();
+                        RelativeLayout friendView = friendSearchView.getMainContent();
+                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)friendView.getLayoutParams();
+                        params.height += searchHolderHeight;
+                        friendView.setLayoutParams(params);
+                        searchHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * On Touch variables
+     */
+    float y1 = 0;
+    float y2 = 0;
+    float startingPosition = -1;
+    float hiddenPosition = -1;
+    float searchHolderHeight = -1;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(startingPosition == -1) return false;
+
+        if(event.getAction() == MotionEvent.ACTION_DOWN){
+            y1 = event.getY();
+        }
+        if(event.getAction() == MotionEvent.ACTION_MOVE){
+            y2 = event.getY();
+
+            float difference = y2-y1;
+
+            if(difference < 0){
+                if(mainContent.getY() + difference >= hiddenPosition){
+                    float newY = mainContent.getY() + difference;
+                    mainContent.setY(newY);
+                }else{
+                    if(mainContent.getY() != hiddenPosition){
+                        mainContent.setY(hiddenPosition);
+                        ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
+                    }
+                }
+            }else{
+                if(mainContent.getY() + difference <= startingPosition){
+                    float newY = mainContent.getY() + difference;
+                    mainContent.setY(newY);
+                }else{
+                    if(mainContent.getY() != startingPosition){
+                        mainContent.setY(startingPosition);
+                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

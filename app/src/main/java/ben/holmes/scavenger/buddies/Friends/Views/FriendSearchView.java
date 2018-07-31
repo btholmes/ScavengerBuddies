@@ -53,17 +53,20 @@ public class FriendSearchView extends RelativeLayout {
 
     }
 
+    public RelativeLayout getMainContent(){
+        return findViewById(R.id.friendSearchView);
+    }
+
     private void sharedConstructor(Context ctx, @Nullable AttributeSet attrs){
         this.ctx = ctx;
         staticContext = this.ctx;
         root = LayoutInflater.from(ctx).inflate(R.layout.friend_search_view, this);
 //        realm = Realm.getDefaultInstance();
         recyclerView = root.findViewById(R.id.recycler_view);
+    }
 
-//        if(attrs != null){
-//            TypedArray ta = ctx.obtainStyledAttributes()
-//        }
-
+    public RecyclerView getRecyclerView() {
+         return this.recyclerView;
     }
 
     public void populateUserList(Database database, FacebookUtil facebookUtil){

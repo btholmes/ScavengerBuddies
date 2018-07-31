@@ -57,14 +57,14 @@
                 app:tabIndicatorColor="@color/white"
                 />
 
-            <View
-                android:id="@+id/tab_shadow"
-                android:layout_width="match_parent"
-                android:layout_height="4dp"
-                android:layout_marginTop="?attr/actionBarSize"
-                android:background="@drawable/tab_shadow"
-                android:elevation="3dp"
-                ></View>
+            <!--<View-->
+                <!--android:id="@+id/tab_shadow"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="4dp"-->
+                <!--android:layout_marginTop="?attr/actionBarSize"-->
+                <!--android:background="@drawable/tab_shadow"-->
+                <!--android:elevation="3dp"-->
+                <!--&gt;</View>-->
 
 
 

@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
@@ -9,84 +10,9 @@
     android:focusableInTouchMode="true"
     >
 
-    <FrameLayout
-        android:id="@+id/searchHolder"
-        android:layout_width="match_parent"
-        android:layout_height="50dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:layout_margin="@dimen/spacing_small"
-            android:paddingTop="@dimen/spacing_medium"
-            >
-
-            <LinearLayout
-                android:padding="@dimen/spacing_medium"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-
-                <ImageView
-                    android:id="@+id/searchIcon"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:tint="@color/grey_medium"
-                    android:src="@drawable/ic_menu_search"
-                    />
-
-                <EditText
-                    style="@style/EditTextStyle"
-                    android:id="@+id/findUsersTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:hint="Find users"
-                    android:textColorHint="@color/grey_medium"
-                    android:background="@null"
-                    android:layout_marginTop="2dp"
-                    />
-
-
-
-            </LinearLayout>
-
-            <View
-                android:id="@+id/underline"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/grey_medium"
-                ></View>
-
-        </LinearLayout>
-
-        <FrameLayout
-            android:id="@+id/closeHolder"
-            android:layout_width="38dp"
-            android:layout_height="48dp"
-            android:layout_gravity="right"
-            android:background="@color/white"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:layout_marginRight="-40dp"
-            >
-
-
-            <ImageView
-                android:id="@+id/closeTextView"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_add"
-                android:tint="@color/black"
-                android:layout_gravity="left"
-                android:layout_marginTop="@dimen/spacing_medium"
-
-                />
-
-        </FrameLayout>
-
-    </FrameLayout>
+    <include android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        layout="@layout/view_search_holder"></include>
 
 
     <ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView

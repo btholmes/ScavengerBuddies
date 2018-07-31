@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     >
-
+<!--TODO get rid of this toolbar if I never use it.. Also main activity extending scavenger activity doesn't work so well-->
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
