@@ -57,15 +57,13 @@ public class GameFragment extends ScavengerFragment{
     private CardView cardView;
     private static Context ctx;
     private FirebaseRecyclerAdapter adapter;
-    private DatabaseReference reference;
-    private FirebaseUser user;
+//    private DatabaseReference reference;
+//    private FirebaseUser user;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.ctx = getContext();
-        reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        user = ((ScavengerActivity)getActivity()).getFirebaseUser();
     }
 
     @Override
@@ -113,6 +111,9 @@ public class GameFragment extends ScavengerFragment{
 
     private boolean hasGames(final BasicCallback callback){
         boolean result = false;
+        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -132,6 +133,9 @@ public class GameFragment extends ScavengerFragment{
     }
 
     private void setAdapter(){
+        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+
         Query query = reference.child("userList").child(user.getUid()).child("games");
         adapter = new FirebaseRecyclerAdapter(Game.class, R.layout.item_game, GameHolder.class, query) {
             @Override

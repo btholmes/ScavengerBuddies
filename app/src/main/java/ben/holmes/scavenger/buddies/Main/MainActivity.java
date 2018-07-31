@@ -124,6 +124,9 @@ public class MainActivity extends ScavengerActivity {
 //        Tools.systemBarLolipop(this);
     }
 
+    public int getDefaultHeight(){
+        return defaultHeight;
+    }
 
     private void setDefaultHeight(){
         if(defaultHeight != -1) return;
@@ -160,7 +163,7 @@ public class MainActivity extends ScavengerActivity {
     public void adjustViewPagerHeight(int amount){
         CustomViewPager viewPager = getViewPager();
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) viewPager.getLayoutParams();
-        params.height = params.height + amount;
+        params.height = defaultHeight + amount;
         viewPager.setLayoutParams(params);
     }
 

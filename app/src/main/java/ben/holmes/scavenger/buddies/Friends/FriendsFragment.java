@@ -177,7 +177,13 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
                     LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
                     params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(3);
                     underLine.setLayoutParams(params);
+
+
+                    RelativeLayout.LayoutParams friendParams = (RelativeLayout.LayoutParams) friendSearchView.getMainContent().getLayoutParams();
+                    friendParams.height = ((MainActivity)getActivity()).getDefaultHeight();
+                    friendSearchView.getMainContent().setLayoutParams(friendParams);
                     friendSearchView.setVisibility(View.VISIBLE);
+
                     showUserList();
                 }else{
                     closeHolder.animate().translationXBy(dp).setDuration(250).setInterpolator(new LinearInterpolator());
