@@ -2,6 +2,8 @@ package ben.holmes.scavenger.buddies.Database;
 
 import android.content.Context;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,6 +44,18 @@ public class Database {
 
     public static void addUser(User user){
         databaseReference.child("userList").child(user.getUid()).setValue(user);
+    }
+
+    public static void updateUserName(String firstName, String lastName){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference.child("userList").child(user.getUid()).child("firstName").setValue(firstName);
+        databaseReference.child("userList").child(user.getUid()).child("lastName").setValue(lastName);
+        databaseReference.child("userList").child(user.getUid()).child("displayName").setValue(firstName + " " + lastName);
+    }
+
+    public static void updateUserPhotoUrl(String url){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference.child("userList").child(user.getUid()).child("photoUrl").setValue(url);
     }
 
 

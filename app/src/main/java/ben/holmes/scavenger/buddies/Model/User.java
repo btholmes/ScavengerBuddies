@@ -14,8 +14,10 @@ import java.util.List;
 public class User {
 
     private String displayName = null;
+    private String firstName = "";
+    private String lastName = "";
     private String email = null;
-    private String photoUrl = "https://scontent.xx.fbcdn.net/v/t1.0-1/s100x100/1378871_10151890982237420_1347727989_n.jpg?oh=f8522e0ea7aee1411b67ee45988d5456&oe=5A6FA4C9";
+    private String photoUrl = "";
     private String uid = null;
 
     private int wins = 0;
@@ -45,6 +47,22 @@ public class User {
         this.email = email;
         this.displayName = displayName;
 
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public int getWins() {

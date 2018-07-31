@@ -12,17 +12,22 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Model.Friend;
@@ -37,8 +42,6 @@ public class FriendSearchView extends RelativeLayout {
     private View root;
     private RecyclerView recyclerView;
     private FirebaseRecyclerAdapter adapter;
-    private Database database;
-    private DatabaseReference reference;
     private FacebookUtil facebookUtil;
     private Realm realm;
 
@@ -69,10 +72,8 @@ public class FriendSearchView extends RelativeLayout {
          return this.recyclerView;
     }
 
-    public void populateUserList(Database database, FacebookUtil facebookUtil){
-        this.database = database;
+    public void populateUserList(FacebookUtil facebookUtil){
         this.facebookUtil = facebookUtil;
-        this.reference = FirebaseDatabase.getInstance().getReference();
 
         setAdapter();
 //        database.getGameUserList(new Database.GameUserListCallback() {
@@ -85,6 +86,7 @@ public class FriendSearchView extends RelativeLayout {
     }
 
     private void setAdapter(){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         Query query = reference.child("userList");
 
         adapter = new FirebaseRecyclerAdapter(User.class, R.layout.item_friend, FriendHolder.class, query) {
@@ -92,8 +94,14 @@ public class FriendSearchView extends RelativeLayout {
             protected void populateViewHolder(RecyclerView.ViewHolder viewHolder, Object model, int position) {
                 User user = (User)model;
                 FriendHolder holder = (FriendHolder)viewHolder;
-                holder.setName(user.getDisplayName());
-                holder.setSubtitle(user.getEmail());
+                if(user.getDisplayName().equals(user.getEmail())){
+                    holder.showEmailInfo();
+                    holder.setEmailName(user.getEmail());
+                }else{
+                    holder.showFacebookInfo();
+                    holder.setName(user.getDisplayName());
+                    holder.setSubtitle(user.getEmail());
+                }
                 holder.setImage(user.getPhotoUrl());
             }
         };
@@ -105,6 +113,32 @@ public class FriendSearchView extends RelativeLayout {
         recyclerView.addItemDecoration(decoration);
         recyclerView.setAdapter(adapter);
         adapter.startListening();
+    }
+
+
+    public void updateAdapter(String text){
+        if(recyclerView == null) return;
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        Query query = reference.child("userList").orderByChild("email").startAt(text).endAt(text +"\uf8ff");
+
+        adapter = new FirebaseRecyclerAdapter(User.class, R.layout.item_friend, FriendHolder.class, query) {
+            @Override
+            protected void populateViewHolder(RecyclerView.ViewHolder viewHolder, Object model, int position) {
+                User user = (User)model;
+                FriendHolder holder = (FriendHolder)viewHolder;
+                if(user.getDisplayName().equals(user.getEmail())){
+                    holder.showEmailInfo();
+                    holder.setEmailName(user.getEmail());
+                }else{
+                    holder.showFacebookInfo();
+                    holder.setName(user.getDisplayName());
+                    holder.setSubtitle(user.getEmail());
+                }
+                holder.setImage(user.getPhotoUrl());
+            }
+        };
+
+        recyclerView.setAdapter(adapter);
     }
 
 
@@ -122,21 +156,44 @@ public class FriendSearchView extends RelativeLayout {
 
         public ImageView image;
         public TextView name;
+        public TextView emailName;
         public TextView subtitle;
         public TextView challengeButton;
+        public LinearLayout facebookInfo;
+        public LinearLayout emailInfo;
 
         public FriendHolder(View view){
             super(view);
             image = view.findViewById(R.id.image);
             name = view.findViewById(R.id.name);
+            emailName = view.findViewById(R.id.emailName);
             subtitle = view.findViewById(R.id.subtitle);
             challengeButton = view.findViewById(R.id.challengeButton);
+            facebookInfo = view.findViewById(R.id.facebookInfo);
+            emailInfo = view.findViewById(R.id.emailInfo);
         }
 
 
+
         public void setImage(String url){
-            Picasso.with(staticContext).load(url).into(image);
+            if(url != null && url.length() > 0)
+                Picasso.with(staticContext).load(url).transform(new CircleTransform()).into(image);
+
 //            image.setImageResource(resource);
+        }
+
+        public void setEmailName(String text){
+            this.emailName.setText(text);
+        }
+
+        public void showEmailInfo(){
+            emailInfo.setVisibility(VISIBLE);
+            facebookInfo.setVisibility(GONE);
+        }
+
+        public void showFacebookInfo(){
+            facebookInfo.setVisibility(VISIBLE);
+            emailInfo.setVisibility(GONE);
         }
 
         public void setName(String name){

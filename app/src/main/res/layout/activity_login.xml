@@ -92,6 +92,7 @@
                     android:layout_height="wrap_content"
                     app:text="Register"
                     app:background_color="@color/colorPrimary"
+                    app:border_color="@color/colorPrimary"
                     android:layout_margin="@dimen/spacing_small"
                     />
                 <!--<Button-->
@@ -127,6 +128,7 @@
                         app:text_color="@color/white"
                         app:text="Facebook"
                         app:background_color="@color/com_facebook_blue"
+                        app:border_color="@color/com_facebook_blue"
                         >
 
 
@@ -147,6 +149,7 @@
                     <!--/>-->
 
                 <FrameLayout
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 

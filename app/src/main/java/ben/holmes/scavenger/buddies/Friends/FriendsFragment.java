@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.widget.TextView;
 
 import com.facebook.GraphResponse;
 import com.facebook.login.widget.LoginButton;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -83,6 +86,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         searchHolder = view.findViewById(R.id.searchHolder);
         setSearchHolderInitialY();
         findUsersTextView = view.findViewById(R.id.findUsersTextView);
+        setTextListener();
         closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
@@ -124,14 +128,15 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         Database database = ((ScavengerActivity)getActivity()).getDatabase();
         FacebookUtil facebookUtil = ((ScavengerActivity)getActivity()).getFacebookUtil();
         friendSearchView.setVisibility(View.VISIBLE);
-        friendSearchView.populateUserList(database, facebookUtil);
+        friendSearchView.populateUserList(facebookUtil);
     }
 
     public interface FacebookConnectedCallback{
         void onComplete(boolean isConnected);
     }
     private boolean facebookConnected(){
-        return ((ScavengerActivity)getActivity()).getPrefs().getFacebookConnected();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        return ((ScavengerActivity)getActivity()).getPrefs().getFacebookConnected(user.getUid());
 //        FacebookUtil facebookUtil = ((ScavengerActivity)getActivity()).getFacebookUtil();
 //        facebookUtil.getUserFriends(new FacebookUtil.FacebookFriendsCallback() {
 //            @Override
@@ -201,6 +206,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         closeHolder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ((MainActivity)getActivity()).setViewPagerHeightNormal();
                 findUsersTextView.clearFocus();
             }
         });
@@ -254,6 +260,11 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
 
     }
 
+    public void updatePage(){
+        if(facebookConnected())
+            facebookButtonHolder.setVisibility(View.GONE);
+    }
+
     private void setUpFacebookConnect(){
         facebookLogin = new FacebookLogin(getContext(), getActivity());
         ((ScavengerActivity)getActivity()).setFacebookLogin(facebookLogin);
@@ -282,6 +293,26 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         return TAG_NAME;
     }
 
+
+    private void setTextListener(){
+        findUsersTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String text = s.toString();
+                friendSearchView.updateAdapter(text);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+    }
 
 
     public void setSearchHolderInitialY(){
@@ -326,23 +357,27 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
             float difference = y2-y1;
 
             if(difference < 0){
+//                upward swipe
+                ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
+
                 if(mainContent.getY() + difference >= hiddenPosition){
                     float newY = mainContent.getY() + difference;
                     mainContent.setY(newY);
                 }else{
                     if(mainContent.getY() != hiddenPosition){
                         mainContent.setY(hiddenPosition);
-                        ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
                     }
                 }
             }else{
+//                Downward swipe
+                ((MainActivity)getActivity()).setViewPagerHeightNormal();
+
                 if(mainContent.getY() + difference <= startingPosition){
                     float newY = mainContent.getY() + difference;
                     mainContent.setY(newY);
                 }else{
                     if(mainContent.getY() != startingPosition){
                         mainContent.setY(startingPosition);
-                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
                     }
                 }
             }

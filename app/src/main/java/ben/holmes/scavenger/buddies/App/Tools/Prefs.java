@@ -57,12 +57,12 @@ public class Prefs {
     }
 
 
-    public void setFacebookConnected(boolean isConnected){
-        prefs.edit().putBoolean(FACEBOOK_CONNECTED, isConnected).commit();
+    public void setFacebookConnected(String userID, boolean isConnected){
+        prefs.edit().putBoolean(userID, isConnected).commit();
     }
 
-    public boolean getFacebookConnected(){
-        return prefs.getBoolean(FACEBOOK_CONNECTED, false);
+    public boolean getFacebookConnected(String userId){
+        return prefs.getBoolean(userId, false);
     }
 
     public void putHasLoggedInFacebook(boolean loggedIn){

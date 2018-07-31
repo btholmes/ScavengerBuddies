@@ -25,80 +25,89 @@
         ></ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView>
 
 
-
-    <TextView
-        android:id="@+id/friendsText"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Friends fragment"
-        android:gravity="center"
-        android:visibility="gone"
-        />
-
-    <ImageView
+    <RelativeLayout
+        android:id="@+id/friend_content"
         android:layout_below="@+id/searchHolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/brown"
-        />
-
-
-    <FrameLayout
-        android:id="@+id/facebookButtonHolder"
-        android:layout_width="match_parent"
-        android:layout_height="110dp"
-        android:layout_alignParentBottom="true"
+        android:background="@color/colorPrimary"
         >
 
+
         <TextView
-            android:id="@+id/inviteFriends"
-            android:text="Connect with facebook to challenge your friends"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textAlignment="center"
+            android:id="@+id/friendsText"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/spacing_large"
-            />
-
-
-        <com.facebook.login.widget.LoginButton
-            android:id="@+id/facebookButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:layout_margin="@dimen/spacing_small"
+            android:layout_height="match_parent"
+            android:text="Friends fragment"
+            android:gravity="center"
             android:visibility="gone"
             />
 
-        <ben.holmes.scavenger.buddies.Model.ShadowButton
-            android:id="@+id/facebookButtonImposter"
+        <ImageView
+            android:layout_below="@+id/searchHolder"
             android:layout_width="match_parent"
-            android:layout_margin="@dimen/spacing_medium"
-            android:layout_height="wrap_content"
-            app:text_color="@color/white"
-            app:text="Connect"
-            app:background_color="@color/com_facebook_blue"
-            app:border_color="@color/com_facebook_blue"
-            android:layout_gravity="bottom"
+            android:layout_height="match_parent"
+            android:background="@mipmap/ic_launcher"
+            />
+
+
+        <FrameLayout
+            android:id="@+id/facebookButtonHolder"
+            android:layout_width="match_parent"
+            android:layout_height="110dp"
+            android:layout_alignParentBottom="true"
             >
-        </ben.holmes.scavenger.buddies.Model.ShadowButton>
 
-        <!--<ben.holmes.scavenger.buddies.Model.ShadowButton-->
-            <!--android:id="@+id/facebookButton"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:layout_margin="@dimen/spacing_medium"-->
-            <!--app:text="Connect"-->
-            <!--app:background_color="@color/com_facebook_blue"-->
-            <!--app:left_icon="@drawable/ic_feed_dark"-->
-            <!--&gt;-->
-        <!--</ben.holmes.scavenger.buddies.Model.ShadowButton>-->
+            <TextView
+                android:id="@+id/inviteFriends"
+                android:text="Connect with facebook to challenge your friends"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textAlignment="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/spacing_large"
+                />
 
-    </FrameLayout>
 
+            <com.facebook.login.widget.LoginButton
+                android:id="@+id/facebookButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                android:layout_margin="@dimen/spacing_small"
+                android:visibility="gone"
+                />
+
+            <ben.holmes.scavenger.buddies.Model.ShadowButton
+                android:id="@+id/facebookButtonImposter"
+                android:layout_width="match_parent"
+                android:layout_margin="@dimen/spacing_medium"
+                android:layout_height="wrap_content"
+                app:text_color="@color/white"
+                app:text="Connect"
+                app:background_color="@color/com_facebook_blue"
+                app:border_color="@color/com_facebook_blue"
+                android:layout_gravity="bottom"
+                >
+            </ben.holmes.scavenger.buddies.Model.ShadowButton>
+
+            <!--<ben.holmes.scavenger.buddies.Model.ShadowButton-->
+                <!--android:id="@+id/facebookButton"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="50dp"-->
+                <!--android:layout_alignParentBottom="true"-->
+                <!--android:layout_margin="@dimen/spacing_medium"-->
+                <!--app:text="Connect"-->
+                <!--app:background_color="@color/com_facebook_blue"-->
+                <!--app:left_icon="@drawable/ic_feed_dark"-->
+                <!--&gt;-->
+            <!--</ben.holmes.scavenger.buddies.Model.ShadowButton>-->
+
+        </FrameLayout>
+    </RelativeLayout>
 
 
 </RelativeLayout>

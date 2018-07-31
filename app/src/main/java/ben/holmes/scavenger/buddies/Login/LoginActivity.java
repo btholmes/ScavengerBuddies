@@ -246,7 +246,7 @@ public class LoginActivity extends AppCompatActivity {
                 signInButton.quickClick(new ShadowButton.QuickClick() {
                     @Override
                     public void onSuccess() {
-                        final String email = userEmail.getText().toString();
+                        final String email = userEmail.getText().toString().trim();
                         String pass = userPass.getText().toString();
                         handleInvalidInput(email, pass);
                         if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
@@ -300,7 +300,7 @@ public class LoginActivity extends AppCompatActivity {
                 signInButton.quickClick(new ShadowButton.QuickClick() {
                     @Override
                     public void onSuccess() {
-                        final String email = userEmail.getText().toString();
+                        final String email = userEmail.getText().toString().trim();
                         String pass = userPass.getText().toString();
                         handleInvalidInput(email, pass);
                         if(email != null && email.length() > 0 && pass != null && pass.length() > 0){
@@ -400,7 +400,7 @@ public class LoginActivity extends AppCompatActivity {
             userPass.setError("Password must contain at least 6 characters");
         }else if(message.contains("password is invalid or the user does not have a password")){
             userPass.setError("Incorrect password");
-            showChangePassDialog(userEmail.getText().toString());
+            showChangePassDialog(userEmail.getText().toString().trim());
         }else if(message.contains("There is no user record corresponding to this identifier")){
             userEmail.setError("Given email does not exist. If you would like to create an account, please register.");
         }
