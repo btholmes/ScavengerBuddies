@@ -1,5 +1,9 @@
 package ben.holmes.scavenger.buddies.Model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +15,7 @@ import java.util.List;
 /**
  * This is user class used to retrieve data from Firebase. All info is parsed and stored in Realm as user-specific
  */
-public class User {
+public class User implements Serializable{
 
     private String displayName = null;
     private String firstName = "";

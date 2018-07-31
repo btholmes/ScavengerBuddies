@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+
+    <item
+        android:id="@+id/chat"
+        android:orderInCategory="100"
+        android:title="Chat"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/challenge"
+        android:orderInCategory="100"
+        android:title="Challenge"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/block"
+        android:orderInCategory="100"
+        android:title="Block"
+        app:showAsAction="never" />
+</menu>

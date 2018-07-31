@@ -90,6 +90,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
+        friendSearchView.setActivity(getActivity());
         friendSearchView.getRecyclerView().setOnTouchListener(this);
         facebookButtonHolder = view.findViewById(R.id.facebookButtonHolder);
         facebookButton = view.findViewById(R.id.facebookButton);
@@ -207,6 +208,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
             @Override
             public void onClick(View v) {
                 ((MainActivity)getActivity()).setViewPagerHeightNormal();
+                mainContent.setY(startingPosition);
                 findUsersTextView.clearFocus();
             }
         });

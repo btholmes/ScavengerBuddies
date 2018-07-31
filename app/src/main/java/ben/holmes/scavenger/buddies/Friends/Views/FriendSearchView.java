@@ -1,5 +1,6 @@
 package ben.holmes.scavenger.buddies.Friends.Views;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -30,6 +31,7 @@ import java.util.List;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.Database.Database;
+import ben.holmes.scavenger.buddies.Friends.Activities.FriendDetailsActivity;
 import ben.holmes.scavenger.buddies.Model.Friend;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
@@ -38,6 +40,7 @@ import io.realm.Realm;
 public class FriendSearchView extends RelativeLayout {
 
     private Context ctx;
+    private static Activity activity;
     private static Context staticContext;
     private View root;
     private RecyclerView recyclerView;
@@ -54,6 +57,10 @@ public class FriendSearchView extends RelativeLayout {
         super(ctx, attrs);
         sharedConstructor(ctx, attrs);
 
+    }
+
+    public void setActivity(Activity activity){
+        this.activity = activity;
     }
 
     public RelativeLayout getMainContent(){
@@ -94,15 +101,7 @@ public class FriendSearchView extends RelativeLayout {
             protected void populateViewHolder(RecyclerView.ViewHolder viewHolder, Object model, int position) {
                 User user = (User)model;
                 FriendHolder holder = (FriendHolder)viewHolder;
-                if(user.getDisplayName().equals(user.getEmail())){
-                    holder.showEmailInfo();
-                    holder.setEmailName(user.getEmail());
-                }else{
-                    holder.showFacebookInfo();
-                    holder.setName(user.getDisplayName());
-                    holder.setSubtitle(user.getEmail());
-                }
-                holder.setImage(user.getPhotoUrl());
+                holder.setUserInfo(user);
             }
         };
 
@@ -126,15 +125,7 @@ public class FriendSearchView extends RelativeLayout {
             protected void populateViewHolder(RecyclerView.ViewHolder viewHolder, Object model, int position) {
                 User user = (User)model;
                 FriendHolder holder = (FriendHolder)viewHolder;
-                if(user.getDisplayName().equals(user.getEmail())){
-                    holder.showEmailInfo();
-                    holder.setEmailName(user.getEmail());
-                }else{
-                    holder.showFacebookInfo();
-                    holder.setName(user.getDisplayName());
-                    holder.setSubtitle(user.getEmail());
-                }
-                holder.setImage(user.getPhotoUrl());
+                holder.setUserInfo(user);
             }
         };
 
@@ -159,6 +150,8 @@ public class FriendSearchView extends RelativeLayout {
         public TextView emailName;
         public TextView subtitle;
         public TextView challengeButton;
+        public TextView messageButton;
+        public LinearLayout userContent;
         public LinearLayout facebookInfo;
         public LinearLayout emailInfo;
 
@@ -169,10 +162,33 @@ public class FriendSearchView extends RelativeLayout {
             emailName = view.findViewById(R.id.emailName);
             subtitle = view.findViewById(R.id.subtitle);
             challengeButton = view.findViewById(R.id.challengeButton);
+            messageButton = view.findViewById(R.id.messageButton);
+            userContent = view.findViewById(R.id.userContent);
             facebookInfo = view.findViewById(R.id.facebookInfo);
             emailInfo = view.findViewById(R.id.emailInfo);
         }
 
+        public void setUserInfo(User user){
+            if(user.getDisplayName().equals(user.getEmail())){
+                showEmailInfo();
+                setEmailName(user.getEmail());
+            }else{
+                showFacebookInfo();
+                setName(user.getDisplayName());
+                setSubtitle(user.getEmail());
+            }
+            setImage(user.getPhotoUrl());
+            setListeners(user);
+        }
+
+        public void setListeners(final User user){
+            setUserContentListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FriendDetailsActivity.navigate(activity, user);
+                }
+            });
+        }
 
 
         public void setImage(String url){
@@ -204,8 +220,16 @@ public class FriendSearchView extends RelativeLayout {
             this.subtitle.setText(subtitle);
         }
 
+        public void setUserContentListener(View.OnClickListener listener){
+            this.userContent.setOnClickListener(listener);
+        }
+
         public void setChallengeListner(View.OnClickListener listener){
             this.challengeButton.setOnClickListener(listener);
+        }
+
+        public void setMessageListener(View.OnClickListener listener){
+            this.messageButton.setOnClickListener(listener);
         }
 
     }

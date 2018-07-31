@@ -25,8 +25,8 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 
 public class MessagesFragment extends ScavengerFragment {
 
-    private DatabaseReference reference;
-    private FirebaseUser user;
+//    private DatabaseReference reference;
+//    private FirebaseUser user;
 
     public static final String TAG_NAME = "Messages";
     public static final int TOOLBAR_COLOR = R.color.colorPrimary;
@@ -37,8 +37,8 @@ public class MessagesFragment extends ScavengerFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+//        reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+//        user = ((ScavengerActivity)getActivity()).getFirebaseUser();
     }
 
     @Nullable
@@ -55,6 +55,9 @@ public class MessagesFragment extends ScavengerFragment {
     }
 
     private void hasMessages(final MessagesCallback callback){
+        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
