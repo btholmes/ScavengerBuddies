@@ -37,6 +37,7 @@ import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
+import ben.holmes.scavenger.buddies.Login.LoginHelpers.LoginUtil;
 import ben.holmes.scavenger.buddies.Main.MainActivity;
 import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
@@ -140,6 +141,12 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     }
     private boolean facebookConnected(){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user == null){
+            LoginUtil.logOut();
+            ((ScavengerActivity)getActivity()).goToLoginActivity();
+            return false;
+        }
+
         return ((ScavengerActivity)getActivity()).getPrefs().getFacebookConnected(user.getUid());
 //        FacebookUtil facebookUtil = ((ScavengerActivity)getActivity()).getFacebookUtil();
 //        facebookUtil.getUserFriends(new FacebookUtil.FacebookFriendsCallback() {
@@ -270,7 +277,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     }
 
 
-    private void hideKeyboard(){
+    public void hideKeyboard(){
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }

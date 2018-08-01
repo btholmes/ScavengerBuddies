@@ -1,12 +1,14 @@
 package ben.holmes.scavenger.buddies.Main;
 
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -20,17 +22,21 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.squareup.picasso.Picasso;
 
 import ben.holmes.scavenger.buddies.App.Fragments.DrawerFragment;
 import ben.holmes.scavenger.buddies.App.Model.CustomViewPager;
 import ben.holmes.scavenger.buddies.App.Splash.LaunchActivity;
 import ben.holmes.scavenger.buddies.App.Tools.Analytics;
+import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Tools;
 import ben.holmes.scavenger.buddies.App.Views.CustomBottomView;
+import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
 import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
 import ben.holmes.scavenger.buddies.LeaderBoard.LeaderBoardFragment;
@@ -38,6 +44,7 @@ import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Messages.MessagesFragment;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.Train.dataCollectionActivity;
 
 
@@ -47,6 +54,7 @@ import ben.holmes.scavenger.buddies.R;
 public class MainActivity extends ScavengerActivity {
 
     private View parentView;
+    private static Context ctx;
     private DrawerLayout drawerLayout;
     private CustomViewPager viewPager;
     private TabLayout tabLayout;
@@ -80,6 +88,8 @@ public class MainActivity extends ScavengerActivity {
         setContentView(R.layout.activity_main);
         setUpAnalytics();
 
+        this.ctx = this;
+
         customBottomView = findViewById(R.id.custom_bottom_view);
         parentView = findViewById(android.R.id.content);
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -99,6 +109,7 @@ public class MainActivity extends ScavengerActivity {
         tabLayout.setupWithViewPager(viewPager);
 
         navigationView = findViewById(R.id.nav_view);
+        setUpNavView();
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -123,6 +134,43 @@ public class MainActivity extends ScavengerActivity {
 
 
 //        Tools.systemBarLolipop(this);
+    }
+
+    /**
+     * Updates app to refelect new user content when FirebaseUser changes
+     */
+    public void updateApp(){
+        setUpNavView();
+    }
+
+    private void setUpNavView(){
+        navigationView.post(new Runnable() {
+            @Override
+            public void run() {
+                View header = navigationView.getHeaderView(0);
+                final ImageView mainImage = header.findViewById(R.id.mainImage);
+                final TextView displayName = header.findViewById(R.id.displayName);
+                final TextView nameHash = header.findViewById(R.id.nameHash);
+
+                Database database = Database.getInstance(ctx);
+                database.getUser(new Database.UserCallback() {
+                    @Override
+                    public void onComplete(User user) {
+                        if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
+                            displayName.setVisibility(View.GONE);
+                            nameHash.setText(user.getNameHash());
+                        }else{
+                            displayName.setText(user.getDisplayName());
+                            nameHash.setText(user.getNameHash());
+                        }
+                        if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
+                            Picasso.with(ctx).load(user.getPhotoUrl()).transform(new CircleTransform()).into(mainImage);
+                        else
+                            mainImage.setImageResource(R.drawable.ic_generic_account);
+                    }
+                });
+            }
+        });
     }
 
     public int getDefaultHeight(){
@@ -182,6 +230,12 @@ public class MainActivity extends ScavengerActivity {
                         setViewPagerHeightNormal();
                     }
                 }
+
+                if(isKeyboardVisible()){
+                    FriendsFragment friendsFragment = (FriendsFragment) ((PageFragmentAdapter)viewPager.getAdapter()).getItem(1);
+                    friendsFragment.hideKeyboard();
+                }
+
             }
 
             @Override
@@ -189,6 +243,10 @@ public class MainActivity extends ScavengerActivity {
 
             }
         });
+    }
+
+    private boolean isKeyboardVisible(){
+        return true;
     }
 
     @Override

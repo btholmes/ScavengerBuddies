@@ -102,7 +102,7 @@ public abstract class ScavengerActivity extends AppCompatActivity {
         };
     }
 
-    private void goToLoginActivity(){
+    public void goToLoginActivity(){
         Intent intent = new Intent(ScavengerActivity.this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

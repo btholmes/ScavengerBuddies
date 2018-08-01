@@ -4,12 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="172dp"
     android:orientation="vertical"
-    android:background="@drawable/photo_female_1"
+    android:background="@color/black"
     android:paddingTop="@dimen/status_bar_height"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
+        android:id="@+id/mainImage"
+        android:background="@drawable/black_circle"
+        android:src="@drawable/ic_people"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_centerInParent="true"
+        />
+
+    <ImageView
         android:id="@+id/avatar"
+        android:visibility="invisible"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_margin="@dimen/spacing_large"
@@ -24,10 +34,11 @@
         android:layout_below="@+id/avatar"
         android:layout_marginLeft="@dimen/spacing_large"
         android:text="UsernameHolderText"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        />
 
     <TextView
-        android:id="@+id/userEmail"
+        android:id="@+id/nameHash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

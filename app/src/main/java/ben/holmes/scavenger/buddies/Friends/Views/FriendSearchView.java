@@ -118,7 +118,7 @@ public class FriendSearchView extends RelativeLayout {
     public void updateAdapter(String text){
         if(recyclerView == null) return;
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        Query query = reference.child("userList").orderByChild("email").startAt(text).endAt(text +"\uf8ff");
+        Query query = reference.child("userList").orderByChild("nameHash").startAt(text).endAt(text +"\uf8ff");
 
         adapter = new FirebaseRecyclerAdapter(User.class, R.layout.item_friend, FriendHolder.class, query) {
             @Override
@@ -169,13 +169,13 @@ public class FriendSearchView extends RelativeLayout {
         }
 
         public void setUserInfo(User user){
-            if(user.getDisplayName().equals(user.getEmail())){
+            if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
                 showEmailInfo();
-                setEmailName(user.getEmail());
+                setEmailName(user.getNameHash());
             }else{
                 showFacebookInfo();
                 setName(user.getDisplayName());
-                setSubtitle(user.getEmail());
+                setSubtitle(user.getNameHash());
             }
             setImage(user.getPhotoUrl());
             setListeners(user);

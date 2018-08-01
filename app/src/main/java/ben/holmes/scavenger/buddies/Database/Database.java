@@ -86,6 +86,26 @@ public class Database {
         });
     }
 
+    public interface UserCallback{
+        void onComplete(User user);
+    }
+
+    public void getUser(final UserCallback callback){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference.child("userList").child(user.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                callback.onComplete(user);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     public interface TagCallback{
         void onComplete(List<String> list);
     }

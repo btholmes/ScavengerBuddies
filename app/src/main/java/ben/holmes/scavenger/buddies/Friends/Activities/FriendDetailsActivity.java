@@ -86,8 +86,15 @@ public class FriendDetailsActivity extends AppCompatActivity {
     }
 
     public void init(){
-        name.setText(user.getDisplayName());
-        email.setText(user.getEmail());
+        if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
+            name.setVisibility(View.GONE);
+            email.setText(user.getNameHash());
+        }else{
+            name.setVisibility(View.VISIBLE);
+            name.setText(user.getDisplayName());
+            email.setText(user.getNameHash());
+        }
+
         messageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

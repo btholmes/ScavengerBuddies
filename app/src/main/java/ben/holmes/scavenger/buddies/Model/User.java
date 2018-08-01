@@ -17,12 +17,13 @@ import java.util.List;
  */
 public class User implements Serializable{
 
-    private String displayName = null;
+    private String displayName = "";
+    private String nameHash = "";
     private String firstName = "";
     private String lastName = "";
-    private String email = null;
+    private String email = "";
     private String photoUrl = "";
-    private String uid = null;
+    private String uid = "";
 
     private int wins = 0;
     private int losses = 0;
@@ -43,10 +44,17 @@ public class User implements Serializable{
         this.uid = uid;
         this.email = email;
         String name = "@" + email.substring(0, email.indexOf("@"));
-        this.displayName = name;
+        this.nameHash = name;
 
     }
 
+    public String getNameHash() {
+        return nameHash;
+    }
+
+    public void setNameHash(String nameHash) {
+        this.nameHash = nameHash;
+    }
 
     public String getFirstName() {
         return firstName;

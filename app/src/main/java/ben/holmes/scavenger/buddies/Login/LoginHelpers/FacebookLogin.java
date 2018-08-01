@@ -110,6 +110,10 @@ public class FacebookLogin {
                                     if(currentUser == null)
                                         currentUser = mAuth.getCurrentUser();
 
+                                    if(!currentUser.getEmail().equals(email))
+                                        return;
+
+
                                     prefs.setFacebookConnected(currentUser.getUid(), true);
                                     User user = new User(currentUser.getUid(), currentUser.getEmail());
                                     user.setFirstName(firstName);
@@ -117,7 +121,11 @@ public class FacebookLogin {
                                     user.setPhotoUrl(profileUrl);
                                     user.setDisplayName(firstName + " " + lastName);
                                     Database.getInstance(ctx).addUser(user);
-                                    ((LoginActivity)activity).goToMain();
+
+                                    updateFriendsFragment();
+
+                                    if(activity instanceof  LoginActivity)
+                                        ((LoginActivity)activity).goToMain();
                                 }
                             });
                         } else {
@@ -132,6 +140,18 @@ public class FacebookLogin {
                         }
                     }
                 });
+    }
+
+    private void updateFriendsFragment(){
+        if(activity instanceof ScavengerActivity){
+            //update friends fragment to hide facebook connect button
+            MainActivity mainActivity = (MainActivity)activity;
+            mainActivity.updateApp();
+
+            PageFragmentAdapter adapter = (PageFragmentAdapter) mainActivity.getViewPager().getAdapter();
+            FriendsFragment friendsFragment = (FriendsFragment)adapter.getItem(1);
+            friendsFragment.updatePage();
+        }
     }
 
     private void showUserCollisionError(){
@@ -190,13 +210,7 @@ public class FacebookLogin {
                                     }
                                 }
                             });
-                            if(activity instanceof ScavengerActivity){
-                                //update friends fragment to hide facebook connect button
-                                MainActivity mainActivity = (MainActivity)activity;
-                                PageFragmentAdapter adapter = (PageFragmentAdapter) mainActivity.getViewPager().getAdapter();
-                                FriendsFragment friendsFragment = (FriendsFragment)adapter.getItem(1);
-                                friendsFragment.updatePage();
-                            }
+                            updateFriendsFragment();
                         }
                     }
                 });
