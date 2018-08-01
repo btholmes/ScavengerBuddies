@@ -73,15 +73,34 @@ public class FriendDetailsActivity extends AppCompatActivity {
         challengeButton = findViewById(R.id.challengeButton);
 
         user = (User) getIntent().getSerializableExtra(EXTRA_OBJCT);
+        init();
 
         collapsingToolbar.setTitle(user.getDisplayName());
-        if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
+        if (user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
             Picasso.with(this).load(user.getPhotoUrl()).into(mainImage);
     }
 
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         return super.onCreateView(name, context, attrs);
+    }
+
+    public void init(){
+        name.setText(user.getDisplayName());
+        email.setText(user.getEmail());
+        messageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        challengeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     @Override

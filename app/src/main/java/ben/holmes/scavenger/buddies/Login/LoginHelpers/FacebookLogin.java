@@ -40,6 +40,7 @@ import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Main.MainActivity;
+import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Model.FacebookProfile;
 import ben.holmes.scavenger.buddies.Model.User;
 
@@ -50,6 +51,7 @@ public class FacebookLogin {
     public CallbackManager callbackManager;
     private FirebaseAuth mAuth;
     private Prefs prefs;
+    private FirebaseUser currentUser;
 
 
     public FacebookLogin(Context ctx, Activity activity){
@@ -57,6 +59,7 @@ public class FacebookLogin {
         this.activity = activity;
         callbackManager = CallbackManager.Factory.create();
         mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
         prefs = new Prefs(ctx);
     }
 
@@ -104,9 +107,11 @@ public class FacebookLogin {
                                 public void onComplete(String email, String firstName, String lastName, String profileUrl) {
 //                                    FacebookProfile facebookProfile = new FacebookProfile(email, firstName, lastName, profileUrl);
 //                                    prefs.saveFacebookProfile(facebookProfile);
-                                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                                    prefs.setFacebookConnected(firebaseUser.getUid(), true);
-                                    User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
+                                    if(currentUser == null)
+                                        currentUser = mAuth.getCurrentUser();
+
+                                    prefs.setFacebookConnected(currentUser.getUid(), true);
+                                    User user = new User(currentUser.getUid(), currentUser.getEmail());
                                     user.setFirstName(firstName);
                                     user.setLastName(lastName);
                                     user.setPhotoUrl(profileUrl);
@@ -115,8 +120,6 @@ public class FacebookLogin {
                                     ((LoginActivity)activity).goToMain();
                                 }
                             });
-
-
                         } else {
                             Log.e("Facebook signin failed", "signInWithCredential:failure", task.getException());
                             if(task.getException().toString().contains("FirebaseAuthUserCollisionException")){
@@ -169,9 +172,14 @@ public class FacebookLogin {
 //                            Successfully retrieved the email
 //                            FacebookProfile facebookProfile = new FacebookProfile(email, firstName, lastName, profileUrl);
 //                            prefs.saveFacebookProfile(facebookProfile);
+                            if(currentUser == null)
+                                currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
                             Database.getInstance(ctx).updateUserName(firstName, lastName);
                             Database.getInstance(ctx).updateUserPhotoUrl(profileUrl);
-                            prefs.setFacebookConnected(FirebaseAuth.getInstance().getCurrentUser().getUid(), true);
+
+
+                            prefs.setFacebookConnected(currentUser.getUid(), true);
                             facebookUtil.linkFacebookCredential(credential, activity, new FacebookUtil.FacebookCredentialCallback() {
                                 @Override
                                 public void onComplete(boolean isSuccessful) {
@@ -185,7 +193,7 @@ public class FacebookLogin {
                             if(activity instanceof ScavengerActivity){
                                 //update friends fragment to hide facebook connect button
                                 MainActivity mainActivity = (MainActivity)activity;
-                                FragmentPagerAdapter adapter = (FragmentPagerAdapter)mainActivity.getViewPager().getAdapter();
+                                PageFragmentAdapter adapter = (PageFragmentAdapter) mainActivity.getViewPager().getAdapter();
                                 FriendsFragment friendsFragment = (FriendsFragment)adapter.getItem(1);
                                 friendsFragment.updatePage();
                             }
@@ -199,7 +207,10 @@ public class FacebookLogin {
 
 
     private void failedToHandleUserCollision(final ScavengerDialog dialog, FacebookUtil facebookUtil, AuthCredential credential){
-        if(FirebaseAuth.getInstance().getCurrentUser() == null) {
+        if(currentUser == null)
+            currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if(currentUser == null) {
             dialog.showSingleOkButton();
             dialog.setMessageText("We could not link your account with the facebook provider. Try signing " +
                     "in with the provider you used previously. We can link you from inside the app.");

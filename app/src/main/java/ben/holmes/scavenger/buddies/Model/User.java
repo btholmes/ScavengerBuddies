@@ -42,16 +42,11 @@ public class User implements Serializable{
     public User(String uid, String email){
         this.uid = uid;
         this.email = email;
-        this.displayName = email;
+        String name = "@" + email.substring(0, email.indexOf("@"));
+        this.displayName = name;
 
     }
 
-    public User(String uid, String email, String displayName) {
-        this.uid = uid;
-        this.email = email;
-        this.displayName = displayName;
-
-    }
 
     public String getFirstName() {
         return firstName;

@@ -1,6 +1,7 @@
 package ben.holmes.scavenger.buddies.Friends;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -37,6 +38,7 @@ import ben.holmes.scavenger.buddies.Friends.Views.FriendSearchView;
 import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.Main.MainActivity;
+import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.R;
 
@@ -85,9 +87,10 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         friendsText = view.findViewById(R.id.friendsText);
         searchHolder = view.findViewById(R.id.searchHolder);
         setSearchHolderInitialY();
+        closeHolder = view.findViewById(R.id.closeHolder);
+        setCloseHolderInitialPosition();
         findUsersTextView = view.findViewById(R.id.findUsersTextView);
         setTextListener();
-        closeHolder = view.findViewById(R.id.closeHolder);
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
         friendSearchView.setActivity(getActivity());
@@ -176,30 +179,13 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         findUsersTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(40);
+                CustomViewPager viewPager = ((MainActivity)getActivity()).getViewPager();
+                if(viewPager.getCurrentItem() != 1) return;
+
                 if(hasFocus){
-                    closeHolder.animate().translationXBy(-dp).setDuration(250).setInterpolator(new LinearInterpolator());
-                    underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
-                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(3);
-                    underLine.setLayoutParams(params);
-
-
-                    RelativeLayout.LayoutParams friendParams = (RelativeLayout.LayoutParams) friendSearchView.getMainContent().getLayoutParams();
-                    friendParams.height = ((MainActivity)getActivity()).getDefaultHeight();
-                    friendSearchView.getMainContent().setLayoutParams(friendParams);
-                    friendSearchView.setVisibility(View.VISIBLE);
-
-                    showUserList();
+                    animateHasFocus();
                 }else{
-                    closeHolder.animate().translationXBy(dp).setDuration(250).setInterpolator(new LinearInterpolator());
-                    underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
-                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
-                    params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(1);
-                    underLine.setLayoutParams(params);
-                    hideKeyboard();
-                    findUsersTextView.setText("");
-                    friendSearchView.setVisibility(View.GONE);
+                    animateRemoveFocus();
                 }
             }
         });
@@ -210,11 +196,78 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
                 ((MainActivity)getActivity()).setViewPagerHeightNormal();
                 mainContent.setY(startingPosition);
                 ((MainActivity)getActivity()).setViewPagerHeightNormal();
-                findUsersTextView.clearFocus();
+                animateRemoveFocus();
             }
         });
     }
 
+    float closeHolderHiddenPosition = -1;
+    float closeHolderVisiblePosition = -1;
+    private void setCloseHolderInitialPosition(){
+        closeHolder.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if(closeHolderHiddenPosition == -1){
+                    closeHolderHiddenPosition = closeHolder.getX();
+                    int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(40);
+                    closeHolderVisiblePosition = closeHolderHiddenPosition - dp;
+                    closeHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            }
+        });
+    }
+
+    private void animateHasFocus(){
+        float closeHolderCurrentPosition = closeHolder.getX();
+        if(closeHolderCurrentPosition == closeHolderHiddenPosition){
+            closeHolder.animate().x(closeHolderVisiblePosition).setDuration(250).setInterpolator(new LinearInterpolator());
+
+            underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+            params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(3);
+            underLine.setLayoutParams(params);
+
+
+            RelativeLayout.LayoutParams friendParams = (RelativeLayout.LayoutParams) friendSearchView.getMainContent().getLayoutParams();
+            friendParams.height = ((MainActivity)getActivity()).getDefaultHeight();
+            friendSearchView.getMainContent().setLayoutParams(friendParams);
+            friendSearchView.setVisibility(View.VISIBLE);
+
+            showUserList();
+        }
+    }
+
+    private void animateClose(){
+        if(mainContent.getY() != startingPosition){
+            mainContent.animate().y(startingPosition).setDuration(250).setInterpolator(new LinearInterpolator());
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    closeHolder.animate().x(closeHolderHiddenPosition).setDuration(250).setInterpolator(new LinearInterpolator());
+                }
+            }, 250);
+        }else{
+            closeHolder.animate().x(closeHolderHiddenPosition).setDuration(250).setInterpolator(new LinearInterpolator());
+        }
+    }
+
+    private void animateRemoveFocus(){
+//        int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(40);
+        float closeHolderCurrentPosition = closeHolder.getX();
+        if(closeHolderCurrentPosition == closeHolderVisiblePosition){
+            animateClose();
+
+            underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+            params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(1);
+            underLine.setLayoutParams(params);
+            hideKeyboard();
+            findUsersTextView.setText("");
+            friendSearchView.setVisibility(View.GONE);
+            findUsersTextView.clearFocus();
+        }
+    }
 
 
     private void hideKeyboard(){
@@ -229,6 +282,8 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     private void hasFriends(final FriendCallback callback){
         FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
         DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
+        if(user == null || reference == null) return;
+
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

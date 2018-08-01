@@ -91,6 +91,7 @@ public class MainActivity extends ScavengerActivity {
         actionBar.setDisplayHomeAsUpEnabled(false);
 
         viewPager = findViewById(R.id.viewpager);
+        viewPager.setOffscreenPageLimit(3);
         setDefaultHeight();
         setPageListener();
         setUpViewPager(viewPager);

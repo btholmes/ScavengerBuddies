@@ -135,6 +135,7 @@ public class GameFragment extends ScavengerFragment{
     private void setAdapter(){
         DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
         FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        if(user == null || reference == null) return;
 
         Query query = reference.child("userList").child(user.getUid()).child("games");
         adapter = new FirebaseRecyclerAdapter(Game.class, R.layout.item_game, GameHolder.class, query) {
