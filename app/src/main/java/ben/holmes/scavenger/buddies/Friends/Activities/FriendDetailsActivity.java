@@ -75,7 +75,7 @@ public class FriendDetailsActivity extends AppCompatActivity {
         user = (User) getIntent().getSerializableExtra(EXTRA_OBJCT);
         init();
 
-        collapsingToolbar.setTitle(user.getDisplayName());
+        collapsingToolbar.setTitle(user.getNameHash());
         if (user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
             Picasso.with(this).load(user.getPhotoUrl()).into(mainImage);
     }

@@ -43,9 +43,7 @@ import ben.holmes.scavenger.buddies.R;
 public abstract class ScavengerActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private FrameLayout fragmentLayout;
-    private FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
+
     private Database database;
     private DatabaseReference reference;
     private FirebaseUser firebaseUser;
@@ -54,6 +52,9 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener authStateListener;
     private Prefs prefs;
 
+    private FrameLayout fragmentLayout;
+    private FragmentManager fragmentManager;
+    private FragmentTransaction fragmentTransaction;
 
     private static final int READ_CONTACTS = 1000;
     private static final int WRITE_EXTERNAL_STORAGE = 1001;
@@ -74,6 +75,7 @@ public abstract class ScavengerActivity extends AppCompatActivity {
         reference = FirebaseDatabase.getInstance().getReference();
         fragmentManager = getSupportFragmentManager();
         fragmentLayout = findViewById(R.id.fragment_frame);
+
         setAuthListener();
     }
 
@@ -102,6 +104,18 @@ public abstract class ScavengerActivity extends AppCompatActivity {
         };
     }
 
+    public FrameLayout getFragmentLayout() {
+        return fragmentLayout;
+    }
+
+    public FragmentManager getFragManager() {
+        return fragmentManager;
+    }
+
+    public FragmentTransaction getFragmentTransaction() {
+        return fragmentTransaction;
+    }
+
     public void goToLoginActivity(){
         Intent intent = new Intent(ScavengerActivity.this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -120,9 +134,6 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     }
 
 
-    public void replaceFragment(Fragment fragment, String title){
-        replaceFragment(fragment, title, 0, 0);
-    }
 
     public int convertDpToPixels(int dp){
         return Math.round(dp*(getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
@@ -130,30 +141,6 @@ public abstract class ScavengerActivity extends AppCompatActivity {
 
 
 
-    public void replaceFragmentDontAdd(Fragment fragment, String title){
-        replaceFragmentDontAdd(fragment, title, 0, 0);
-    }
-
-
-    public void replaceFragmentDontAdd(Fragment fragment, String title, int enterAnimation, int exitAnimation){
-        fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);
-        fragmentTransaction.replace(R.id.fragment_frame, fragment, title);
-        fragmentTransaction.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        fragmentTransaction.commit();
-    }
-
-
-    public void replaceFragment(Fragment fragment, String title, int enterAnimation, int exitAnimation){
-        fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);
-        fragmentTransaction.replace(R.id.fragment_frame, fragment, title);
-        fragmentTransaction.addToBackStack(fragment.toString());
-        fragmentTransaction.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        fragmentTransaction.commit();
-    }
 
     public FirebaseUser getFirebaseUser() {
         return firebaseUser;

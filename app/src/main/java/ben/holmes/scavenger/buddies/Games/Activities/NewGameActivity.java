@@ -2,6 +2,9 @@ package ben.holmes.scavenger.buddies.Games.Activities;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -9,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.Games.Fragments.NewGameFragment;
@@ -20,12 +24,14 @@ public class NewGameActivity extends ScavengerActivity {
 
     private boolean selectFriendShown = false;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(savedInstanceState == null){
             replaceFragmentDontAdd(new NewGameFragment(), NewGameFragment.TAG_NAME);
         }
+
     }
 
     @Override
@@ -70,4 +76,35 @@ public class NewGameActivity extends ScavengerActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    public void replaceFragmentDontAdd(Fragment fragment, String title){
+        replaceFragmentDontAdd(fragment, title, 0, 0);
+    }
+
+
+    public void replaceFragmentDontAdd(Fragment fragment, String title, int enterAnimation, int exitAnimation){
+        FragmentTransaction fragmentTransaction = getFragManager().beginTransaction();
+
+        fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);
+        fragmentTransaction.replace(R.id.fragment_frame, fragment, title);
+        fragmentTransaction.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        fragmentTransaction.commit();
+    }
+
+    public void replaceFragment(Fragment fragment, String title){
+        replaceFragment(fragment, title, 0, 0);
+    }
+
+    public void replaceFragment(Fragment fragment, String title, int enterAnimation, int exitAnimation){
+        FragmentTransaction fragmentTransaction = getFragManager().beginTransaction();
+
+        fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);
+        fragmentTransaction.replace(R.id.fragment_frame, fragment, title);
+        fragmentTransaction.addToBackStack(fragment.toString());
+        fragmentTransaction.setTransition(android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        fragmentTransaction.commit();
+    }
+
+
 }

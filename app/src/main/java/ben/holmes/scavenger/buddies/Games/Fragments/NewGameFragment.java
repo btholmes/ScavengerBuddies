@@ -236,17 +236,13 @@ public class NewGameFragment extends ScavengerFragment {
 
 
     private void handleSelectFriend(){
+        SelectFriendFragment fragment = new SelectFriendFragment();
         if(friendButton.isChecked()){
-            View friendPage = getLayoutInflater().inflate(R.layout.select_friend, (ViewGroup) rootView, false);
-            friendPage.setVisibility(View.VISIBLE);
-            LinearLayout friendList = friendPage.findViewById(R.id.friend_list);
-            for(int i = 0; i < 100; i++){
-                FriendItem friend = new FriendItem(getContext());
-                friend.setName(i + " someone");
-                friendList.addView(friend);
-            }
-            ((ViewGroup) getActivity().findViewById(android.R.id.content) ).addView(friendPage);
-            ((NewGameActivity)getActivity()).setSelectFriendShown(true);
+            ((NewGameActivity)getActivity())
+                    .replaceFragment(fragment,
+                            SelectFriendFragment.TAG_NAME,
+                            R.anim.slide_up,
+                            R.anim.slide_out_right);
         }
     }
 
@@ -256,7 +252,7 @@ public class NewGameFragment extends ScavengerFragment {
         bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
         bundle.putBoolean(FIVE_WORD_KEY, wordCountFIve.isChecked());
         fragment.setArguments(bundle);
-        ((ScavengerActivity)getActivity())
+        ((NewGameActivity)getActivity())
                 .replaceFragment(fragment,
                         PlayFragment.TAG_NAME,
                         R.anim.slide_in_right,
@@ -309,9 +305,9 @@ public class NewGameFragment extends ScavengerFragment {
 
     private void goToGame(){
 
-//        handleSelectFriend();
-        createGame();
-        moveOn();
+        handleSelectFriend();
+//        createGame();
+//        moveOn();
 
     }
 

@@ -60,6 +60,8 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     private View view;
     private TextView friendsText;
 
+//    private HideSearchHelper hideSearchHelper;
+
     private RelativeLayout mainContent;
     private FrameLayout searchHolder;
     private FrameLayout closeHolder;
@@ -87,6 +89,8 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         mainContent = view.findViewById(R.id.main_content);
         friendsText = view.findViewById(R.id.friendsText);
         searchHolder = view.findViewById(R.id.searchHolder);
+//        hideSearchHelper = new HideSearchHelper(getContext(), searchHolder);
+//        hideSearchHelper.setSearchHolderInitialY();
         setSearchHolderInitialY();
         closeHolder = view.findViewById(R.id.closeHolder);
         setCloseHolderInitialPosition();
@@ -369,7 +373,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String text = s.toString();
-                friendSearchView.updateAdapter(text);
+                friendSearchView.updateAdapter("@" + text);
             }
 
             @Override

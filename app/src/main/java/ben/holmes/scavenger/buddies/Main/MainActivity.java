@@ -160,6 +160,7 @@ public class MainActivity extends ScavengerActivity {
                             displayName.setVisibility(View.GONE);
                             nameHash.setText(user.getNameHash());
                         }else{
+                            displayName.setVisibility(View.VISIBLE);
                             displayName.setText(user.getDisplayName());
                             nameHash.setText(user.getNameHash());
                         }
