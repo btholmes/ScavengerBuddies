@@ -71,9 +71,13 @@ public class Database {
     }
 
     public void getGameUserList(final GameUserListCallback callback){
-        databaseReference.child("userList").addValueEventListener(new ValueEventListener() {
+        final Query query = databaseReference.child("userList");
+
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                query.removeEventListener(this);
+
                 GenericTypeIndicator<HashMap<String, User>> ta = new GenericTypeIndicator<HashMap<String, User>>(){};
                 HashMap<String, User> map = dataSnapshot.getValue(ta);
                 List<User> list = new ArrayList<>(map.values());
@@ -93,9 +97,13 @@ public class Database {
 
     public void getUser(final UserCallback callback){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        databaseReference.child("userList").child(user.getUid()).addValueEventListener(new ValueEventListener() {
+        final Query query = databaseReference.child("userList").child(user.getUid());
+
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                query.removeEventListener(this);
+
                 User user = dataSnapshot.getValue(User.class);
                 callback.onComplete(user);
             }
@@ -113,9 +121,12 @@ public class Database {
 
     public void getTags(final TagCallback callback, final int count){
         ArrayList<String> result = new ArrayList<>();
-        databaseReference.child("TagData").child("TagList").addValueEventListener(new ValueEventListener() {
+        final Query query = databaseReference.child("TagData").child("TagList");
+
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                query.removeEventListener(this);
 
                 GenericTypeIndicator<HashMap<String, Tag>> genericTypeIndicator = new GenericTypeIndicator<HashMap<String, Tag>>(){};
                 HashMap<String, Tag> map = dataSnapshot.getValue(genericTypeIndicator);
@@ -150,6 +161,7 @@ public class Database {
 
     public void getRandomFriend(final UserCallback callback){
         final Query query = databaseReference.child("userList");
+
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
