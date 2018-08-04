@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:layout_marginTop="?attr/actionBarSize"
+    android:background="@color/white"
     android:fitsSystemWindows="true"
     android:overScrollMode="never"
     >

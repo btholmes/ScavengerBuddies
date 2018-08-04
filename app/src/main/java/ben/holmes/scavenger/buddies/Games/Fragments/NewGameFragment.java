@@ -23,11 +23,13 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
+import ben.holmes.scavenger.buddies.Games.NewGameState;
 import ben.holmes.scavenger.buddies.Model.FriendItem;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
+import io.realm.Realm;
 
 public class NewGameFragment extends ScavengerFragment {
 
@@ -41,6 +43,8 @@ public class NewGameFragment extends ScavengerFragment {
     private ShadowButton wordCountFIve;
     private ShadowButton wordCountTen;
     private ShadowButton playNow;
+
+    private NewGameState newGameState;
 
 
     @Override
@@ -65,11 +69,63 @@ public class NewGameFragment extends ScavengerFragment {
     public void onResume() {
         super.onResume();
         setUp();
+        restoreState();
+    }
+
+    private NewGameState getState(Realm realm){
+        return realm.where(NewGameState.class).equalTo("id", 0).findFirst();
+    }
+
+    private void restoreState(){
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        NewGameState state = getState(realm);
+
+        if(state == null) {
+            realm.commitTransaction();
+            realm.close();
+            return;
+        }
+
+        if(state.isFiveWordKey())
+            wordCountFIve.setChecked();
+        else
+            wordCountTen.setChecked();
+
+        if(state.isFriendKey())
+            friendButton.setChecked();
+        else
+            opponentButton.setChecked();
+
+        realm.commitTransaction();
+        realm.close();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        saveState();
+    }
+
+    private NewGameState createState(Realm realm){
+        if(realm.where(NewGameState.class).equalTo("id", 0).count() > 0)
+            return realm.where(NewGameState.class).equalTo("id", 0).findFirst();
+
+        NewGameState state = realm.createObject(NewGameState.class, 0);
+        return state;
+    }
+
+    private void saveState(){
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+
+        NewGameState state = createState(realm);
+        state.setFiveWordKey(wordCountFIve.isChecked());
+        state.setFriendKey(friendButton.isChecked());
+
+        realm.copyToRealmOrUpdate(state);
+        realm.commitTransaction();
+        realm.close();
     }
 
     @Override
@@ -140,26 +196,33 @@ public class NewGameFragment extends ScavengerFragment {
 
     }
 
+    private void setOpponentButtonChecked(){
+        opponentButton.setClicked();
+        opponentButton.setChecked();
+        friendButton.setElevated();
+        friendButton.setUnChecked();
+    }
+
+    private void setFriendButtonChecked(){
+        friendButton.setClicked();
+        friendButton.setChecked();
+        opponentButton.setElevated();
+        opponentButton.setUnChecked();
+    }
+
     private void setOpponentClicks(){
 
         opponentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                opponentButton.setClicked();
-                opponentButton.setChecked();
-                friendButton.setElevated();
-                friendButton.setUnChecked();
-
+               setOpponentButtonChecked();
             }
         });
 
         friendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                friendButton.setClicked();
-                friendButton.setChecked();
-                opponentButton.setElevated();
-                opponentButton.setUnChecked();
+                setFriendButtonChecked();
             }
         });
 
@@ -183,24 +246,32 @@ public class NewGameFragment extends ScavengerFragment {
 //        wordCountTen.showLeftIcon();
     }
 
+    private void setFiveWordsChecked(){
+        wordCountFIve.setClicked();
+        wordCountFIve.setChecked();
+        wordCountTen.setElevated();
+        wordCountTen.setUnChecked();
+    }
+
+    private void setTenWordsChecked(){
+        wordCountTen.setClicked();
+        wordCountTen.setChecked();
+        wordCountFIve.setElevated();
+        wordCountFIve.setUnChecked();
+    }
+
     private void setWordCountClicks(){
         wordCountFIve.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wordCountFIve.setClicked();
-                wordCountFIve.setChecked();
-                wordCountTen.setElevated();
-                wordCountTen.setUnChecked();
+                setFiveWordsChecked();
 
             }
         });
         wordCountTen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wordCountTen.setClicked();
-                wordCountTen.setChecked();
-                wordCountFIve.setElevated();
-                wordCountFIve.setUnChecked();
+                setTenWordsChecked();
             }
         });
     }
@@ -236,7 +307,15 @@ public class NewGameFragment extends ScavengerFragment {
 
 
     private void handleSelectFriend(){
+        ((NewGameActivity)getActivity()).setNewGameFragmentDelegate(this);
+
         SelectFriendFragment fragment = new SelectFriendFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(SelectFriendFragment.CALLING_FRAGMENT, NewGameFragment.class.hashCode());
+        bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
+        bundle.putBoolean(FIVE_WORD_KEY, wordCountFIve.isChecked());
+
+        fragment.setArguments(bundle);
         if(friendButton.isChecked()){
             ((NewGameActivity)getActivity())
                     .replaceFragment(fragment,
@@ -246,69 +325,12 @@ public class NewGameFragment extends ScavengerFragment {
         }
     }
 
-    private void moveOn(){
-        PlayFragment fragment = new PlayFragment();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
-        bundle.putBoolean(FIVE_WORD_KEY, wordCountFIve.isChecked());
-        fragment.setArguments(bundle);
-        ((NewGameActivity)getActivity())
-                .replaceFragment(fragment,
-                        PlayFragment.TAG_NAME,
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_right);
-
-
-    }
-
-    private User getOpponent(){
-        User opponent = null;
-        if(friendButton.isChecked()){
-
-        }
-
-        return new User("mhwZoOnxESO4no3xTRhQMtIjxfG2", "sixpackers49@aol.com");
-    }
-
-    public interface WordCallback{
-        void onComplete(List<String> list);
-    }
-
-    private void getWords(final WordCallback callback, int count){
-        Database database = ((ScavengerActivity)getActivity()).getDatabase();
-
-        database.getTags(new Database.TagCallback() {
-            @Override
-            public void onComplete(List<String> list) {
-                callback.onComplete(list);
-            }
-        }, count);
-    }
-
-    private void createGame(){
-        int wordCount = 5;
-        if(!wordCountFIve.isChecked()) wordCount = 10;
-
-        getWords(new WordCallback() {
-            @Override
-            public void onComplete(List<String> list) {
-                User opponent = getOpponent();
-                FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
-                Game game = new Game(user.getUid(),opponent.getUid(), list );
-                Database database = ((ScavengerActivity)getActivity()).getDatabase();
-                database.addGameToFirebase(game);
-
-            }
-        }, wordCount);
-
-    }
 
     private void goToGame(){
-
-        handleSelectFriend();
-//        createGame();
-//        moveOn();
-
+        if(friendButton.isChecked())
+            handleSelectFriend();
+        else
+            ((NewGameActivity)getActivity()).goToGame(null,  wordCountFIve.isChecked());
     }
 
 

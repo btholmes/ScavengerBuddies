@@ -94,7 +94,8 @@ public class FriendSearchView extends RelativeLayout {
 
     private void setAdapter(){
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        Query query = reference.child("userList");
+        int limit = 50;
+        Query query = reference.child("userList").limitToFirst(limit);
 
         adapter = new FirebaseRecyclerAdapter(User.class, R.layout.item_friend, FriendHolder.class, query) {
             @Override
@@ -118,7 +119,8 @@ public class FriendSearchView extends RelativeLayout {
     public void updateAdapter(String text){
         if(recyclerView == null) return;
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        Query query = reference.child("userList").orderByChild("nameHash").startAt(text).endAt(text +"\uf8ff");
+        int limit = 50;
+        Query query = reference.child("userList").orderByChild("nameHash").startAt(text).endAt(text +"\uf8ff").limitToFirst(limit);
 
         adapter = new FirebaseRecyclerAdapter(User.class, R.layout.item_friend, FriendHolder.class, query) {
             @Override

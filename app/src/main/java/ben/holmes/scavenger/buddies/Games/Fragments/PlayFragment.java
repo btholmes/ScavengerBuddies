@@ -28,6 +28,9 @@ import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.Camera.CameraHelper;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
+import ben.holmes.scavenger.buddies.Database.Database;
+import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
+import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.SpinWheel;
 import ben.holmes.scavenger.buddies.R;
@@ -37,6 +40,10 @@ public class PlayFragment extends ScavengerFragment {
     public static final String TAG_NAME = "Gameplay";
     public static final int TOOLBAR_COLOR = R.color.colorPrimary;
     public static final String ROTATED_STATE = "rotation state of wheel";
+    public static final String FRIEND_KEY = "bundle key stores friend if user selected one";
+    public static final String GAME_KEY = "bundle key stores game obj";
+
+    private Game game;
 
     private PlayFragment fragment;
     private Clarifai clarifai;
@@ -55,6 +62,9 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ((NewGameActivity)getActivity()).destroyNewGameState();
+
         prefs = new Prefs(getContext());
         Bundle bundle;
 
@@ -67,15 +77,15 @@ public class PlayFragment extends ScavengerFragment {
             setDefaultValues(bundle);
         }
 
-        setUpGame();
-
     }
 
     private void setDefaultValues(Bundle bundle){
         if(bundle == null)
             return;
 
-        fiveWords = bundle.getBoolean(FIVE_WORD_KEY, false);
+        game = (Game)bundle.getSerializable(GAME_KEY);
+
+        fiveWords = game.getWords().size() == 5;
         rotatedState = bundle.getInt(ROTATED_STATE, 0);
 
         if(fiveWords) dividers = 5;
@@ -86,6 +96,7 @@ public class PlayFragment extends ScavengerFragment {
 
     private void setUpGame(){
         Clarifai clarifai = new Clarifai(getContext());
+
     }
 
 
@@ -114,11 +125,15 @@ public class PlayFragment extends ScavengerFragment {
         setDefaultValues(savedInstanceState);
     }
 
+
+//    TODO Where to save the game before the view is destroyed?
+
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean(FIVE_WORD_KEY, fiveWords);
+        outState.putSerializable(GAME_KEY, game);
         outState.putInt(ROTATED_STATE, rotatedState);
+
+        Database.getInstance(getContext()).addGameToFirebase(game);
 
 //        fragment = new PlayFragment();
 //        Bundle bundle = new Bundle();
@@ -127,6 +142,8 @@ public class PlayFragment extends ScavengerFragment {
 //
 //        if(fragment.isAdded())
 //            getActivity().getSupportFragmentManager().putFragment(bundle, TAG_NAME, fragment);
+        super.onSaveInstanceState(outState);
+
     }
 
     @Override
@@ -153,6 +170,7 @@ public class PlayFragment extends ScavengerFragment {
     public void onDestroy() {
         super.onDestroy();
     }
+
 
     @Override
     public int getToolbarColor() {

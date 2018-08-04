@@ -14,6 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toolbar;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
+
+import ben.holmes.scavenger.buddies.Database.Database;
+import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
+import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
+import ben.holmes.scavenger.buddies.Model.Game;
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
 /**
@@ -78,8 +88,6 @@ public abstract class ScavengerFragment extends Fragment {
     public abstract String getToolbarTitle();
 
     public abstract int getToolbarColor();
-
-
 
 
 }

@@ -9,6 +9,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -147,6 +148,39 @@ public class Database {
     }
 
 
+    public void getRandomFriend(final UserCallback callback){
+        final Query query = databaseReference.child("userList");
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                query.removeEventListener(this);
+
+                GenericTypeIndicator<HashMap<String, User>> ta = new GenericTypeIndicator<HashMap<String, User>>(){};
+                HashMap<String, User> map = dataSnapshot.getValue(ta);
+                ArrayList<User> list = new ArrayList<>(map.values());
+                Random rand = new Random();
+                User friend = null;
+                if(list.size() == 1) {
+                    callback.onComplete(null);
+
+                    return;
+                }
+
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                while(friend == null){
+                    friend = list.get(rand.nextInt(list.size()));
+                    if(friend.getUid().equals(currentUser.getUid()))
+                        friend = null;
+                }
+                callback.onComplete(friend);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 
 }

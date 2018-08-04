@@ -4,6 +4,7 @@ package ben.holmes.scavenger.buddies.Model;
  * Created by btholmes on 3/26/17.
  */
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,7 +16,7 @@ import io.realm.annotations.Required;
 
 import static android.R.attr.id;
 
-public class Game {
+public class Game implements Serializable{
 
     private String lastPictureTaken;
     @Required

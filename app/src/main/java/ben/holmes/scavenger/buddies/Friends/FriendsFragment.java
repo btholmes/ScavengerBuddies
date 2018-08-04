@@ -192,7 +192,6 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
             public void onFocusChange(View v, boolean hasFocus) {
                 CustomViewPager viewPager = ((MainActivity)getActivity()).getViewPager();
                 if(viewPager.getCurrentItem() != 1) return;
-
                 if(hasFocus){
                     animateHasFocus();
                 }else{
