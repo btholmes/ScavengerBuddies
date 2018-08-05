@@ -97,6 +97,7 @@ public class NewGameActivity extends ScavengerActivity {
 //            destroyNewGameState();
             Intent intent = new Intent(NewGameActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra(MainActivity.OPEN_DRAWER_ON_START, false);
             startActivity(intent);
             finish();
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);

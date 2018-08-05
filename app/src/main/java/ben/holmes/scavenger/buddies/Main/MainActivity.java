@@ -53,6 +53,8 @@ import ben.holmes.scavenger.buddies.R;
 
 public class MainActivity extends ScavengerActivity {
 
+    public static String OPEN_DRAWER_ON_START = "String, if present in bundle, don't show drawer on start";
+
     private View parentView;
     private static Context ctx;
     private DrawerLayout drawerLayout;
@@ -89,11 +91,14 @@ public class MainActivity extends ScavengerActivity {
         setUpAnalytics();
 
         this.ctx = this;
+        Bundle bundle = getIntent().getExtras();
+        boolean showDrawer = bundle.getBoolean(OPEN_DRAWER_ON_START, true);
 
         customBottomView = findViewById(R.id.custom_bottom_view);
         parentView = findViewById(android.R.id.content);
         drawerLayout = findViewById(R.id.drawer_layout);
-        drawerLayout.openDrawer(Gravity.LEFT);
+        if(showDrawer)
+            drawerLayout.openDrawer(Gravity.LEFT);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
