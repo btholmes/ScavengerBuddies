@@ -95,9 +95,9 @@ public class Database {
         void onComplete(User user);
     }
 
-    public void getUser(final UserCallback callback){
+    public void getUser(final UserCallback callback, String uid){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        final Query query = databaseReference.child("userList").child(user.getUid());
+        final Query query = databaseReference.child("userList").child(uid);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override

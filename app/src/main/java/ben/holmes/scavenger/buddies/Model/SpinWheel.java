@@ -89,19 +89,19 @@ public class SpinWheel extends View {
         Drawable result = null;
         switch (place){
             case 0:
-                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                result = ContextCompat.getDrawable(getContext(), R.drawable.icon3);
                 break;
             case 1:
-                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_two);
+                result = ContextCompat.getDrawable(getContext(), R.drawable.icon1);
                 break;
             case 2:
-                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                result = ContextCompat.getDrawable(getContext(), R.drawable.icon2);
                 break;
             case 3:
-                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_four);
+                result = ContextCompat.getDrawable(getContext(), R.drawable.icon4);
                 break;
             case 4:
-                result = ContextCompat.getDrawable(getContext(), R.drawable.ic_one);
+                result = ContextCompat.getDrawable(getContext(), R.drawable.icon5);
                 break;
             case 5:
                 result = ContextCompat.getDrawable(getContext(), R.drawable.ic_six);

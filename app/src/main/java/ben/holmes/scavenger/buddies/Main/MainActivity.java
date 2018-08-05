@@ -169,7 +169,7 @@ public class MainActivity extends ScavengerActivity {
                         else
                             mainImage.setImageResource(R.drawable.ic_generic_account);
                     }
-                });
+                }, FirebaseAuth.getInstance().getCurrentUser().getUid());
             }
         });
     }

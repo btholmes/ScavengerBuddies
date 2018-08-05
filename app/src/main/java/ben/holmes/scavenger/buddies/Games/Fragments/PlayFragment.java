@@ -2,14 +2,21 @@ package ben.holmes.scavenger.buddies.Games.Fragments;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -18,13 +25,20 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.Api;
+import com.google.firebase.auth.FirebaseAuth;
+import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
+import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.Camera.CameraHelper;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
@@ -33,6 +47,7 @@ import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.SpinWheel;
+import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
 
 public class PlayFragment extends ScavengerFragment {
@@ -44,6 +59,9 @@ public class PlayFragment extends ScavengerFragment {
     public static final String GAME_KEY = "bundle key stores game obj";
 
     private Game game;
+
+    private LinearLayout playerWordCount;
+    private LinearLayout opponentWordCount;
 
     private PlayFragment fragment;
     private Clarifai clarifai;
@@ -62,7 +80,7 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setHasOptionsMenu(true);
 
 
         prefs = new Prefs(getContext());
@@ -99,7 +117,21 @@ public class PlayFragment extends ScavengerFragment {
 
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_play_fragment, menu);
+        super.onCreateOptionsMenu(menu, inflater);
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.chat:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Nullable
     @Override
@@ -110,11 +142,132 @@ public class PlayFragment extends ScavengerFragment {
         spinWheelCenter = rootView.findViewById(R.id.spin_wheel_center);
         upArrow = rootView.findViewById(R.id.up_arrow);
         takePictureButton = rootView.findViewById(R.id.take_picture);
+        playerWordCount = rootView.findViewById(R.id.player_word_count);
+        opponentWordCount = rootView.findViewById(R.id.opponent_word_count);
+        setWordCount();
+        setPlayerInfo();
+        setOpponentInfo();
 
         setTakePictureClick();
         setDefaultSelected();
         setUpWheel();
         return rootView;
+    }
+
+    private void hideSpinWheel(){
+        spinWheel.setVisibility(View.GONE);
+        spinWheelCenter.setVisibility(View.GONE);
+        upArrow.setVisibility(View.GONE);
+    }
+
+    private void showSpinWheel(){
+        spinWheel.setVisibility(View.VISIBLE);
+        spinWheelCenter.setVisibility(View.VISIBLE);
+        upArrow.setVisibility(View.VISIBLE);
+    }
+
+    private void markWord(boolean wasFound, int word, boolean player){
+        if(player){
+            if(wasFound){
+                TextView textView = (TextView) rootView.findViewWithTag("player_word" + word);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.Green));
+            }else{
+                TextView textView = (TextView) rootView.findViewWithTag("player_word" + word);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.Red));
+                textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
+        }else{
+            if(wasFound){
+                TextView textView = (TextView) rootView.findViewWithTag("opponent_word" + word);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.Green));
+            }else{
+                TextView textView = (TextView) rootView.findViewWithTag("opponent_word" + word);
+                textView.setTextColor(ContextCompat.getColor(getContext(), R.color.Red));
+                textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
+        }
+    }
+
+    private void showPictureButton(){
+        takePictureButton.setVisibility(View.VISIBLE);
+    }
+
+    private void hidePictureButton(){
+        takePictureButton.setVisibility(View.GONE);
+    }
+
+    private void setPlayerInfo(){
+        final ImageView image = rootView.findViewById(R.id.image);
+        final TextView text = rootView.findViewById(R.id.text);
+        Database.getInstance(getContext()).getUser(new Database.UserCallback() {
+            @Override
+            public void onComplete(User user) {
+                if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
+                    Picasso.with(getContext()).load(user.getPhotoUrl()).transform(new CircleTransform()).into(image);
+                else
+                    image.setImageResource(R.drawable.ic_generic_account);
+
+                if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
+                    text.setText(user.getNameHash());
+                }else
+                    text.setText(user.getDisplayName());
+            }
+        }, FirebaseAuth.getInstance().getCurrentUser().getUid());
+    }
+
+    private void setOpponentInfo(){
+        final ImageView image = rootView.findViewById(R.id.opponent_image);
+        final TextView text = rootView.findViewById(R.id.opponent_text);
+        String uid = game.getOpponent();
+        if(FirebaseAuth.getInstance().getCurrentUser().getUid().equals(uid))
+            uid = game.getChallenger();
+        Database.getInstance(getContext()).getUser(new Database.UserCallback() {
+            @Override
+            public void onComplete(User user) {
+                if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
+                    Picasso.with(getContext()).load(user.getPhotoUrl()).transform(new CircleTransform()).into(image);
+                else
+                    image.setImageResource(R.drawable.ic_generic_account);
+
+                if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
+                    text.setText(user.getNameHash());
+                }else
+                    text.setText(user.getDisplayName());
+            }
+        }, uid);
+
+    }
+
+    private void setWordCount(){
+        addPlayerWordCount(true);
+        addPlayerWordCount(false);
+    }
+
+    private void addPlayerWordCount(boolean playerCount){
+        if(playerCount)
+            playerWordCount.removeAllViews();
+        else
+            opponentWordCount.removeAllViews();
+        List<String> wordList = game.getWords();
+        for(int i = 1; i <= wordList.size(); i++){
+            TextView textView = new TextView(getContext());
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.setMargins((int)getResources().getDimension(R.dimen.spacing_small), (int)getResources().getDimension(R.dimen.spacing_small),
+                    (int)getResources().getDimension(R.dimen.spacing_xsmall), (int)getResources().getDimension(R.dimen.spacing_small));
+            textView.setLayoutParams(params);
+            textView.setTypeface(textView.getTypeface(), Typeface.BOLD);
+            textView.setTextColor(ContextCompat.getColor(getContext(), R.color.black));
+            textView.setText(i + "");
+            if(playerCount){
+                textView.setTag("player_word" + i);
+                playerWordCount.addView(textView);
+            }else{
+                textView.setTag("opponent_word" + i);
+                opponentWordCount.addView(textView);
+            }
+        }
     }
 
 
@@ -181,7 +334,7 @@ public class PlayFragment extends ScavengerFragment {
 
     @Override
     public String getToolbarTitle() {
-        return TAG_NAME;
+        return "ROUND " + game.getRound() + "/" + game.getWords().size();
     }
 
     private void setDefaultSelected(){
@@ -209,6 +362,14 @@ public class PlayFragment extends ScavengerFragment {
             next = dividers;
 
         storeSelectedWheel(next);
+        getWord(next);
+    }
+
+    private void getWord(int next){
+        int index = next;
+        if(index < 0) index = (game.getWords().size() + next);
+        String word = game.getWords().get(index-1);
+        Toast.makeText(getContext(), "Next : " + next + " index: " + index + " " + word , Toast.LENGTH_LONG).show();
     }
 
 
@@ -227,7 +388,7 @@ public class PlayFragment extends ScavengerFragment {
                 final int totalRotation = (360 * 3 )+ random.nextInt(360) + 1;
                 storeNextSelectedWheel(totalRotation);
 
-                if(Build.VERSION.SDK_INT >= 19 && false){
+                if(Build.VERSION.SDK_INT >= 19){
                     spinWheel.animate().rotationBy(totalRotation)
                             .setInterpolator(new DecelerateInterpolator())
                             .setDuration(5000)

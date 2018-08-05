@@ -43,6 +43,7 @@ public class Game implements Serializable{
 
     private boolean stillInPlay;
     private boolean challengerTurn;
+    private int round;
     private boolean opponentHasAccepted;
     private long opponentTimeElapsed;
     private long challengerTimeElapsed;
@@ -70,6 +71,7 @@ public class Game implements Serializable{
         stillInPlay = true;
         opponentHasAccepted = false;
         challengerTurn = true;
+        round = 1;
     }
 
 //    public Game(boolean stillInPlay, boolean opponentHasAccepted, String opponentUID, String gameID, String dateCreated, String challengerUID){
@@ -80,6 +82,23 @@ public class Game implements Serializable{
 //        this.date = dateCreated;
 //        this.challenger = challengerUID;
 //    }
+
+
+    public boolean isChallengerTurn() {
+        return challengerTurn;
+    }
+
+    public void setChallengerTurn(boolean challengerTurn) {
+        this.challengerTurn = challengerTurn;
+    }
+
+    public int getRound() {
+        return round;
+    }
+
+    public void setRound(int round) {
+        this.round = round;
+    }
 
     public String getOpponentDisplayName() {
         return opponentDisplayName;
