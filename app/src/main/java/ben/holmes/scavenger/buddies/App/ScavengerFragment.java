@@ -1,11 +1,14 @@
 package ben.holmes.scavenger.buddies.App;
 
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -38,6 +41,38 @@ public abstract class ScavengerFragment extends Fragment {
     private Toolbar toolbar;
     private ActionBar actionBar;
 
+    private ActivityAttached activityAttachedInterface;
+
+    public interface ActivityAttached{
+        void isAttached(FragmentActivity activity);
+    }
+
+    public void getAttachedActivity(ActivityAttached listener){
+        if(getActivity() == null){
+            this.activityAttachedInterface = listener;
+        }else{
+            listener.isAttached(getActivity());
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(this.activityAttachedInterface != null){
+            this.activityAttachedInterface.isAttached((FragmentActivity)context);
+            this.activityAttachedInterface = null;
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if(this.activityAttachedInterface != null){
+            this.activityAttachedInterface.isAttached((FragmentActivity)activity);
+            this.activityAttachedInterface = null;
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +93,7 @@ public abstract class ScavengerFragment extends Fragment {
     }
 
     private void setToolbar(){
+        if(getActivity() == null) return;
         actionBar = ((ScavengerActivity)getActivity()).getSupportActionBar();
         if(actionBar != null){
             actionBar.setTitle(getToolbarTitle());
@@ -75,11 +111,13 @@ public abstract class ScavengerFragment extends Fragment {
     }
 
     public void setDarkTheme(){
+        if(getActivity() == null) return;
         android.support.v7.widget.Toolbar toolbar = ((ScavengerActivity)getActivity()).getToolbar();
         toolbar.getContext().setTheme(R.style.ThemeOverlay_AppCompat_Dark_ActionBar);
     }
 
     public void setLightTheme(){
+        if(getActivity() == null) return;
         android.support.v7.widget.Toolbar toolbar = ((ScavengerActivity)getActivity()).getToolbar();
         toolbar.getContext().setTheme(R.style.ThemeOverlay_AppCompat_Light);
     }

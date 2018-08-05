@@ -8,7 +8,10 @@ public class NewGameState extends RealmObject {
     @PrimaryKey
     int id = 0;
     private boolean friendKey;
+    private boolean opponentKey;
+
     private boolean fiveWordKey;
+    private boolean tenWordKey;
 
     public NewGameState(){ }
 
@@ -26,5 +29,21 @@ public class NewGameState extends RealmObject {
 
     public void setFiveWordKey(boolean fiveWordKey) {
         this.fiveWordKey = fiveWordKey;
+    }
+
+    public boolean isOpponentKey() {
+        return opponentKey;
+    }
+
+    public void setOpponentKey(boolean opponentKey) {
+        this.opponentKey = opponentKey;
+    }
+
+    public boolean isTenWordKey() {
+        return tenWordKey;
+    }
+
+    public void setTenWordKey(boolean tenWordKey) {
+        this.tenWordKey = tenWordKey;
     }
 }

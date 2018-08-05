@@ -89,12 +89,12 @@ public class NewGameFragment extends ScavengerFragment {
 
         if(state.isFiveWordKey())
             wordCountFIve.setChecked();
-        else
+        else if(state.isTenWordKey())
             wordCountTen.setChecked();
 
         if(state.isFriendKey())
             friendButton.setChecked();
-        else
+        else if(state.isOpponentKey())
             opponentButton.setChecked();
 
         realm.commitTransaction();
@@ -121,7 +121,9 @@ public class NewGameFragment extends ScavengerFragment {
 
         NewGameState state = createState(realm);
         state.setFiveWordKey(wordCountFIve.isChecked());
+        state.setTenWordKey(wordCountTen.isChecked());
         state.setFriendKey(friendButton.isChecked());
+        state.setOpponentKey(opponentButton.isChecked());
 
         realm.copyToRealmOrUpdate(state);
         realm.commitTransaction();

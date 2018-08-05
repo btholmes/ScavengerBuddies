@@ -1,59 +1,196 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/spacing_small"
-    android:background="@color/white"
+    android:background="@color/grey_medium"
     >
 
     <FrameLayout
         android:id="@+id/versus_frame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="242dp"
         android:layout_weight="0"
+        android:padding="@dimen/spacing_medium"
         >
 
-        <android.support.v7.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:backgroundTint="@color/OrangeRed"
-            android:clipToPadding="true"
-            app:cardCornerRadius="@dimen/button_corner_radius"
-            >
+        <!--<android.support.v7.widget.CardView-->
+            <!--android:id="@+id/card_view"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="200dp"-->
+            <!--android:backgroundTint="@color/colorPrimary"-->
+            <!--android:clipToPadding="true"-->
+            <!--app:cardCornerRadius="@dimen/button_corner_radius"-->
+            <!--android:visibility="visible"-->
+            <!--&gt;-->
+        <!--</android.support.v7.widget.CardView>-->
 
-        </android.support.v7.widget.CardView>
 
         <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/player_views"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="200dp"
             android:weightSum="2"
+            android:background="@drawable/rounded_rectangle"
             >
 
             <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="180dp"
                 android:layout_weight="1"
+                android:padding="@dimen/spacing_large"
+                android:background="@drawable/right_border"
                 >
+
+                <LinearLayout
+                    android:id="@+id/player_name_tag"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical|left"
+                    >
+
+                    <ImageView
+                        android:id="@+id/image"
+                        android:src="@drawable/ic_generic_account"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        />
+                    <TextView
+                        android:id="@+id/text"
+                        android:textColor="@color/black"
+                        android:textStyle="bold"
+                        android:layout_toRightOf="@id/image"
+                        android:ellipsize="none"
+                        android:scrollHorizontally="false"
+                        android:textAlignment="textStart"
+                        android:text="Player"
+                        android:layout_margin="@dimen/spacing_medium"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+
+                <TextView
+                    android:id="@+id/player_word_count_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Word Count"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:layout_margin="@dimen/spacing_small"
+                    android:layout_above="@+id/player_word_count"
+                    />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:id="@+id/player_word_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentLeft="true"
+                    >
+                    <TextView
+                        android:text="1"
+                        android:textColor="@color/black"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_small"
+                        />
+
+                </LinearLayout>
 
 
             </RelativeLayout>
 
             <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_height="180dp"
                 android:layout_weight="1"
+                android:padding="@dimen/spacing_large"
                 >
 
+                <LinearLayout
+                    android:id="@+id/opponent_name_tag"
+                    android:gravity="center_vertical|right"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    >
+
+                    <TextView
+                        android:id="@+id/opponent_text"
+                        android:textColor="@color/black"
+                        android:textStyle="bold"
+                        android:layout_toLeftOf="@id/opponent_image"
+                        android:text="Opponent"
+                        android:layout_width="80dp"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="none"
+                        android:layout_margin="@dimen/spacing_medium"
+                        android:scrollHorizontally="false"
+                        android:textAlignment="textEnd"
+                        />
+
+                    <ImageView
+                        android:id="@+id/opponent_image"
+                        android:src="@drawable/ic_generic_account"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/opponent_word_count_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Word Count"
+                    android:textColor="@color/black"
+                    android:textStyle="bold"
+                    android:layout_margin="@dimen/spacing_small"
+                    android:layout_above="@+id/opponent_word_count"
+                    android:textAlignment="textEnd"
+                    />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:id="@+id/opponent_word_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:textAlignment="textEnd"
+                    android:layout_alignParentRight="true"
+                    android:layoutDirection="rtl"
+                    >
+
+                    <TextView
+                        android:text="1"
+                        android:textColor="@color/black"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_small"
+                        />
+
+                </LinearLayout>
 
             </RelativeLayout>
 
 
         </LinearLayout>
 
-
-
+        <View
+            android:id="@+id/bottom_border"
+            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@drawable/semi_circle"
+            ></View>
     </FrameLayout>
 
 
@@ -61,7 +198,7 @@
         android:layout_below="@+id/versus_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/spacing_large"
+        android:layout_marginTop="-60dp"
         android:layout_weight="2"
         >
 
@@ -69,6 +206,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
+
             >
 
             <ben.holmes.scavenger.buddies.Model.SpinWheel
@@ -76,7 +214,6 @@
                 android:layout_width="@dimen/spin_wheel_dimension"
                 android:layout_height="@dimen/spin_wheel_dimension"
                 android:layout_gravity="center"
-
                 ></ben.holmes.scavenger.buddies.Model.SpinWheel>
 
             <RelativeLayout
@@ -116,8 +253,13 @@
 
     <ben.holmes.scavenger.buddies.Model.ShadowButton
         android:id="@+id/take_picture"
+        app:background_color="@color/colorAccent"
+        app:text_color="@color/white"
+        app:text="PLAY"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        >
 
 
     </ben.holmes.scavenger.buddies.Model.ShadowButton>
@@ -133,4 +275,4 @@
     <!--</ben.holmes.scavenger.buddies.Model.Preview>-->
 
 
-</LinearLayout>
+</RelativeLayout>

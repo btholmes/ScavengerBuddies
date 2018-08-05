@@ -63,7 +63,7 @@ public class PlayFragment extends ScavengerFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((NewGameActivity)getActivity()).destroyNewGameState();
+
 
         prefs = new Prefs(getContext());
         Bundle bundle;
@@ -154,6 +154,7 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public void onResume() {
         super.onResume();
+        ((NewGameActivity)getActivity()).destroyNewGameState();
     }
 
     @Override
@@ -169,6 +170,7 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        ((NewGameActivity)getActivity()).destroyNewGameState();
     }
 
 

@@ -1,5 +1,6 @@
 package ben.holmes.scavenger.buddies.Games.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Fragments.NewGameFragment;
 import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
 import ben.holmes.scavenger.buddies.Games.NewGameState;
+import ben.holmes.scavenger.buddies.Main.MainActivity;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.User;
@@ -33,6 +35,7 @@ import io.realm.Realm;
 public class NewGameActivity extends ScavengerActivity {
 
 
+    private boolean isPlayFragment = false;
     private boolean selectFriendShown = false;
     private NewGameFragment newGameFragmentDelegate;
 
@@ -41,8 +44,15 @@ public class NewGameActivity extends ScavengerActivity {
         super.onCreate(savedInstanceState);
         if(savedInstanceState == null){
             replaceFragmentDontAdd(new NewGameFragment(), NewGameFragment.TAG_NAME);
+            isPlayFragment = false;
         }
+    }
 
+    public void setIsPlayFragment(Fragment fragment){
+        if(fragment instanceof PlayFragment)
+            isPlayFragment = true;
+        else
+            isPlayFragment = false;
     }
 
     @Override
@@ -72,8 +82,13 @@ public class NewGameActivity extends ScavengerActivity {
             View selectFriend = view.findViewById(R.id.select_friend);
             view.removeView(selectFriend);
             selectFriendShown = false;
-        }else if(false){
-
+        }else if(isPlayFragment){
+            isPlayFragment = false;
+//            destroyNewGameState();
+            Intent intent = new Intent(NewGameActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         }else{
             super.onBackPressed();
         }
@@ -103,7 +118,10 @@ public class NewGameActivity extends ScavengerActivity {
     }
 
 
+
     public void replaceFragmentDontAdd(Fragment fragment, String title, int enterAnimation, int exitAnimation){
+        setIsPlayFragment(fragment);
+
         FragmentTransaction fragmentTransaction = getFragManager().beginTransaction();
 
         fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);
@@ -117,6 +135,8 @@ public class NewGameActivity extends ScavengerActivity {
     }
 
     public void replaceFragment(Fragment fragment, String title, int enterAnimation, int exitAnimation){
+        setIsPlayFragment(fragment);
+
         FragmentTransaction fragmentTransaction = getFragManager().beginTransaction();
 
         fragmentTransaction.setCustomAnimations(enterAnimation, exitAnimation);

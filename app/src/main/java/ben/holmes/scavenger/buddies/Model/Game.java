@@ -42,6 +42,7 @@ public class Game implements Serializable{
     private String winner;
 
     private boolean stillInPlay;
+    private boolean challengerTurn;
     private boolean opponentHasAccepted;
     private long opponentTimeElapsed;
     private long challengerTimeElapsed;
@@ -68,16 +69,17 @@ public class Game implements Serializable{
         this.winner = null;
         stillInPlay = true;
         opponentHasAccepted = false;
+        challengerTurn = true;
     }
 
-    public Game(boolean stillInPlay, boolean opponentHasAccepted, String opponentUID, String gameID, String dateCreated, String challengerUID){
-        this.stillInPlay = stillInPlay;
-        this.opponentHasAccepted = opponentHasAccepted;
-        this.opponent = opponentUID;
-        this.gameID = gameID;
-        this.date = dateCreated;
-        this.challenger = challengerUID;
-    }
+//    public Game(boolean stillInPlay, boolean opponentHasAccepted, String opponentUID, String gameID, String dateCreated, String challengerUID){
+//        this.stillInPlay = stillInPlay;
+//        this.opponentHasAccepted = opponentHasAccepted;
+//        this.opponent = opponentUID;
+//        this.gameID = gameID;
+//        this.date = dateCreated;
+//        this.challenger = challengerUID;
+//    }
 
     public String getOpponentDisplayName() {
         return opponentDisplayName;

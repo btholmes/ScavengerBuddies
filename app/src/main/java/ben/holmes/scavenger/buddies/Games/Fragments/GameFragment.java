@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DividerItemDecoration;
@@ -111,6 +112,8 @@ public class GameFragment extends ScavengerFragment{
 
     private boolean hasGames(final BasicCallback callback){
         boolean result = false;
+        if(!isAdded()) return  false;
+
         DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
         FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
 
@@ -133,6 +136,8 @@ public class GameFragment extends ScavengerFragment{
     }
 
     private void setAdapter(){
+        if(!isAdded()) return;
+
         DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
         FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
         if(user == null || reference == null) return;
@@ -187,12 +192,14 @@ public class GameFragment extends ScavengerFragment{
      * Hard programs the height of item_game into this
      */
     private void adjustSize(){
+        if(!isAdded()) return;
+
         if(cardView.getVisibility() == View.GONE) return;
         if(adapter == null) return;
 
         int totalHeight = 0;
         if(isAdded()){
-            int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(90);
+            int dp = ((ScavengerActivity) getActivity()).convertDpToPixels(90);
             totalHeight += adapter.getItemCount() * dp;
         }
 
@@ -221,6 +228,7 @@ public class GameFragment extends ScavengerFragment{
 
 
     private void goToNewGameActivity(){
+        if(!isAdded()) return;
         Intent intent = new Intent(getActivity(), NewGameActivity.class);
         startActivity(intent);
     }
