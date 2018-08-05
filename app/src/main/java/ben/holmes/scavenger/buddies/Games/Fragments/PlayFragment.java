@@ -358,17 +358,32 @@ public class PlayFragment extends ScavengerFragment {
         rotatedState = (rotatedState + totalRotation) % 360;
         int nextAngle = (270-rotatedState) % 360;
         int next = (int)Math.floor((double)nextAngle/spinWheel.getSweepAngle()) + 1;
-        if(next == 0)
-            next = dividers;
 
         storeSelectedWheel(next);
         getWord(next);
     }
 
+    /**
+     * In java modulus isn't modulus, it's the remainder, which means -1 % 2 = -1 instead
+     * of 1.. To fix this use (((n % m) + m ) % m)
+     * @param next
+     */
     private void getWord(int next){
+        int listSize = game.getWords().size();
+        if(next == 0)
+            next = listSize;
+
         int index = next;
-        if(index < 0) index = (game.getWords().size() + next);
-        String word = game.getWords().get(index-1);
+        if(index > listSize || index < 0){
+            if(index > listSize)
+                index  = index % listSize;
+            else
+                index = (((index % listSize) + listSize) % listSize);
+        }
+
+        if(index > 0)
+            index = index -1;
+        String word = game.getWords().get(index);
         Toast.makeText(getContext(), "Next : " + next + " index: " + index + " " + word , Toast.LENGTH_LONG).show();
     }
 
