@@ -68,7 +68,7 @@ public abstract class ScavengerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scavenger_base);
-        database = Database.getInstance(this);
+        database = Database.getInstance();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         prefs = new Prefs(this);
         facebookUtil = new FacebookUtil(this);

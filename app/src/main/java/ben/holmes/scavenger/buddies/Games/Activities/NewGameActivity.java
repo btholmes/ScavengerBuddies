@@ -34,6 +34,7 @@ import io.realm.Realm;
 
 public class NewGameActivity extends ScavengerActivity {
 
+    public static String GAME_OBJ_KEY = "Key stores game obj in bundle";
 
     private boolean isPlayFragment = false;
     private boolean selectFriendShown = false;
@@ -42,9 +43,18 @@ public class NewGameActivity extends ScavengerActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(savedInstanceState == null){
+
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null && bundle.getSerializable(PlayFragment.GAME_KEY) != null){
+            PlayFragment fragment = new PlayFragment();
+            fragment.setArguments(bundle);
+            replaceFragment(fragment,
+                    PlayFragment.TAG_NAME,
+                    0,
+                    0);
+
+        }else if(savedInstanceState == null){
             replaceFragmentDontAdd(new NewGameFragment(), NewGameFragment.TAG_NAME);
-            isPlayFragment = false;
         }
     }
 
@@ -89,6 +99,7 @@ public class NewGameActivity extends ScavengerActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }else{
             super.onBackPressed();
         }
@@ -151,7 +162,7 @@ public class NewGameActivity extends ScavengerActivity {
     }
 
     private void getFriend(final boolean fiveWordKey){
-        Database.getInstance(this).getRandomFriend(new Database.UserCallback() {
+        Database.getInstance().getRandomFriend(new Database.UserCallback() {
             @Override
             public void onComplete(User user) {
                 if(user == null)
@@ -195,9 +206,14 @@ public class NewGameActivity extends ScavengerActivity {
             @Override
             public void onComplete(List<String> words) {
                 FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-                Game game = new Game(currentUser.getUid(), friend.getUid(), words );
-                database.addGameToFirebase(game);
-                moveOn(game);
+                final Game game = new Game(currentUser.getUid(), friend.getUid(), words );
+                game.setPlayerInfo(new Game.setInfoCallback() {
+                    @Override
+                    public void onComplete() {
+                        database.addGameToFirebase(game);
+                        moveOn(game);
+                    }
+                });
             }
         }, wordCount);
     }

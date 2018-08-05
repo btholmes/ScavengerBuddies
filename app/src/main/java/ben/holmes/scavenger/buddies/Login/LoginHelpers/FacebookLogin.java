@@ -120,7 +120,7 @@ public class FacebookLogin {
                                     user.setLastName(lastName);
                                     user.setPhotoUrl(profileUrl);
                                     user.setDisplayName(firstName + " " + lastName);
-                                    Database.getInstance(ctx).addUser(user);
+                                    Database.getInstance().addUser(user);
 
                                     updateFriendsFragment();
 
@@ -195,8 +195,8 @@ public class FacebookLogin {
                             if(currentUser == null)
                                 currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                            Database.getInstance(ctx).updateUserName(firstName, lastName);
-                            Database.getInstance(ctx).updateUserPhotoUrl(profileUrl);
+                            Database.getInstance().updateUserName(firstName, lastName);
+                            Database.getInstance().updateUserPhotoUrl(profileUrl);
 
 
                             prefs.setFacebookConnected(currentUser.getUid(), true);

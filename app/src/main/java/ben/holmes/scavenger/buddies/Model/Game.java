@@ -1,16 +1,15 @@
 package ben.holmes.scavenger.buddies.Model;
 
-/**
- * Created by btholmes on 3/26/17.
- */
-
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 
+import ben.holmes.scavenger.buddies.Database.Database;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
@@ -34,15 +33,27 @@ public class Game implements Serializable{
     private List<String> opponentWordsLeft = new ArrayList<>();
     @Required
 //    private String challengerWordsLeft;
-   private List<String> challengerWordsLeft = new ArrayList<>();
+    private List<String> challengerWordsLeft = new ArrayList<>();
+
+    private int permittedGameDuration = 3;
 
 
     private String challengerDisplayName;
     private String opponentDisplayName;
+
+    private String challengerPhotoUrl;
+    private String opponentPhotoUrl;
+
+    private int opponentScore;
+    private int challengerScore;
+
+    private String challengersLastPlayedTurn;
+    private String opponentsLastPlayedTurn;
+
     private String winner;
 
     private boolean stillInPlay;
-    private boolean challengerTurn;
+    private boolean yourTurn;
     private int round;
     private boolean opponentHasAccepted;
     private long opponentTimeElapsed;
@@ -51,7 +62,8 @@ public class Game implements Serializable{
     private Friend friend;
     private String text = null;
     private int photo = -1;
-
+    private String dateFormat = "yyyy-MM-dd HH:mm:ss";
+    private TimeZone challengerTimeZone;
 
     public Game() {
 
@@ -60,36 +72,124 @@ public class Game implements Serializable{
     public Game(String challenger, String opponent, List<String> words ){
         Random random = new Random();
         String gameID = System.currentTimeMillis() +""+ random.nextInt(100000);
+        this.gameID = gameID;
 
 //        this.words = words.toString();
         this.words = words;
-        this.gameID = gameID;
-        date =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        setOpponentWordsLeft(words);
+        setChallengerWordsLeft(words);
+        setOpponentScore(0);
+        setChallengerScore(0);
+
+        challengerTimeZone = TimeZone.getDefault();
+        Date currentDate = Calendar.getInstance(challengerTimeZone).getTime();
+        String dateString = new SimpleDateFormat(dateFormat).format(currentDate);
+        setDate(dateString);
+        setChallengersLastPlayedTurn(dateString);
+        setOpponentsLastPlayedTurn("");
+
         this.challenger = challenger;
         this.opponent = opponent;
         this.winner = null;
         stillInPlay = true;
         opponentHasAccepted = false;
-        challengerTurn = true;
+        yourTurn = true;
         round = 1;
+
     }
 
-//    public Game(boolean stillInPlay, boolean opponentHasAccepted, String opponentUID, String gameID, String dateCreated, String challengerUID){
-//        this.stillInPlay = stillInPlay;
-//        this.opponentHasAccepted = opponentHasAccepted;
-//        this.opponent = opponentUID;
-//        this.gameID = gameID;
-//        this.date = dateCreated;
-//        this.challenger = challengerUID;
-//    }
 
 
-    public boolean isChallengerTurn() {
-        return challengerTurn;
+
+
+    public interface setInfoCallback{
+        void onComplete();
     }
 
-    public void setChallengerTurn(boolean challengerTurn) {
-        this.challengerTurn = challengerTurn;
+
+    private void setChallengerInfo(final setInfoCallback callback){
+        Database.getInstance().getUser(new Database.UserCallback() {
+            @Override
+            public void onComplete(User user) {
+                if(user.getDisplayName() == null || user.getDisplayName().length() <= 0)
+                    setChallengerDisplayName(user.getNameHash());
+                else
+                    setChallengerDisplayName(user.getDisplayName());
+
+                setChallengerPhotoUrl(user.getPhotoUrl());
+                callback.onComplete();
+            }
+        }, getChallenger());
+    }
+
+    private void setOpponentInfo(final setInfoCallback callback){
+        Database.getInstance().getUser(new Database.UserCallback() {
+            @Override
+            public void onComplete(User user) {
+                if(user.getDisplayName() == null || user.getDisplayName().length() <= 0)
+                    setOpponentDisplayName(user.getNameHash());
+                else
+                    setOpponentDisplayName(user.getDisplayName());
+
+                setOpponentPhotoUrl(user.getPhotoUrl());
+                callback.onComplete();
+            }
+        }, getOpponent());
+    }
+
+    public void setPlayerInfo(final setInfoCallback callback){
+      setChallengerInfo(new setInfoCallback() {
+          @Override
+          public void onComplete() {
+              setOpponentInfo(new setInfoCallback() {
+                  @Override
+                  public void onComplete() {
+                      callback.onComplete();
+                  }
+              });
+          }
+      });
+
+    }
+
+    public int getOpponentScore() {
+        return opponentScore;
+    }
+
+    public void setOpponentScore(int opponentScore) {
+        this.opponentScore = opponentScore;
+    }
+
+    public int getChallengerScore() {
+        return challengerScore;
+    }
+
+    public void setChallengerScore(int challengerScore) {
+        this.challengerScore = challengerScore;
+    }
+
+    public String getChallengerPhotoUrl() {
+        return challengerPhotoUrl;
+    }
+
+    public void setChallengerPhotoUrl(String challengerPhotoUrl) {
+        this.challengerPhotoUrl = challengerPhotoUrl;
+    }
+
+    public String getOpponentPhotoUrl() {
+        return opponentPhotoUrl;
+    }
+
+    public void setOpponentPhotoUrl(String opponentPhotoUrl) {
+        this.opponentPhotoUrl = opponentPhotoUrl;
+    }
+
+    public boolean getYourTurn() {
+        return this.yourTurn;
+    }
+
+    public void setYourTurn(boolean yourTurn) {
+        this.yourTurn = yourTurn;
     }
 
     public int getRound() {
@@ -132,8 +232,57 @@ public class Game implements Serializable{
         return gameID;
     }
 
-    public String getDate() {
-        return date;
+    public String getDate(){
+        return this.date;
+    }
+
+    public String getCreationDate() {
+        String result = "";
+        TimeZone tz = TimeZone.getDefault();
+        try{
+            Date creationDate = new SimpleDateFormat(dateFormat).parse(this.date);
+            Date today = Calendar.getInstance(tz).getTime();
+            int days = daysBetween(creationDate, today);
+            String plural = " days ";
+            if(days == 1)
+                plural = " day ";
+            if(days == 0)
+                result = "Created today";
+            else
+                result = "Created " + plural + days + " ago";
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            return result;
+        }
+    }
+
+    public String getTimeLeft(String uid){
+        String result = "";
+        TimeZone tz = TimeZone.getDefault();
+        try{
+            Date creationDate;
+            if(uid.equals(getChallenger()))
+                creationDate = new SimpleDateFormat(dateFormat).parse(getChallengersLastPlayedTurn());
+            else
+                creationDate = new SimpleDateFormat(dateFormat).parse(getOpponentsLastPlayedTurn());
+
+            Date today = Calendar.getInstance(tz).getTime();
+            int days = permittedGameDuration - daysBetween(creationDate, today);
+            String plural = " days ";
+            if(days <= 1)
+                plural = " day ";
+
+            result = "You have " + days + plural + "left to play";
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            return result;
+        }
+    }
+
+    public int daysBetween(Date date1, Date date2){
+        return (int)Math.floor(date2.getTime() - date1.getTime())/(1000*60*60*24);
     }
 
     public String getChallenger() {
@@ -220,6 +369,31 @@ public class Game implements Serializable{
     }
 
 
+    public String getChallengersLastPlayedTurn() {
+        return challengersLastPlayedTurn;
+    }
+
+    public void setChallengersLastPlayedTurn(String challengersLastPlayedTurn) {
+        this.challengersLastPlayedTurn = challengersLastPlayedTurn;
+    }
+
+    public void setChallengerPlayed(){
+        Date currentDate = Calendar.getInstance(TimeZone.getDefault()).getTime();
+        this.challengersLastPlayedTurn = new SimpleDateFormat(dateFormat).format(currentDate);
+    }
+
+    public String getOpponentsLastPlayedTurn() {
+        return opponentsLastPlayedTurn;
+    }
+
+    public void setOpponentsLastPlayedTurn(String opponentsLastPlayedTurn) {
+        this.opponentsLastPlayedTurn = opponentsLastPlayedTurn;
+    }
+
+    public void setOpponentPlayed(){
+        Date currentDate = Calendar.getInstance(TimeZone.getDefault()).getTime();
+        this.opponentsLastPlayedTurn = new SimpleDateFormat(dateFormat).format(currentDate);
+    }
 
     public long getId() {
         return id;

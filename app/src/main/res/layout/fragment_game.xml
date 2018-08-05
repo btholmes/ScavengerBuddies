@@ -37,67 +37,20 @@
             android:layout_below="@id/text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_large"
             />
 
-        <android.support.v7.widget.CardView
-            android:id="@+id/card_view"
-            android:layout_below="@id/game_button"
-            android:visibility="visible"
-            android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="6dp"
-            app:cardBackgroundColor="@color/grey_bg"
-            >
+        <include layout="@layout/view_your_turn_card"
+            android:layout_below="@+id/game_button"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"></include>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                >
-
-                <LinearLayout
-                    android:id="@+id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="30dp"
-                    android:background="@color/colorPrimary"
-                    android:padding="@dimen/spacing_small"
-                    >
-
-                    <TextView
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentTop="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:text="Current Games"
-                        android:textColor="@color/white"
-                        android:textSize="15sp"
-                        android:textStyle="normal"
-                        android:typeface="normal"
-                        />
-                </LinearLayout>
-
-                <RelativeLayout
-                    android:id="@+id/recycler_holder"
-                    android:layout_below="@+id/title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <android.support.v7.widget.RecyclerView
-                        android:overScrollMode="never"
-                        android:id="@+id/recycler_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        >
-                    </android.support.v7.widget.RecyclerView>
-
-                </RelativeLayout>
-
-
-            </RelativeLayout>
-
-
-        </android.support.v7.widget.CardView>
+        <include layout="@layout/view_their_turn_card"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:layout_below="@+id/your_turn_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"></include>
 
 
     </RelativeLayout>

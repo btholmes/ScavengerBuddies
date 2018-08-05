@@ -79,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
         LoginUtil.logOut();
 
         setContentView(R.layout.activity_login);
-        database = Database.getInstance(this);
+        database = Database.getInstance();
 
         if (BuildConfig.DEBUG) {
             FacebookSdk.setIsDebugEnabled(true);

@@ -7,7 +7,7 @@
         android:id="@+id/chat"
         android:orderInCategory="100"
         android:title="Chat"
-        android:icon="@drawable/ic_message"
+        android:icon="@drawable/ic_menu_message"
         android:iconTint="@color/white"
         app:showAsAction="always" />
 

@@ -94,7 +94,6 @@ public class PlayFragment extends ScavengerFragment {
             bundle = getArguments();
             setDefaultValues(bundle);
         }
-
     }
 
     private void setDefaultValues(Bundle bundle){
@@ -199,7 +198,7 @@ public class PlayFragment extends ScavengerFragment {
     private void setPlayerInfo(){
         final ImageView image = rootView.findViewById(R.id.image);
         final TextView text = rootView.findViewById(R.id.text);
-        Database.getInstance(getContext()).getUser(new Database.UserCallback() {
+        Database.getInstance().getUser(new Database.UserCallback() {
             @Override
             public void onComplete(User user) {
                 if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
@@ -221,7 +220,7 @@ public class PlayFragment extends ScavengerFragment {
         String uid = game.getOpponent();
         if(FirebaseAuth.getInstance().getCurrentUser().getUid().equals(uid))
             uid = game.getChallenger();
-        Database.getInstance(getContext()).getUser(new Database.UserCallback() {
+        Database.getInstance().getUser(new Database.UserCallback() {
             @Override
             public void onComplete(User user) {
                 if(user.getPhotoUrl() != null && user.getPhotoUrl().length() > 0)
@@ -286,7 +285,7 @@ public class PlayFragment extends ScavengerFragment {
         outState.putSerializable(GAME_KEY, game);
         outState.putInt(ROTATED_STATE, rotatedState);
 
-        Database.getInstance(getContext()).addGameToFirebase(game);
+        Database.getInstance().addGameToFirebase(game);
 
 //        fragment = new PlayFragment();
 //        Bundle bundle = new Bundle();
@@ -307,6 +306,7 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public void onResume() {
         super.onResume();
+        displayHomeBackButton();
         ((NewGameActivity)getActivity()).destroyNewGameState();
     }
 
@@ -416,10 +416,10 @@ public class PlayFragment extends ScavengerFragment {
                                     int rotationPoint = (int)Math.floor(totalRotation * progress);
                                     int alpha = (270 + rotationPoint) % segmentSpan;
                                     int delta = (hitPoint - alpha);
-                                    if(delta <= 15 && delta >= 0 && progress > 0){
-                                        upArrow.animate().rotation(delta);
-                                    }else
-                                        upArrow.animate().rotation(0);
+//                                    if(delta <= 15 && delta >= 0 && progress > 0){
+//                                        upArrow.animate().rotation(delta);
+//                                    }else
+//                                        upArrow.animate().rotation(0);
 
                                 }
                             }).setListener(new Animator.AnimatorListener() {

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
 import ben.holmes.scavenger.buddies.Model.Friend;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.User;
@@ -27,24 +28,37 @@ import ben.holmes.scavenger.buddies.Train.Tag;
  */
 public class Database {
 
-    public static Context ctx;
     public static DatabaseReference databaseReference;
     public static Database database;
 
-    public static Database getInstance(Context ctx){
+    public static Database getInstance(){
         if(database == null)
-            return new Database(ctx);
+            return new Database();
 
         return database;
     }
 
-    private Database(Context ctx){
-        this.ctx = ctx;
+
+
+    private Database(){
         databaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
-    public static void addUser(User user){
-        databaseReference.child("userList").child(user.getUid()).setValue(user);
+
+    public static void addUser(final User user){
+        Query query = databaseReference.child("userList").orderByChild("uid").equalTo(user.getUid());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()){
+                    databaseReference.child("userList").child(user.getUid()).setValue(user);
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public static void updateUserName(String firstName, String lastName){
@@ -62,6 +76,7 @@ public class Database {
 
     public static void addGameToFirebase(Game gameObj){
         databaseReference.child("userList").child(gameObj.getChallenger()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+        gameObj.setYourTurn(false);
         databaseReference.child("userList").child(gameObj.getOpponent()).child("games").child(gameObj.getGameID()).setValue(gameObj);
     }
 
@@ -106,6 +121,39 @@ public class Database {
 
                 User user = dataSnapshot.getValue(User.class);
                 callback.onComplete(user);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public interface GameCallback{
+        void onComplete(List<Game> games);
+    }
+
+    public void getGameList(final GameCallback callback){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        final Query query = databaseReference.child("userList").child(user.getUid()).child("games");
+
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<HashMap<String, Game>> ta = new GenericTypeIndicator<HashMap<String, Game>>(){};
+                HashMap<String, Game> map = dataSnapshot.getValue(ta);
+                if(map == null || map.size() == 0){
+                    ArrayList<Game> list = new ArrayList<>();
+                    callback.onComplete(list);
+                    query.removeEventListener(this);
+                    return;
+                }
+
+                List<Game> list = new ArrayList<>(map.values());
+                callback.onComplete(list);
+                query.removeEventListener(this);
+                return;
             }
 
             @Override

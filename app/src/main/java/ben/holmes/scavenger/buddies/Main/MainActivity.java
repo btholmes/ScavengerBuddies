@@ -152,7 +152,7 @@ public class MainActivity extends ScavengerActivity {
                 final TextView displayName = header.findViewById(R.id.displayName);
                 final TextView nameHash = header.findViewById(R.id.nameHash);
 
-                Database database = Database.getInstance(ctx);
+                Database database = Database.getInstance();
                 database.getUser(new Database.UserCallback() {
                     @Override
                     public void onComplete(User user) {

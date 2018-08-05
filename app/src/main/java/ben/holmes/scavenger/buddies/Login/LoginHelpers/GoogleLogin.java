@@ -85,7 +85,7 @@ public class GoogleLogin implements View.OnClickListener {
 //                            Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
-                            Database.getInstance(ctx).addUser(user);
+                            Database.getInstance().addUser(user);
                             ((LoginActivity)activity).goToMain();
 
 //                            updateUI(user);
