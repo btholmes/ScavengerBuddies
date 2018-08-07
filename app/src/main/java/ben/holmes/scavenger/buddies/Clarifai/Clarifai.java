@@ -4,6 +4,7 @@ import android.content.Context;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +45,7 @@ public class Clarifai {
 
 
     public interface ClarifiaResponse{
-        void onSuccess();
+        void onSuccess(List<Concept> result);
         void onError(int error);
     }
 
@@ -57,8 +58,10 @@ public class Clarifai {
         );
         request.executeAsync(new ClarifaiRequest.Callback<List<ClarifaiOutput<Concept>>>() {
             @Override
-            public void onClarifaiResponseSuccess(List<ClarifaiOutput<Concept>> clarifaiOutputs) {
-                callback.onSuccess();
+            public void onClarifaiResponseSuccess(List<ClarifaiOutput<Concept>> outputs) {
+                ClarifaiOutput<Concept> concept = outputs.get(0);
+                List<Concept> result = new ArrayList<>(concept.data());
+                callback.onSuccess(result);
             }
 
             @Override

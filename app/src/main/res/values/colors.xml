@@ -34,6 +34,7 @@
 
 
     <color name="transparent">#00000000</color>
+    <color name="slilght_transparent">#00099999</color>
 
 
     <color name="White">#FFFFFF</color>

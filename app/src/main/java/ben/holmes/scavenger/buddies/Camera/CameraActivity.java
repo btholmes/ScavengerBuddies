@@ -2,6 +2,7 @@ package ben.holmes.scavenger.buddies.Camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -17,7 +18,9 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
+import android.opengl.GLException;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,9 +43,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,10 +57,14 @@ import javax.microedition.khronos.opengles.GL10;
 
 import ben.holmes.scavenger.buddies.Camera.gles.FullFrameRect;
 import ben.holmes.scavenger.buddies.Camera.gles.Texture2dProgram;
+import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.R;
+import clarifai2.dto.prediction.Concept;
 
 public class CameraActivity extends AppCompatActivity implements SurfaceTexture.OnFrameAvailableListener{
 
+    private Clarifai clarifai;
+    private TextView predictionBox;
     // Camera filters; must match up with cameraFilterNames in strings.xml
     static final int FILTER_NONE = 0;
     static final int FILTER_BLACK_WHITE = 1;
@@ -106,6 +115,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_view);
+        predictionBox = findViewById(R.id.prediciton_box);
 
         File outputFile = new File(getFilesDir(), "camera-test.mp4");
 //        TextView fileText = (TextView) findViewById(R.id.cameraOutputFile_text);
@@ -434,6 +444,9 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
     protected void onResume() {
 //        Log.d(TAG, "onResume -- acquiring camera");
         super.onResume();
+
+        clarifai = new Clarifai(this);
+
 //        updateControls();
 
 //        if (PermissionHelper.hasCameraPermission(this)) {
@@ -741,6 +754,8 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             if (VERBOSE) Log.d(TAG, "onDrawFrame tex=" + mTextureId);
             boolean showBox = false;
 
+            new PredictAsync().execute(unused);
+
             // Latch the latest frame.  If there isn't anything new, we'll just re-use whatever
             // was there before.
             mSurfaceTexture.updateTexImage();
@@ -832,6 +847,72 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             GLES20.glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+        }
+
+        private class PredictAsync extends AsyncTask<GL10, Void, Void>{
+            @Override
+            protected Void doInBackground(GL10... gl10s) {
+                GL10 gl10 = gl10s[0];
+                try{
+                    getPredictions(gl10);
+                }catch (Exception e){
+
+                }
+                return null;
+            }
+        }
+
+        private void getPredictions(GL10 gl10) throws Exception{
+            Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            bitmap.recycle();
+            stream.close();
+            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
+                @Override
+                public void onSuccess(List<Concept> result) {
+//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
+                    Concept concept = result.get(0);
+//                    for(Concept concept : result){
+                        if(!predictionBox.getText().equals(concept.name()))
+                            predictionBox.setText(concept.name());
+//                    }
+                }
+
+                @Override
+                public void onError(int error) {
+
+                }
+            });
+        }
+
+        private Bitmap createBitmapFromGLSurface(int x, int y, int w, int h, GL10 gl)
+                throws OutOfMemoryError {
+            int bitmapBuffer[] = new int[w * h];
+            int bitmapSource[] = new int[w * h];
+            IntBuffer intBuffer = IntBuffer.wrap(bitmapBuffer);
+            intBuffer.position(0);
+
+            try {
+                gl.glReadPixels(x, y, w, h, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, intBuffer);
+                int offset1, offset2;
+                for (int i = 0; i < h; i++) {
+                    offset1 = i * w;
+                    offset2 = (h - i - 1) * w;
+                    for (int j = 0; j < w; j++) {
+                        int texturePixel = bitmapBuffer[offset1 + j];
+                        int blue = (texturePixel >> 16) & 0xff;
+                        int red = (texturePixel << 16) & 0x00ff0000;
+                        int pixel = (texturePixel & 0xff00ff00) | red | blue;
+                        bitmapSource[offset2 + j] = pixel;
+                    }
+                }
+            } catch (GLException e) {
+                return null;
+            }
+
+            return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
         }
     }
 
