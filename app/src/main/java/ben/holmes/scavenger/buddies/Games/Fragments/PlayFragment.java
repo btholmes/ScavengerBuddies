@@ -2,17 +2,13 @@ package ben.holmes.scavenger.buddies.Games.Fragments;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,29 +16,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.Api;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
-import ben.holmes.scavenger.buddies.Camera.CameraActivity;
-import ben.holmes.scavenger.buddies.Camera.CameraHelper;
+import ben.holmes.scavenger.buddies.Camera.Activities.Camera2Activity;
+import ben.holmes.scavenger.buddies.Camera.Activities.Camera2OpenGL;
+import ben.holmes.scavenger.buddies.Camera.Activities.CameraActivity;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
@@ -503,6 +495,33 @@ public class PlayFragment extends ScavengerFragment {
     }
 
 
+    private void showSelection(){
+        final ScavengerDialog dialog = new ScavengerDialog(getContext());
+        dialog.hideHeader();
+        dialog.setHeaderText("Select");
+        dialog.setMessageText("Chose a camera interface");
+        dialog.setNegativeButtonText("Camera");
+        dialog.setAffirmativeButtonText("Camera2");
+        dialog.setNegativeButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), CameraActivity.class);
+                startActivity(intent);
+                dialog.dismiss();
+            }
+        });
+        dialog.setAffirmativeButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Intent intent = new Intent(getContext(), Camera2Activity.class);
+                Intent intent = new Intent(getContext(), Camera2OpenGL.class);
+                startActivity(intent);
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
 
     private void setTakePictureClick(){
         takePictureButton.setOnClickListener(new View.OnClickListener() {
@@ -511,8 +530,13 @@ public class PlayFragment extends ScavengerFragment {
 //                CameraHelper helper = new CameraHelper(getContext(), getActivity());
 //                helper.openCamera(0);
 
-                Intent intent = new Intent(getContext(), CameraActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(getContext(), CameraActivity.class);
+//                startActivity(intent);
+
+//                Intent intent = new Intent(getContext(), Camera2Activity.class);
+//                startActivity(intent);
+
+                showSelection();
 
 //                ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
 //                        ViewGroup.LayoutParams.MATCH_PARENT,

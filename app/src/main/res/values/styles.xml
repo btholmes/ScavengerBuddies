@@ -43,6 +43,10 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
+    <style name = "Camera2Style" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
 
     <style name="MyCustomTabLayout" parent="Widget.Design.TabLayout">
         <item name="tabIndicatorColor">@color/tab_indicator_color</item>

@@ -56,6 +56,7 @@ public class Clarifai {
         PredictRequest<Concept> request = generalModel.predict().withInputs(
                 ClarifaiInput.forImage(ClarifaiImage.of(bitmap))
         );
+
         request.executeAsync(new ClarifaiRequest.Callback<List<ClarifaiOutput<Concept>>>() {
             @Override
             public void onClarifaiResponseSuccess(List<ClarifaiOutput<Concept>> outputs) {

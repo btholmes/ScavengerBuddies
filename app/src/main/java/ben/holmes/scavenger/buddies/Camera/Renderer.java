@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import android.util.Log;
 import android.view.TextureView;
 
+import ben.holmes.scavenger.buddies.Camera.Activities.CameraActivity;
 import ben.holmes.scavenger.buddies.Camera.gles.EglCore;
 import ben.holmes.scavenger.buddies.Camera.gles.WindowSurface;
 

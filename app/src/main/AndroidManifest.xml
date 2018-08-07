@@ -80,8 +80,14 @@
             android:screenOrientation="portrait"
             ></activity>
 
-        <activity android:name=".Camera.CameraActivity"></activity>
+        <activity android:name=".Camera.Activities.CameraActivity"></activity>
+        <activity android:name=".Camera.Activities.Camera2Activity"
+            android:theme="@style/Camera2Style"
+            ></activity>
 
+        <activity android:name=".Camera.Activities.Camera2OpenGL"
+            android:theme="@style/Camera2Style"
+            ></activity>
 
     </application>
 

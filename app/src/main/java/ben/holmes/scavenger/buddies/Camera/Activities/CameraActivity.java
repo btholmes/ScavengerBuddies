@@ -1,20 +1,13 @@
-package ben.holmes.scavenger.buddies.Camera;
+package ben.holmes.scavenger.buddies.Camera.Activities;
 
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Camera;
-import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
-import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.Image;
 import android.media.ImageReader;
 import android.opengl.EGL14;
 import android.opengl.GLES20;
@@ -29,7 +22,6 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
@@ -41,20 +33,20 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import ben.holmes.scavenger.buddies.Camera.CameraUtils;
+import ben.holmes.scavenger.buddies.Camera.Renderer;
+import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
 import ben.holmes.scavenger.buddies.Camera.gles.FullFrameRect;
 import ben.holmes.scavenger.buddies.Camera.gles.Texture2dProgram;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
@@ -748,17 +740,26 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             Log.d(TAG, "onSurfaceChanged " + width + "x" + height);
         }
 
+
+
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         @Override
-        public void onDrawFrame(GL10 unused) {
+        public void onDrawFrame(final GL10 unused) {
             if (VERBOSE) Log.d(TAG, "onDrawFrame tex=" + mTextureId);
             boolean showBox = false;
 
+//              GLClone clone = new GLClone(unused);
+//            Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), unused);
+//            updatePrediction(getBytes(bitmap));
             new PredictAsync().execute(unused);
+
+
+
 
             // Latch the latest frame.  If there isn't anything new, we'll just re-use whatever
             // was there before.
             mSurfaceTexture.updateTexImage();
+
 
             // If the recording state is changing, take care of it here.  Ideally we wouldn't
             // be doing all this in onDrawFrame(), but the EGLContext sharing with GLSurfaceView
@@ -854,6 +855,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             protected Void doInBackground(GL10... gl10s) {
                 GL10 gl10 = gl10s[0];
                 try{
+
                     getPredictions(gl10);
                 }catch (Exception e){
 
@@ -862,22 +864,48 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             }
         }
 
+        private boolean waitingOnResponse = false;
         private void getPredictions(GL10 gl10) throws Exception{
-            Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
+            if(!waitingOnResponse){
+                waitingOnResponse = true;
+
+                Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
+//                Bitmap bitmap = getBitmap2(gl10);
+                updatePrediction(getBytes(bitmap));
+            }
+        }
+
+        private byte[] getBytes(Bitmap bitmap) throws Exception{
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] byteArray = stream.toByteArray();
             bitmap.recycle();
             stream.close();
+            return byteArray;
+        }
+
+        private void updatePrediction(byte[] byteArray){
             clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
                 @Override
                 public void onSuccess(List<Concept> result) {
 //                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
-                    Concept concept = result.get(0);
-//                    for(Concept concept : result){
-                        if(!predictionBox.getText().equals(concept.name()))
-                            predictionBox.setText(concept.name());
-//                    }
+                    final String prevWord = predictionBox.getText().toString();
+                    final Concept concept = result.get(0);
+                    String word = concept.name();
+                    int i = 1;
+                    while(word.equals("abstract") || word.equals(prevWord)){
+                        word = result.get(i).name();
+                        i++;
+                    }
+                    final String resultWord = word;
+                    predictionBox.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            predictionBox.setText(resultWord);
+                        }
+                    });
+
+                    waitingOnResponse = false;
                 }
 
                 @Override
@@ -885,6 +913,28 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
 
                 }
             });
+        }
+
+        private Bitmap getBitmap2(GL10 mGL) {
+            final int mWidth = mGLView.getWidth();
+            final int mHeight = mGLView.getHeight();
+            IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
+            IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
+
+
+            mGL.glReadPixels(0, 0, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
+
+            // Convert upside down mirror-reversed image to right-side up normal
+            // image.
+            for (int i = 0; i < mHeight; i++) {
+                for (int j = 0; j < mWidth; j++) {
+                    ibt.put((mHeight - i - 1) * mWidth + j, ib.get(i * mWidth + j));
+                }
+            }
+
+            Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+            mBitmap.copyPixelsFromBuffer(ibt);
+            return mBitmap;
         }
 
         private Bitmap createBitmapFromGLSurface(int x, int y, int w, int h, GL10 gl)
