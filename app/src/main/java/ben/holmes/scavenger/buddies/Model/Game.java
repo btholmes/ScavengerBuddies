@@ -243,13 +243,13 @@ public class Game implements Serializable{
             Date creationDate = new SimpleDateFormat(dateFormat).parse(this.date);
             Date today = Calendar.getInstance(tz).getTime();
             int days = daysBetween(creationDate, today);
-            String plural = " days ";
+            String plural = " days";
             if(days == 1)
-                plural = " day ";
+                plural = " day";
             if(days == 0)
                 result = "Created today";
             else
-                result = "Created " + plural + days + " ago";
+                result = "Created " + days +  plural + " ago";
         }catch (Exception e){
             e.printStackTrace();
         }finally {

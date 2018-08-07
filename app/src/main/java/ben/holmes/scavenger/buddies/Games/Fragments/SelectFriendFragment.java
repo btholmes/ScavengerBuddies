@@ -26,11 +26,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.squareup.picasso.Picasso;
 
+import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
@@ -221,8 +224,14 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
         adapter.setOnItemClickListener(new CustomFirebaseAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, User obj, int position) {
-                if(callingFragment == NewGameFragment.class.hashCode())
-                    ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                if(callingFragment == NewGameFragment.class.hashCode()){
+                    FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if(!obj.getUid().equals(firebaseUser.getUid()))
+                        ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                    else
+                        showCantChallengeYourselfDialog();
+                }
+
             }
         });
 
@@ -243,14 +252,35 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
         adapter.setOnItemClickListener(new CustomFirebaseAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, User obj, int position) {
-                if(callingFragment == NewGameFragment.class.hashCode())
-                    ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if(callingFragment == NewGameFragment.class.hashCode()){
+                    if(!firebaseUser.getUid().equals(obj.getUid()))
+                        ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                    else
+                        showCantChallengeYourselfDialog();
+                }
+
             }
         });
 
         recyclerView.setAdapter(adapter);
     }
 
+
+    private void showCantChallengeYourselfDialog(){
+        final ScavengerDialog dialog = new ScavengerDialog(getContext());
+        dialog.hideHeader();
+        dialog.setBannerText("User Conflict");
+        dialog.showSingleOkButton();
+        dialog.setMessageText("Unfortunately you can't challenge yourself to a game.");
+        dialog.setSingleOkButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
 
     @Override
     public String getToolbarTitle() {

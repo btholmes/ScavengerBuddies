@@ -27,6 +27,7 @@ import android.widget.TextView;
 
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 
 import ben.holmes.scavenger.buddies.App.Fragments.DrawerFragment;
@@ -156,6 +157,8 @@ public class MainActivity extends ScavengerActivity {
                 final ImageView mainImage = header.findViewById(R.id.mainImage);
                 final TextView displayName = header.findViewById(R.id.displayName);
                 final TextView nameHash = header.findViewById(R.id.nameHash);
+                final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if(firebaseUser == null) return;
 
                 Database database = Database.getInstance();
                 database.getUser(new Database.UserCallback() {
@@ -174,7 +177,7 @@ public class MainActivity extends ScavengerActivity {
                         else
                             mainImage.setImageResource(R.drawable.ic_generic_account);
                     }
-                }, FirebaseAuth.getInstance().getCurrentUser().getUid());
+                }, firebaseUser.getUid());
             }
         });
     }

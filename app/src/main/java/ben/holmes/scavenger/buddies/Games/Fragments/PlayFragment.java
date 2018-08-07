@@ -3,6 +3,7 @@ package ben.holmes.scavenger.buddies.Games.Fragments;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -40,6 +41,7 @@ import java.util.Random;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
+import ben.holmes.scavenger.buddies.Camera.CameraActivity;
 import ben.holmes.scavenger.buddies.Camera.CameraHelper;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Database.Database;
@@ -76,6 +78,8 @@ public class PlayFragment extends ScavengerFragment {
     private int rotatedState;
     private ShadowButton takePictureButton;
 
+    private TextView wordText;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,8 +105,8 @@ public class PlayFragment extends ScavengerFragment {
             return;
 
         game = (Game)bundle.getSerializable(GAME_KEY);
-
         fiveWords = game.getWords().size() == 5;
+
         rotatedState = bundle.getInt(ROTATED_STATE, 0);
 
         if(fiveWords) dividers = 5;
@@ -136,6 +140,7 @@ public class PlayFragment extends ScavengerFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_play, container, false);
+        wordText = rootView.findViewById(R.id.wordText);
         spinWheel = rootView.findViewById(R.id.spin_wheel);
         spinWheel.setDividers(dividers);
         spinWheelCenter = rootView.findViewById(R.id.spin_wheel_center);
@@ -160,6 +165,8 @@ public class PlayFragment extends ScavengerFragment {
     }
 
     private void showSpinWheel(){
+        wordText.setVisibility(View.GONE);
+        wordText.setAlpha(0);
         spinWheel.setVisibility(View.VISIBLE);
         spinWheelCenter.setVisibility(View.VISIBLE);
         upArrow.setVisibility(View.VISIBLE);
@@ -348,9 +355,9 @@ public class PlayFragment extends ScavengerFragment {
     private int getSelectedWheel(){
         int selected = -1;
         selected = prefs.getSelectedWheel();
-        if(selected == -1){
-            selected = (int)Math.ceil(270/spinWheel.getSweepAngle());
-        }
+//        if(selected == -1){
+//            selected = (int)Math.ceil(270/spinWheel.getSweepAngle());
+//        }
         return selected;
     }
 
@@ -360,15 +367,29 @@ public class PlayFragment extends ScavengerFragment {
         int next = (int)Math.floor((double)nextAngle/spinWheel.getSweepAngle()) + 1;
 
         storeSelectedWheel(next);
-        getWord(next);
+        String word = getWord(next);
     }
+
+    private void showTheWord(){
+        String word = getWord(getSelectedWheel());
+        hideSpinWheel();
+        showPictureButton();
+        animateWord(word);
+    }
+
+    private void animateWord(String word){
+        wordText.setText(word);
+        wordText.setVisibility(View.VISIBLE);
+        wordText.animate().alpha(1f).setDuration(250);
+    }
+
 
     /**
      * In java modulus isn't modulus, it's the remainder, which means -1 % 2 = -1 instead
      * of 1.. To fix this use (((n % m) + m ) % m)
      * @param next
      */
-    private void getWord(int next){
+    private String getWord(int next){
         int listSize = game.getWords().size();
         if(next == 0)
             next = listSize;
@@ -383,8 +404,12 @@ public class PlayFragment extends ScavengerFragment {
 
         if(index > 0)
             index = index -1;
+
         String word = game.getWords().get(index);
         Toast.makeText(getContext(), "Next : " + next + " index: " + index + " " + word , Toast.LENGTH_LONG).show();
+
+        return word;
+
     }
 
 
@@ -424,12 +449,16 @@ public class PlayFragment extends ScavengerFragment {
                                 }
                             }).setListener(new Animator.AnimatorListener() {
                         @Override
-                        public void onAnimationStart(Animator animation) { }
+                        public void onAnimationStart(Animator animation) {
+                            spinWheelCenter.setEnabled(false);
+                        }
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             int selected = getSelectedWheel();
                             int a = selected;
+                            spinWheelCenter.setEnabled(true);
+                            showTheWord();
                         }
 
                         @Override
@@ -451,8 +480,7 @@ public class PlayFragment extends ScavengerFragment {
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            int selected = getSelectedWheel();
-                            int a = selected;
+                            showTheWord();
                         }
 
                         @Override
@@ -480,8 +508,12 @@ public class PlayFragment extends ScavengerFragment {
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CameraHelper helper = new CameraHelper(getContext(), getActivity());
-                helper.openCamera(0);
+//                CameraHelper helper = new CameraHelper(getContext(), getActivity());
+//                helper.openCamera(0);
+
+                Intent intent = new Intent(getContext(), CameraActivity.class);
+                startActivity(intent);
+
 //                ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
 //                        ViewGroup.LayoutParams.MATCH_PARENT,
 //                        ViewGroup.LayoutParams.MATCH_PARENT

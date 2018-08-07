@@ -53,11 +53,11 @@ public class CameraHelper {
             //Represent
             int id = ids[0];
 //            if(Build.VERSION.SDK_INT >= 21){
-//                openNewCamera(id);
+                openNewCamera(id);
 //            }else{
 //                openOldCamera(id);
 //            }
-            openOldCamera(id);
+//            openOldCamera(id);
             return null;
         }
 

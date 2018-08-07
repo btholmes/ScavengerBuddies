@@ -248,6 +248,19 @@
 
         </FrameLayout>
 
+        <TextView
+            android:id="@+id/wordText"
+            android:visibility="gone"
+            android:alpha="0"
+            android:textAllCaps="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your word is"
+            android:textColor="@color/black"
+            android:layout_centerInParent="true"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            />
 
     </RelativeLayout>
 
@@ -255,7 +268,7 @@
         android:id="@+id/take_picture"
         app:background_color="@color/colorAccent"
         app:text_color="@color/white"
-        app:text="PLAY"
+        app:text="GO TO CAMERA"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

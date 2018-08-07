@@ -227,7 +227,8 @@ public class GameFragment extends ScavengerFragment{
         };
 
         theirTurnRecyclerView.setHasFixedSize(true);
-        theirTurnRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        theirTurnRecyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recycler_divider));
         theirTurnRecyclerView.addItemDecoration(decoration);
@@ -263,7 +264,10 @@ public class GameFragment extends ScavengerFragment{
         };
 
         yourTurnRecyclerView.setHasFixedSize(true);
-        yourTurnRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        yourTurnRecyclerView.setLayoutManager(layoutManager);
         DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recycler_divider));
         yourTurnRecyclerView.addItemDecoration(decoration);
