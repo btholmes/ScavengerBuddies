@@ -2,6 +2,7 @@ package ben.holmes.scavenger.buddies.Camera.Activities;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraCaptureSession;
@@ -17,10 +18,12 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -28,24 +31,33 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ben.holmes.scavenger.buddies.Camera.Model.Prediction;
 import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
+import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
 import ben.holmes.scavenger.buddies.R;
+import clarifai2.dto.prediction.Concept;
 
 public class Camera2Activity extends AppCompatActivity{
 
+    private String searchWord;
     private Clarifai clarifai;
-    private TextView predictionBox;
+    private LinearLayout predictionBox;
     private TextureView textureView;
     // Camera filters; must match up with cameraFilterNames in strings.xml
     private Button takePictureButton;
+    private Button tryAgainButton;
+    private ProgressBar progressBar;
 
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -72,26 +84,136 @@ public class Camera2Activity extends AppCompatActivity{
 
     private static TextureMovieEncoder sVideoEncoder = new TextureMovieEncoder();
 
-    private int mCameraPreviewWidth = 1000;
-    private int mCameraPreviewHeight = 1000;
+    private int mCameraPreviewWidth = 1280;
+    private int mCameraPreviewHeight = 720;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_2_view);
+        clarifai = new Clarifai(this);
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null){
+            searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
+        }
+
         predictionBox = findViewById(R.id.prediciton_box);
         textureView = findViewById(R.id.textureView);
         textureView.setSurfaceTextureListener(textureListener);
 
         takePictureButton = findViewById(R.id.btn_takepicture);
+        tryAgainButton = findViewById(R.id.btn_try_again);
+        progressBar = findViewById(R.id.progress_bar);
+        setUpButtons();
+
+    }
+
+    private void setCameraPreviewValues(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mCameraPreviewHeight = metrics.widthPixels;
+        mCameraPreviewHeight = metrics.heightPixels;
+
+    }
+
+    private void setUpButtons(){
+        takePictureButton.setVisibility(View.VISIBLE);
+        tryAgainButton.setVisibility(View.GONE);
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 takePicture();
             }
         });
+        tryAgainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTakePictureButton();
+                updatePreview(false);
+            }
+        });
+    }
+
+
+    private void hideTakePictureButton(){
+        takePictureButton.setVisibility(View.GONE);
+        tryAgainButton.setVisibility(View.VISIBLE);
+        predictionBox.setVisibility(View.VISIBLE);
+    }
+
+    private void showTakePictureButton(){
+        takePictureButton.setVisibility(View.VISIBLE);
+        predictionBox.setVisibility(View.GONE);
+        tryAgainButton.setVisibility(View.GONE);
+    }
+
+
+    private void updatePage(final Bitmap bitmap){
+            progressBar.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            });
+//            showPredictions(bitmap);
 
     }
+
+    private void updatePredictions(List<Concept> concepts){
+        predictionBox.setVisibility(View.VISIBLE);
+        predictionBox.removeAllViews();
+        for(int i = 0; i < 7; i++){
+            Concept concept = concepts.get(i);
+            Prediction prediction = new Prediction(this);
+            prediction.setPrediction(concept);
+            predictionBox.addView(prediction);
+        }
+    }
+
+    private void showPredictions(byte[] byteArray){
+//        progressBar.setVisibility(View.VISIBLE);
+        try {
+//            byte[] byteArray = getBytes(bitmap);
+            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
+                @Override
+                public void onSuccess(List<Concept> result) {
+//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
+                    progressBar.setVisibility(View.GONE);
+                    updatePredictions(result);
+                    hideTakePictureButton();
+//                    if(isMatch(result)){
+//                        showCongratulationsScreen();
+//                    }else{
+//                        hideTakePictureButton();
+//                    }
+                }
+
+                @Override
+                public void onError(int error) {
+                    int a = error;
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void showCongratulationsScreen(){
+
+    }
+
+
+    private boolean isMatch(List<Concept> concepts){
+        for(int i = 0; i < 7; i++){
+            String word = concepts.get(i).name();
+            if(word.equals(searchWord))
+                return true;
+        }
+        return false;
+    }
+
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -118,7 +240,7 @@ public class Camera2Activity extends AppCompatActivity{
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
             cameraDevice = camera;
-            createCameraPreview();
+            createCameraPreview(false);
         }
 
         @Override
@@ -133,13 +255,13 @@ public class Camera2Activity extends AppCompatActivity{
         }
     };
 
-    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            createCameraPreview();
-        }
-    };
+//    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
+//        @Override
+//        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+//            super.onCaptureCompleted(session, request, result);
+//            createCameraPreview();
+//        }
+//    };
 
     protected  void startBackgroundThread(){
         mBackgroudnThread = new HandlerThread("Camera Background");
@@ -170,8 +292,8 @@ public class Camera2Activity extends AppCompatActivity{
             if(characteristics != null){
                 jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
             }
-            int width = 640;
-            int height = 480;
+            int width = mCameraPreviewWidth;
+            int height = mCameraPreviewHeight;
             if(jpegSizes != null && jpegSizes.length > 0){
                 width = jpegSizes[0].getWidth();
                 height = jpegSizes[0].getHeight();
@@ -192,7 +314,12 @@ public class Camera2Activity extends AppCompatActivity{
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener(){
                 @Override
                 public void onImageAvailable(ImageReader reader) {
-                    Image image = null;
+                    Image image = reader.acquireLatestImage();
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    byte[] bytes = new byte[buffer.capacity()];
+                    buffer.get(bytes);
+                    showPredictions(bytes);
+//                    Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                 }
             };
 
@@ -203,7 +330,7 @@ public class Camera2Activity extends AppCompatActivity{
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
-                    createCameraPreview();
+                    createCameraPreview(true);
                 }
             };
 
@@ -212,9 +339,7 @@ public class Camera2Activity extends AppCompatActivity{
                 public void onConfigured(@NonNull CameraCaptureSession session) {
                     try{
                         session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
-
                     }catch (Exception e){
-
                     }
                 }
 
@@ -229,7 +354,16 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
-    protected void createCameraPreview(){
+    private void stopRepeating(){
+        try {
+            cameraCaptureSession.stopRepeating();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    protected void createCameraPreview(final boolean pause){
         try{
             SurfaceTexture texture = textureView.getSurfaceTexture();
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
@@ -243,7 +377,7 @@ public class Camera2Activity extends AppCompatActivity{
                         return;
 
                     cameraCaptureSession = session;
-                    updatePreview();
+                    updatePreview(pause);
                 }
 
                 @Override
@@ -277,13 +411,16 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
-    protected void updatePreview(){
+    protected void updatePreview(boolean pause){
         if(cameraDevice == null){
             Log.e("Error", "update preview");
         }
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try{
-            cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
+            if(pause)
+                cameraCaptureSession.stopRepeating();
+            else
+                cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
         }catch (Exception e){
             e.printStackTrace();
         }

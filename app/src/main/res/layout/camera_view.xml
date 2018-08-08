@@ -12,7 +12,7 @@
 
     <TextView
         android:id="@+id/prediciton_box"
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:textSize="20sp"
@@ -24,11 +24,31 @@
 
     <Button
         android:id="@+id/btn_takepicture"
+        android:visibility="visible"
         android:background="@drawable/black_circle"
         android:backgroundTint="@color/transparent"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btn_try_again"
+        android:text="Try Again"
+        android:visibility="gone"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/colorPrimary"
+        />
 
 </FrameLayout>

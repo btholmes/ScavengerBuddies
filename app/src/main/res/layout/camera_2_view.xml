@@ -10,17 +10,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/prediciton_box"
-        android:visibility="visible"
-        android:layout_width="200dp"
+        android:orientation="vertical"
+        android:layout_margin="@dimen/spacing_medium"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:layout_gravity="right"
-        android:ellipsize="none"
-        android:layout_margin="@dimen/spacing_large"
-        />
+        android:layout_gravity="right|top"
+        >
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_takepicture"
@@ -30,5 +29,26 @@
         android:layout_margin="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/btn_try_again"
+        android:text="Try Again"
+        android:visibility="gone"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:visibility="gone"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/colorPrimary"
+        />
 
 </FrameLayout>

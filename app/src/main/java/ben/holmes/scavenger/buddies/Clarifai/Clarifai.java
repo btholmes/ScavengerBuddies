@@ -1,7 +1,11 @@
 package ben.holmes.scavenger.buddies.Clarifai;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,10 +15,12 @@ import java.util.concurrent.TimeUnit;
 import ben.holmes.scavenger.buddies.R;
 import clarifai2.api.ClarifaiBuilder;
 import clarifai2.api.ClarifaiClient;
+import clarifai2.api.ClarifaiResponse;
 import clarifai2.api.request.ClarifaiRequest;
 import clarifai2.api.request.model.PredictRequest;
 import clarifai2.dto.input.ClarifaiImage;
 import clarifai2.dto.input.ClarifaiInput;
+import clarifai2.dto.model.ConceptModel;
 import clarifai2.dto.model.Model;
 import clarifai2.dto.model.output.ClarifaiOutput;
 import clarifai2.dto.prediction.Concept;
@@ -72,10 +78,98 @@ public class Clarifai {
 
             @Override
             public void onClarifaiResponseNetworkError(IOException e) {
-
+                IOException a = e;
             }
         });
+
+//
+//        new AsyncTask<byte[], Void, ClarifaiResponse<List<ClarifaiOutput<Concept>>>>() {
+//
+//            // Model prediction
+//            @Override
+//            protected ClarifaiResponse<List<ClarifaiOutput<Concept>>> doInBackground(byte[]... bitmaps) {
+////                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+////                bitmaps[0].compress(Bitmap.CompressFormat.JPEG, 90, stream);
+////                byte[] byteArray = stream.toByteArray();
+//                byte[] byteArray = bitmaps[0];
+//                final ConceptModel general = client.getDefaultModels().generalModel();
+//                return general.predict()
+//                        .withInputs(ClarifaiInput.forImage(ClarifaiImage.of(byteArray)))
+//                        .executeSync();
+//            }
+//
+//            /*
+//             * Handling API response and then collecting and printing tags
+//             */
+//            @Override
+//            protected void onPostExecute(ClarifaiResponse<List<ClarifaiOutput<Concept>>> response) {
+//                final List<ClarifaiOutput<Concept>> predictions = response.get();
+//                ClarifaiOutput<Concept> concept = predictions.get(0);
+//                List<Concept> result = new ArrayList<>(concept.data());
+//                callback.onSuccess(result);
+////                if (!response.isSuccessful()) {
+////                    Toast.makeText(getApplicationContext(), "API contact error", Toast.LENGTH_SHORT).show();
+////                    return;
+////                }
+////                final List<ClarifaiOutput<Concept>> predictions = response.get();
+////                if (predictions.isEmpty()) {
+////                    Toast.makeText(getApplicationContext(), "No results from API", Toast.LENGTH_SHORT).show();
+////                    return;
+////                }
+////
+////                final List<Concept> predictedTags = predictions.get(0).data();
+////                for (int i = 0; i < predictedTags.size(); i++) {
+////                    tags.add(predictedTags.get(i).name());
+////                }
+////                printTags();
+////                checkMatch();
+//            }
+//        }.execute(bitmap);
+
+
+//        new ByteArrayAsync().execute(bitmap);
     }
+
+
+     public class ByteArrayAsync extends AsyncTask<byte[], Void, ClarifaiResponse<List<ClarifaiOutput<Concept>>>>{
+
+        // Model prediction
+        @Override
+        protected ClarifaiResponse<List<ClarifaiOutput<Concept>>> doInBackground(byte[]... bytes) {
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            bitmaps[0].compress(Bitmap.CompressFormat.JPEG, 90, stream);
+//            byte[] byteArray = stream.toByteArray();
+            byte[] array =  bytes[0];
+            final ConceptModel general = client.getDefaultModels().generalModel();
+            return general.predict()
+                    .withInputs(ClarifaiInput.forImage(ClarifaiImage.of(array)))
+                    .executeSync();
+        }
+
+        /*
+         * Handling API response and then collecting and printing tags
+         */
+        @Override
+        protected void onPostExecute(ClarifaiResponse<List<ClarifaiOutput<Concept>>> response) {
+            if (!response.isSuccessful()) {
+//                Toast.makeText(getApplicationContext(), "API contact error", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            final List<ClarifaiOutput<Concept>> predictions = response.get();
+            if (predictions.isEmpty()) {
+//                Toast.makeText(getApplicationContext(), "No results from API", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            final List<Concept> predictedTags = predictions.get(0).data();
+            for (int i = 0; i < predictedTags.size(); i++) {
+//                tags.add(predictedTags.get(i).name());
+            }
+//            printTags();
+//            checkMatch();
+        }
+    }
+
 
     public void predictImageURL(String url, final ClarifiaResponse callback){
         Model<Concept> generalModel = client.getDefaultModels().generalModel();

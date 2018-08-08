@@ -46,6 +46,8 @@ import ben.holmes.scavenger.buddies.R;
 
 public class PlayFragment extends ScavengerFragment {
 
+    public static String SEARCH_WORD = "Stores the name of the word being searched";
+
     public static final String TAG_NAME = "Gameplay";
     public static final int TOOLBAR_COLOR = R.color.colorPrimary;
     public static final String ROTATED_STATE = "rotation state of wheel";
@@ -84,8 +86,10 @@ public class PlayFragment extends ScavengerFragment {
 
         if(savedInstanceState != null){
              fragment = (PlayFragment) getActivity().getSupportFragmentManager().getFragment(savedInstanceState, TAG_NAME);
-             bundle = fragment.getArguments();
-             setDefaultValues(bundle);
+             if(fragment != null){
+                 bundle = fragment.getArguments();
+                 setDefaultValues(bundle);
+             }
         }else{
             bundle = getArguments();
             setDefaultValues(bundle);
@@ -359,14 +363,13 @@ public class PlayFragment extends ScavengerFragment {
         int next = (int)Math.floor((double)nextAngle/spinWheel.getSweepAngle()) + 1;
 
         storeSelectedWheel(next);
-        String word = getWord(next);
     }
 
     private void showTheWord(){
         String word = getWord(getSelectedWheel());
         hideSpinWheel();
-        showPictureButton();
         animateWord(word);
+        showPictureButton();
     }
 
     private void animateWord(String word){
@@ -533,10 +536,11 @@ public class PlayFragment extends ScavengerFragment {
 //                Intent intent = new Intent(getContext(), CameraActivity.class);
 //                startActivity(intent);
 
-//                Intent intent = new Intent(getContext(), Camera2Activity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(getContext(), Camera2Activity.class);
+                intent.putExtra(SEARCH_WORD, wordText.getText().toString().trim());
+                startActivity(intent);
 
-                showSelection();
+//                showSelection();
 
 //                ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
 //                        ViewGroup.LayoutParams.MATCH_PARENT,

@@ -1,5 +1,6 @@
 package ben.holmes.scavenger.buddies.Camera.Activities;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
@@ -18,11 +19,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -32,9 +37,11 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -50,6 +57,7 @@ import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
 import ben.holmes.scavenger.buddies.Camera.gles.FullFrameRect;
 import ben.holmes.scavenger.buddies.Camera.gles.Texture2dProgram;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
+import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
 import ben.holmes.scavenger.buddies.R;
 import clarifai2.dto.prediction.Concept;
 
@@ -57,6 +65,8 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
 
     private Clarifai clarifai;
     private TextView predictionBox;
+    private boolean takePicture = false;
+    private boolean updating = false;
     // Camera filters; must match up with cameraFilterNames in strings.xml
     static final int FILTER_NONE = 0;
     static final int FILTER_BLACK_WHITE = 1;
@@ -66,6 +76,7 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
     static final int FILTER_EMBOSS = 5;
 
     private Button takePictureButton;
+    private Button tryAgainButton;
     private GLSurfaceView mGLView;
     private CameraSurfaceRenderer mRenderer;
     private android.hardware.Camera mCamera;
@@ -100,13 +111,24 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
 
     private static TextureMovieEncoder sVideoEncoder = new TextureMovieEncoder();
 
-    private int mCameraPreviewWidth = 1000;
-    private int mCameraPreviewHeight = 1000;
+    private ProgressBar progressBar;
+
+    private int mCameraPreviewWidth = 1280;
+    private int mCameraPreviewHeight = 720;
+
+    private String searchWord;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_view);
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null){
+            searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
+        }
+
         predictionBox = findViewById(R.id.prediciton_box);
 
         File outputFile = new File(getFilesDir(), "camera-test.mp4");
@@ -124,206 +146,147 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
 
         // Configure the GLSurfaceView.  This will start the Renderer thread, with an
         // appropriate EGL context.
-        mGLView = (GLSurfaceView) findViewById(R.id.cameraPreview_surfaceView);
         mGLView.setEGLContextClientVersion(2);     // select GLES 2.0
         mRenderer = new CameraSurfaceRenderer(mCameraHandler, sVideoEncoder, outputFile);
         mGLView.setRenderer(mRenderer);
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-
         takePictureButton = findViewById(R.id.btn_takepicture);
+        tryAgainButton = findViewById(R.id.btn_try_again);
+
+        setUpButtons();
+
+    }
+
+    private void setCameraPreviewValues(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mCameraPreviewHeight = metrics.widthPixels;
+        mCameraPreviewHeight = metrics.heightPixels;
+
+    }
+
+    private void setUpButtons(){
+        takePictureButton.setVisibility(View.VISIBLE);
+        tryAgainButton.setVisibility(View.GONE);
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePicture();
+                takePicture = true;
             }
         });
-
+        tryAgainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTakePictureButton();
+                mGLView.onResume();
+                takePicture = false;
+            }
+        });
     }
 
-    TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
-        @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-//            openCamera();
-        }
 
-        @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            return false;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-            SurfaceTexture texture = surface;
-        }
-    };
-
-    private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
-        @Override
-        public void onOpened(@NonNull CameraDevice camera) {
-            cameraDevice = camera;
-            createCameraPreview();
-        }
-
-        @Override
-        public void onDisconnected(@NonNull CameraDevice camera) {
-            cameraDevice.close();
-        }
-
-        @Override
-        public void onError(@NonNull CameraDevice camera, int error) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
-    };
-
-    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            createCameraPreview();
-        }
-    };
-
-    protected  void startBackgroundThread(){
-        mBackgroudnThread = new HandlerThread("Camera Background");
-        mBackgroudnThread.start();
-        mBackgroundHandler = new Handler(mBackgroudnThread.getLooper());
+    private void hideTakePictureButton(){
+        takePictureButton.setVisibility(View.GONE);
+        tryAgainButton.setVisibility(View.VISIBLE);
+        predictionBox.setVisibility(View.VISIBLE);
     }
 
-    protected void stopBackgroundThread(){
-        mBackgroudnThread.quitSafely();
-        try{
-            mBackgroudnThread.join();
-            mBackgroudnThread = null;
-            mBackgroundHandler = null;
+    private void showTakePictureButton(){
+        takePictureButton.setVisibility(View.VISIBLE);
+        predictionBox.setVisibility(View.GONE);
+        tryAgainButton.setVisibility(View.GONE);
+    }
+
+
+    private void updatePage(final Bitmap bitmap){
+        if(takePicture){
+            progressBar.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            });
+//            showPredictions(bitmap);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    showPredictions(bitmap);
+                }
+            });
+        }
+    }
+
+    private void updatePredictions(List<Concept> concepts){
+        predictionBox.setVisibility(View.VISIBLE);
+        predictionBox.setText("");
+        for(int i = 0; i < 7; i++){
+            String word = concepts.get(i).name();
+            predictionBox.setText(predictionBox.getText().toString()+  ", " + word);
+        }
+    }
+
+    private void showPredictions(Bitmap bitmap){
+        try {
+            byte[] byteArray = getBytes(bitmap);
+            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
+                @Override
+                public void onSuccess(List<Concept> result) {
+//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
+                    progressBar.setVisibility(View.GONE);
+                    updatePredictions(result);
+
+                    if(isMatch(result)){
+                        showCongratulationsScreen();
+                    }else{
+                        hideTakePictureButton();
+                    }
+                    waitingOnResponse = false;
+                }
+
+                @Override
+                public void onError(int error) {
+                    int a = error;
+                }
+            });
+
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    protected void takePicture(){
-//        if(cameraDevice == null){
-//            return;
-//        }
-//
-//        CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
-//        try{
-//            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
-//            Size[] jpegSizes = null;
-//            if(characteristics != null){
-//                jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
-//            }
-//            int width = 640;
-//            int height = 480;
-//            if(jpegSizes != null && jpegSizes.length > 0){
-//                width = jpegSizes[0].getWidth();
-//                height = jpegSizes[0].getHeight();
-//            }
-//
-//            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-//            List<Surface> outputSurfaces = new ArrayList<>(2);
-//            outputSurfaces.add(reader.getSurface());
-//            outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
-//            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-//            captureBuilder.addTarget(reader.getSurface());
-////            captureBuilder.addTarget(textureView.getSurfaceTexture());
-//            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-//
-//            //Orientation
-//            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-//            ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener(){
-//                @Override
-//                public void onImageAvailable(ImageReader reader) {
-//                    Image image = null;
-//                }
-//            };
-//
-//
-//            reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
-//
-//            final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
-//                @Override
-//                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-//                    super.onCaptureCompleted(session, request, result);
-//                    createCameraPreview();
-//                }
-//            };
-//
-//            cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
-//                @Override
-//                public void onConfigured(@NonNull CameraCaptureSession session) {
-//                    try{
-//                        session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
-//
-//                    }catch (Exception e){
-//
-//                    }
-//                }
-//
-//                @Override
-//                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-//
-//                }
-//            }, mBackgroundHandler);
-//
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
+    private void showCongratulationsScreen(){
+
     }
 
-    protected void createCameraPreview(){
-//        try{
-//            SurfaceTexture texture = textureView.getSurfaceTexture();
-//            texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
-//            Surface surface = new Surface(texture);
-//            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-//            captureRequestBuilder.addTarget(surface);
-//            cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
-//                @Override
-//                public void onConfigured(@NonNull CameraCaptureSession session) {
-//                    if(cameraDevice == null)
-//                        return;
-//
-//                    cameraCaptureSession = session;
-//                    updatePreview();
-//                }
-//
-//                @Override
-//                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-//
-//                }
-//            }, null);
-//
-//        }catch (Exception e){
-//
-//        }
+
+    private boolean isMatch(List<Concept> concepts){
+        for(int i = 0; i < 7; i++){
+            String word = concepts.get(i).name();
+            if(word.equals(searchWord))
+                return true;
+        }
+        return false;
     }
 
-//    private void openCamera(){
-//        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-//        try{
-//            cameraId = manager.getCameraIdList()[0];
-//            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-//            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-//            assert map != null;
-//            imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
-//            //Add permission
-//            if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-//                ActivityCompat.requestPermissions(CameraActivity.this, new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
-//                return;
-//            }
-//            manager.openCamera(cameraId, stateCallback, null);
-//
-//        }catch (Exception e){
-//
-//        }
-//    }
+    private boolean waitingOnResponse = false;
+    private void getPredictions(Bitmap bitmap) throws Exception{
+        if(!waitingOnResponse){
+            waitingOnResponse = true;
+//            showPredictions(bitmap);
+        }
+    }
+
+    private byte[] getBytes(Bitmap bitmap) throws Exception{
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        bitmap.recycle();
+        stream.close();
+        return byteArray;
+    }
+
 
     /**
      * Opens a camera, and attempts to establish preview mode at the specified width and height.
@@ -406,58 +369,34 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
-//            Log.d(TAG, "releaseCamera -- done");
         }
     }
 
-    protected void updatePreview(){
-        if(cameraDevice == null){
-            Log.e("Error", "update preview");
-        }
-        captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-        try{
-            cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private void closeCamera(){
-        if(cameraDevice != null){
-            cameraDevice.close();
-            cameraDevice = null;
-        }
-        if(imageReader != null){
-            imageReader.close();
-            imageReader = null;
-        }
-    }
     @Override
     protected void onResume() {
-//        Log.d(TAG, "onResume -- acquiring camera");
         super.onResume();
 
+//        setCameraPreviewValues();
         clarifai = new Clarifai(this);
 
 //        updateControls();
 
-//        if (PermissionHelper.hasCameraPermission(this)) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             if (mCamera == null) {
                 openCamera(1280, 720);      // updates mCameraPreviewWidth/Height
             }
-
-//        }
-//        } else {
-//            PermissionHelper.requestCameraPermission(this, false);
-//        }
+        }else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    REQUEST_CAMERA_PERMISSION);
+        }
 
         mGLView.onResume();
         mGLView.queueEvent(new Runnable() {
             @Override public void run() {
-                mRenderer.setCameraPreviewSize(1000, 1000);
+                mRenderer.setCameraPreviewSize(mCameraPreviewWidth, mCameraPreviewHeight);
             }
         });
-//        Log.d(TAG, "onResume complete: " + this);
     }
 
     @Override
@@ -482,19 +421,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
         mCameraHandler.invalidateHandler();     // paranoia
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (!PermissionHelper.hasCameraPermission(this)) {
-//            Toast.makeText(this,
-//                    "Camera permission is needed to run this application", Toast.LENGTH_LONG).show();
-//            PermissionHelper.launchPermissionSettings(this);
-//            finish();
-//        } else {
-//            openCamera(1280, 720);      // updates mCameraPreviewWidth/Height
-//
-//        }
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -502,27 +428,12 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             if(grantResults[0] == PackageManager.PERMISSION_DENIED){
                 //close
                 finish();
+            }else{
+                openCamera(mCameraPreviewWidth, mCameraPreviewHeight);
             }
-            openCamera(1280, 720);
         }
     }
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        startBackgroundThread();
-//        if(textureView.isAvailable()){
-//            openCamera();
-//        }else {
-//            textureView.setSurfaceTextureListener(textureListener);
-//        }
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        stopBackgroundThread();
-//        super.onPause();
-//    }
+
 
 
     /**
@@ -748,95 +659,97 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             if (VERBOSE) Log.d(TAG, "onDrawFrame tex=" + mTextureId);
             boolean showBox = false;
 
-//              GLClone clone = new GLClone(unused);
-//            Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), unused);
-//            updatePrediction(getBytes(bitmap));
-            new PredictAsync().execute(unused);
+            if(takePicture){
+//                BitmapAsync async = new BitmapAsync();
+//                async.execute(unused);
+                Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), unused);
+//                byte[] bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), unused);
+                updatePage(bitmap);
+                mGLView.onPause();
+            }else{
+                // Latch the latest frame.  If there isn't anything new, we'll just re-use whatever
+                // was there before.
+                mSurfaceTexture.updateTexImage();
 
 
-
-
-            // Latch the latest frame.  If there isn't anything new, we'll just re-use whatever
-            // was there before.
-            mSurfaceTexture.updateTexImage();
-
-
-            // If the recording state is changing, take care of it here.  Ideally we wouldn't
-            // be doing all this in onDrawFrame(), but the EGLContext sharing with GLSurfaceView
-            // makes it hard to do elsewhere.
-            if (mRecordingEnabled) {
-                switch (mRecordingStatus) {
-                    case RECORDING_OFF:
-                        Log.d(TAG, "START recording");
-                        // start recording
-                        mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(
-                                mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
-                        mRecordingStatus = RECORDING_ON;
-                        break;
-                    case RECORDING_RESUMED:
-                        Log.d(TAG, "RESUME recording");
-                        mVideoEncoder.updateSharedContext(EGL14.eglGetCurrentContext());
-                        mRecordingStatus = RECORDING_ON;
-                        break;
-                    case RECORDING_ON:
-                        // yay
-                        break;
-                    default:
-                        throw new RuntimeException("unknown status " + mRecordingStatus);
+                // If the recording state is changing, take care of it here.  Ideally we wouldn't
+                // be doing all this in onDrawFrame(), but the EGLContext sharing with GLSurfaceView
+                // makes it hard to do elsewhere.
+                if (mRecordingEnabled) {
+                    switch (mRecordingStatus) {
+                        case RECORDING_OFF:
+                            Log.d(TAG, "START recording");
+                            // start recording
+                            mVideoEncoder.startRecording(new TextureMovieEncoder.EncoderConfig(
+                                    mOutputFile, 640, 480, 1000000, EGL14.eglGetCurrentContext()));
+                            mRecordingStatus = RECORDING_ON;
+                            break;
+                        case RECORDING_RESUMED:
+                            Log.d(TAG, "RESUME recording");
+                            mVideoEncoder.updateSharedContext(EGL14.eglGetCurrentContext());
+                            mRecordingStatus = RECORDING_ON;
+                            break;
+                        case RECORDING_ON:
+                            // yay
+                            break;
+                        default:
+                            throw new RuntimeException("unknown status " + mRecordingStatus);
+                    }
+                } else {
+                    switch (mRecordingStatus) {
+                        case RECORDING_ON:
+                        case RECORDING_RESUMED:
+                            // stop recording
+                            Log.d(TAG, "STOP recording");
+                            mVideoEncoder.stopRecording();
+                            mRecordingStatus = RECORDING_OFF;
+                            break;
+                        case RECORDING_OFF:
+                            // yay
+                            break;
+                        default:
+                            throw new RuntimeException("unknown status " + mRecordingStatus);
+                    }
                 }
-            } else {
-                switch (mRecordingStatus) {
-                    case RECORDING_ON:
-                    case RECORDING_RESUMED:
-                        // stop recording
-                        Log.d(TAG, "STOP recording");
-                        mVideoEncoder.stopRecording();
-                        mRecordingStatus = RECORDING_OFF;
-                        break;
-                    case RECORDING_OFF:
-                        // yay
-                        break;
-                    default:
-                        throw new RuntimeException("unknown status " + mRecordingStatus);
+
+                // Set the video encoder's texture name.  We only need to do this once, but in the
+                // current implementation it has to happen after the video encoder is started, so
+                // we just do it here.
+                //
+                // TODO: be less lame.
+                mVideoEncoder.setTextureId(mTextureId);
+
+                // Tell the video encoder thread that a new frame is available.
+                // This will be ignored if we're not actually recording.
+                mVideoEncoder.frameAvailable(mSurfaceTexture);
+
+                if (mIncomingWidth <= 0 || mIncomingHeight <= 0) {
+                    // Texture size isn't set yet.  This is only used for the filters, but to be
+                    // safe we can just skip drawing while we wait for the various races to resolve.
+                    // (This seems to happen if you toggle the screen off/on with power button.)
+                    Log.i(TAG, "Drawing before incoming texture size set; skipping");
+                    return;
+                }
+                // Update the filter, if necessary.
+                if (mCurrentFilter != mNewFilter) {
+                    updateFilter();
+                }
+                if (mIncomingSizeUpdated) {
+                    mFullScreen.getProgram().setTexSize(mIncomingWidth, mIncomingHeight);
+                    mIncomingSizeUpdated = false;
+                }
+
+                // Draw the video frame.
+                mSurfaceTexture.getTransformMatrix(mSTMatrix);
+                mFullScreen.drawFrame(mTextureId, mSTMatrix);
+
+                // Draw a flashing box if we're recording.  This only appears on screen.
+                showBox = (mRecordingStatus == RECORDING_ON);
+                if (showBox && (++mFrameCount & 0x04) == 0) {
+                    drawBox();
                 }
             }
 
-            // Set the video encoder's texture name.  We only need to do this once, but in the
-            // current implementation it has to happen after the video encoder is started, so
-            // we just do it here.
-            //
-            // TODO: be less lame.
-            mVideoEncoder.setTextureId(mTextureId);
-
-            // Tell the video encoder thread that a new frame is available.
-            // This will be ignored if we're not actually recording.
-            mVideoEncoder.frameAvailable(mSurfaceTexture);
-
-            if (mIncomingWidth <= 0 || mIncomingHeight <= 0) {
-                // Texture size isn't set yet.  This is only used for the filters, but to be
-                // safe we can just skip drawing while we wait for the various races to resolve.
-                // (This seems to happen if you toggle the screen off/on with power button.)
-                Log.i(TAG, "Drawing before incoming texture size set; skipping");
-                return;
-            }
-            // Update the filter, if necessary.
-            if (mCurrentFilter != mNewFilter) {
-                updateFilter();
-            }
-            if (mIncomingSizeUpdated) {
-                mFullScreen.getProgram().setTexSize(mIncomingWidth, mIncomingHeight);
-                mIncomingSizeUpdated = false;
-            }
-
-            // Draw the video frame.
-            mSurfaceTexture.getTransformMatrix(mSTMatrix);
-            mFullScreen.drawFrame(mTextureId, mSTMatrix);
-
-            // Draw a flashing box if we're recording.  This only appears on screen.
-            showBox = (mRecordingStatus == RECORDING_ON);
-            if (showBox && (++mFrameCount & 0x04) == 0) {
-                drawBox();
-            }
         }
 
         /**
@@ -850,92 +763,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
         }
 
-        private class PredictAsync extends AsyncTask<GL10, Void, Void>{
-            @Override
-            protected Void doInBackground(GL10... gl10s) {
-                GL10 gl10 = gl10s[0];
-                try{
-
-                    getPredictions(gl10);
-                }catch (Exception e){
-
-                }
-                return null;
-            }
-        }
-
-        private boolean waitingOnResponse = false;
-        private void getPredictions(GL10 gl10) throws Exception{
-            if(!waitingOnResponse){
-                waitingOnResponse = true;
-
-                Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
-//                Bitmap bitmap = getBitmap2(gl10);
-                updatePrediction(getBytes(bitmap));
-            }
-        }
-
-        private byte[] getBytes(Bitmap bitmap) throws Exception{
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            bitmap.recycle();
-            stream.close();
-            return byteArray;
-        }
-
-        private void updatePrediction(byte[] byteArray){
-            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
-                @Override
-                public void onSuccess(List<Concept> result) {
-//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
-                    final String prevWord = predictionBox.getText().toString();
-                    final Concept concept = result.get(0);
-                    String word = concept.name();
-                    int i = 1;
-                    while(word.equals("abstract") || word.equals(prevWord)){
-                        word = result.get(i).name();
-                        i++;
-                    }
-                    final String resultWord = word;
-                    predictionBox.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            predictionBox.setText(resultWord);
-                        }
-                    });
-
-                    waitingOnResponse = false;
-                }
-
-                @Override
-                public void onError(int error) {
-
-                }
-            });
-        }
-
-        private Bitmap getBitmap2(GL10 mGL) {
-            final int mWidth = mGLView.getWidth();
-            final int mHeight = mGLView.getHeight();
-            IntBuffer ib = IntBuffer.allocate(mWidth * mHeight);
-            IntBuffer ibt = IntBuffer.allocate(mWidth * mHeight);
-
-
-            mGL.glReadPixels(0, 0, mWidth, mHeight, GL10.GL_RGBA, GL10.GL_UNSIGNED_BYTE, ib);
-
-            // Convert upside down mirror-reversed image to right-side up normal
-            // image.
-            for (int i = 0; i < mHeight; i++) {
-                for (int j = 0; j < mWidth; j++) {
-                    ibt.put((mHeight - i - 1) * mWidth + j, ib.get(i * mWidth + j));
-                }
-            }
-
-            Bitmap mBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
-            mBitmap.copyPixelsFromBuffer(ibt);
-            return mBitmap;
-        }
 
         private Bitmap createBitmapFromGLSurface(int x, int y, int w, int h, GL10 gl)
                 throws OutOfMemoryError {
@@ -961,10 +788,45 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
             } catch (GLException e) {
                 return null;
             }
-
+//            return convert(bitmapSource);
             return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
         }
+
+        private byte [] convert(int [] array) {
+            if (array == null || array.length == 0) {
+                return new byte[0];
+            }
+
+            return writeInts(array);
+        }
+
+        private byte [] writeInts(int [] array) {
+            try {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(array.length * 4);
+                DataOutputStream dos = new DataOutputStream(bos);
+                for (int i = 0; i < array.length; i++) {
+                    dos.writeInt(array[i]);
+                }
+
+                return bos.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private class BitmapAsync extends  AsyncTask<GL10, Void, Void>{
+            @Override
+            protected Void doInBackground(GL10... gl10s) {
+                GL10 gl10 = gl10s[0];
+//                Bitmap bitmap = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
+//                byte[] byteArray = createBitmapFromGLSurface(0, 0, mGLView.getWidth(), mGLView.getHeight(), gl10);
+//                updatePage(byteArray);
+                return null;
+            }
+        }
     }
+
+
 
     /**
      * Handles camera operation requests from other threads.  Necessary because the Camera
@@ -1025,33 +887,6 @@ public class CameraActivity extends AppCompatActivity implements SurfaceTexture.
         }
         mCamera.startPreview();
     }
-
-//    /**
-//     * Constructs CameraSurfaceRenderer.
-//     * <p>
-//     * @param cameraHandler Handler for communicating with UI thread
-//     * @param movieEncoder video encoder object
-//     * @param outputFile output file for encoded video; forwarded to movieEncoder
-//     */
-//    public CameraSurfaceRenderer(CameraHandler cameraHandler,
-//                                 TextureMovieEncoder movieEncoder, File outputFile) {
-//        mCameraHandler = cameraHandler;
-//        mVideoEncoder = movieEncoder;
-//        mOutputFile = outputFile;
-//
-//        mTextureId = -1;
-//
-//        mRecordingStatus = -1;
-//        mRecordingEnabled = false;
-//        mFrameCount = -1;
-//
-//        mIncomingSizeUpdated = false;
-//        mIncomingWidth = mIncomingHeight = -1;
-//
-//        // We could preserve the old filter mode, but currently not bothering.
-//        mCurrentFilter = -1;
-//        mNewFilter = CameraCaptureActivity.FILTER_NONE;
-//    }
 
 
     @Override
