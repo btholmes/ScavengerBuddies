@@ -16,6 +16,7 @@
     <application
         android:name=".App.ScavengerApplication"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:logo="@drawable/ic_clock"
         android:label="@string/app_name"
@@ -32,6 +33,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".Notifications.Activities.NotificationActivity"></activity>
 
         <activity android:name="ben.holmes.scavenger.buddies.Main.MainActivity"
             android:screenOrientation="portrait"

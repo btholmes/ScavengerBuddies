@@ -46,13 +46,14 @@ import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Messages.MessagesFragment;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.Model.User;
+import ben.holmes.scavenger.buddies.Notifications.Activities.NotificationActivity;
 import ben.holmes.scavenger.buddies.Train.dataCollectionActivity;
 
 
 import ben.holmes.scavenger.buddies.R;
 
 
-public class MainActivity extends ScavengerActivity {
+public class MainActivity extends ScavengerActivity implements DrawerLayout.DrawerListener{
 
     public static String OPEN_DRAWER_ON_START = "String, if present in bundle, don't show drawer on start";
 
@@ -100,7 +101,7 @@ public class MainActivity extends ScavengerActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         if(showDrawer)
             drawerLayout.openDrawer(Gravity.LEFT);
-
+        drawerLayout.addDrawerListener(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
@@ -164,6 +165,8 @@ public class MainActivity extends ScavengerActivity {
                 database.getUser(new Database.UserCallback() {
                     @Override
                     public void onComplete(User user) {
+//                        if(user == null) return;
+
                         if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
                             displayName.setVisibility(View.GONE);
                             nameHash.setText(user.getNameHash());
@@ -284,31 +287,6 @@ public class MainActivity extends ScavengerActivity {
         super.onDestroy();
     }
 
-
-    private void handleSelectedItem(MenuItem item){
-
-        if(item.getTitle().equals("Make a Contribution")){
-//            GooglePay googlePay = new GooglePay(this);
-//            googlePay.connect();
-         replaceFragment(new DrawerFragment());
-
-        }else if(item.getTitle().equals("Sign Out")){
-            signOut();
-        }else if(item.getTitle().equals("Train")){
-            Intent intent = new Intent(MainActivity.this, dataCollectionActivity.class);
-            startActivity(intent);
-        }else if(item.getTitle().equals("Invite Friends")){
-            item.setChecked(false);
-            customBottomView.show(MainActivity.this);
-//            String message = "Text I want to share.";
-//            Intent share = new Intent(Intent.ACTION_SEND);
-//            share.setType("text/plain");
-//            share.putExtra(Intent.EXTRA_TEXT, message);
-//
-//            startActivity(Intent.createChooser(share, "Title of the dialog the system will open"));
-        }
-
-    }
 
     private void replaceFragment(Fragment fragment) {
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
@@ -438,4 +416,64 @@ public class MainActivity extends ScavengerActivity {
         finish();
     }
 
+
+    private void handleSelectedItem(MenuItem item){
+
+        if(item.getTitle().equals("Make a Contribution")){
+//            GooglePay googlePay = new GooglePay(this);
+//            googlePay.connect();
+            replaceFragment(new DrawerFragment());
+
+        }else if(item.getTitle().equals("Sign Out")){
+            signOut();
+        }else if(item.getTitle().equals("Train")){
+            selectedItem = "Train";
+        }else if(item.getTitle().equals("Invite Friends")){
+            item.setChecked(false);
+            customBottomView.show(MainActivity.this);
+//            String message = "Text I want to share.";
+//            Intent share = new Intent(Intent.ACTION_SEND);
+//            share.setType("text/plain");
+//            share.putExtra(Intent.EXTRA_TEXT, message);
+//
+//            startActivity(Intent.createChooser(share, "Title of the dialog the system will open"));
+        }else if(item.getTitle().equals("Notifications")){
+            selectedItem = "Notifications";
+        }
+
+    }
+
+
+    private String selectedItem = "";
+    @Override
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+    }
+
+    @Override
+    public void onDrawerOpened(@NonNull View drawerView) {
+
+    }
+
+    @Override
+    public void onDrawerClosed(@NonNull View drawerView) {
+        switch (selectedItem){
+            case "Notifications":
+                Intent notificationIntent = new Intent(MainActivity.this, NotificationActivity.class);
+                startActivity(notificationIntent);
+                break;
+            case "Make a Contribution":
+                break;
+            case "Train":
+                Intent dataIntent = new Intent(MainActivity.this, dataCollectionActivity.class);
+                startActivity(dataIntent);
+                break;
+        }
+        selectedItem = "";
+    }
+
+    @Override
+    public void onDrawerStateChanged(int newState) {
+
+    }
 }

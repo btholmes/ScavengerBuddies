@@ -84,9 +84,14 @@ public class GoogleLogin implements View.OnClickListener {
                             // Sign in success, update UI with the signed-in user's information
 //                            Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                            User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
-                            Database.getInstance().addUser(user);
-                            ((LoginActivity)activity).goToMain();
+                            final User user = new User(firebaseUser.getUid(), firebaseUser.getEmail());
+                            user.createNameHash(new User.CreateUserCallback() {
+                                @Override
+                                public void onComplete() {
+                                    Database.getInstance().addUser(user);
+                                    ((LoginActivity)activity).goToMain();
+                                }
+                            });
 
 //                            updateUI(user);
                         } else {

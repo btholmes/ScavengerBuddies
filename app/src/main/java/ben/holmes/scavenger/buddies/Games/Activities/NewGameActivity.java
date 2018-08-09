@@ -163,7 +163,10 @@ public class NewGameActivity extends ScavengerActivity {
     }
 
     private void getFriend(final boolean fiveWordKey){
-        Database.getInstance().getRandomFriend(new Database.UserCallback() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user == null) return;
+
+        Database.getInstance().getRandomFriend(user.getEmail(), new Database.UserCallback() {
             @Override
             public void onComplete(User user) {
                 if(user == null)

@@ -2,18 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    >
 
     <TextView
-        android:id="@+id/text"
-        android:text="Word"
+        android:id="@+id/percent"
+        android:text="93%"
         android:textSize="20sp"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/white"
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_margin="@dimen/spacing_medium"
+
         />
 
     <FrameLayout
@@ -25,12 +27,24 @@
 
         <View
             android:id="@+id/progress"
-            android:layout_width="match_parent"
+            android:layout_width="100dp"
             android:layout_height="match_parent"
             android:background="@drawable/progress_filler"
             ></View>
 
 
     </FrameLayout>
+
+    <TextView
+        android:id="@+id/text"
+        android:text="Word"
+        android:textSize="20sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="@dimen/spacing_medium"
+        />
 
 </LinearLayout>

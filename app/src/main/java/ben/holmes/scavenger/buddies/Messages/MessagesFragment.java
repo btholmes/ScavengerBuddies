@@ -57,6 +57,7 @@ public class MessagesFragment extends ScavengerFragment {
     private void hasMessages(final MessagesCallback callback){
         DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
         FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        if(user == null) return;
 
         reference.child("userList").child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

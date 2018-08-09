@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ben.holmes.scavenger.buddies.App.Tools.HandleCurrentUser;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
 import ben.holmes.scavenger.buddies.BuildConfig;
 import ben.holmes.scavenger.buddies.Database.Database;
@@ -314,9 +315,14 @@ public class LoginActivity extends AppCompatActivity {
                                             prefs.setEmailVerificationSent(true);
                                             progressBar.setVisibility(View.GONE);
 //                                    showVerifyEmailDialog(email);
-                                            User user = new User(mAuth.getCurrentUser().getUid(), email);
-                                            database.addUser(user);
-                                            goToMain();
+                                            final User user = new User(mAuth.getCurrentUser().getUid(), email);
+                                            user.createNameHash(new User.CreateUserCallback() {
+                                                @Override
+                                                public void onComplete() {
+                                                    database.addUser(user);
+                                                    goToMain();
+                                                }
+                                            });
                                         }
                                     });
                                 }

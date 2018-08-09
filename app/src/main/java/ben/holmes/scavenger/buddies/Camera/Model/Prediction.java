@@ -16,6 +16,7 @@ public class Prediction extends RelativeLayout {
     private Context ctx;
     private View rootView;
     private TextView text;
+    private TextView percent;
     private View progress;
 
     public Prediction(Context ctx){
@@ -32,8 +33,15 @@ public class Prediction extends RelativeLayout {
     private void sharedConstructor(Context ctx, AttributeSet attrs){
         this.ctx = ctx;
         rootView = LayoutInflater.from(ctx).inflate(R.layout.view_prediction, this);
+        percent = rootView.findViewById(R.id.percent);
         text = rootView.findViewById(R.id.text);
         progress = rootView.findViewById(R.id.progress);
+    }
+
+    public void setPercent(float value){
+        value *= 100;
+        value = Math.round(value); 
+        percent.setText(value + "%");
     }
 
     public void setText(String text){
@@ -49,6 +57,7 @@ public class Prediction extends RelativeLayout {
 
     public void setPrediction(Concept concept){
         setText(concept.name());
+        setPercent(concept.value());
         setProgress(concept.value());
     }
 

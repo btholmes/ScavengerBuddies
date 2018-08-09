@@ -22,6 +22,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -31,25 +32,32 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ben.holmes.scavenger.buddies.Camera.Handlers.ImageHandler;
 import ben.holmes.scavenger.buddies.Camera.Model.Prediction;
 import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
+import ben.holmes.scavenger.buddies.Camera.ThreadPool;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
+import ben.holmes.scavenger.buddies.Model.Message;
 import ben.holmes.scavenger.buddies.R;
 import clarifai2.dto.prediction.Concept;
 
 public class Camera2Activity extends AppCompatActivity{
 
+//    private ImageHandler imageHandler;
+    private View content;
     private String searchWord;
     private Clarifai clarifai;
     private LinearLayout predictionBox;
@@ -80,6 +88,7 @@ public class Camera2Activity extends AppCompatActivity{
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
+    private Handler imageHandler;
     private HandlerThread mBackgroudnThread;
 
     private static TextureMovieEncoder sVideoEncoder = new TextureMovieEncoder();
@@ -91,11 +100,13 @@ public class Camera2Activity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_2_view);
-        clarifai = new Clarifai(this);
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
             searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
         }
+
+        content = findViewById(R.id.content);
+        clarifai = new Clarifai(this);
 
         predictionBox = findViewById(R.id.prediciton_box);
         textureView = findViewById(R.id.textureView);
@@ -140,53 +151,72 @@ public class Camera2Activity extends AppCompatActivity{
         takePictureButton.setVisibility(View.GONE);
         tryAgainButton.setVisibility(View.VISIBLE);
         predictionBox.setVisibility(View.VISIBLE);
+        content.setVisibility(View.VISIBLE);
     }
 
     private void showTakePictureButton(){
         takePictureButton.setVisibility(View.VISIBLE);
         predictionBox.setVisibility(View.GONE);
+        content.setVisibility(View.GONE);
         tryAgainButton.setVisibility(View.GONE);
     }
 
 
-    private void updatePage(final Bitmap bitmap){
-            progressBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(View.VISIBLE);
-                }
-            });
-//            showPredictions(bitmap);
-
-    }
-
     private void updatePredictions(List<Concept> concepts){
+        progressBar.setVisibility(View.GONE);
         predictionBox.setVisibility(View.VISIBLE);
         predictionBox.removeAllViews();
         for(int i = 0; i < 7; i++){
             Concept concept = concepts.get(i);
             Prediction prediction = new Prediction(this);
-            prediction.setPrediction(concept);
             predictionBox.addView(prediction);
+            prediction.setPrediction(concept);
         }
     }
 
-    private void showPredictions(byte[] byteArray){
-//        progressBar.setVisibility(View.VISIBLE);
-        try {
-//            byte[] byteArray = getBytes(bitmap);
-            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
-                @Override
-                public void onSuccess(List<Concept> result) {
-//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
-                    progressBar.setVisibility(View.GONE);
-                    updatePredictions(result);
-                    hideTakePictureButton();
+    private List<Concept> filterResult(List<Concept> result){
+        ArrayList<Concept> copy = new ArrayList<>();
+        for(Concept concept : result){
+            if(concept.name().equalsIgnoreCase("abstract")
+                    || concept.name().equalsIgnoreCase("blur")
+                    || concept.name().equalsIgnoreCase("no person")){
+                continue;
+            }else
+                copy.add(concept);
+
+            if(copy.size() == 7)
+                break;
+        }
+
+        return copy;
+    }
+
+    private void updateUI(final List<Concept> result){
+        final List<Concept> copy = filterResult(result);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePredictions(copy);
 //                    if(isMatch(result)){
 //                        showCongratulationsScreen();
 //                    }else{
 //                        hideTakePictureButton();
 //                    }
+                hideTakePictureButton();
+            }
+        });
+    }
+
+
+    private void showPredictions(byte[] byteArray){
+        final Context ctx = this;
+        try {
+            clarifai.predictImageBitmap(byteArray, new Clarifai.ClarifiaResponse() {
+                @Override
+                public void onSuccess(List<Concept> result) {
+//                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
+                        updateUI(result);
                 }
 
                 @Override
@@ -267,6 +297,18 @@ public class Camera2Activity extends AppCompatActivity{
         mBackgroudnThread = new HandlerThread("Camera Background");
         mBackgroudnThread.start();
         mBackgroundHandler = new Handler(mBackgroudnThread.getLooper());
+        imageHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
+            @Override
+            public boolean handleMessage(android.os.Message msg) {
+
+                byte[] bytes = (byte[]) msg.obj;
+                showPredictions(bytes);
+//                List<Concept> response = clarifai.predictInSync(bytes);
+//                updateUI(res);
+                int a = 0;
+                return true;
+            }
+        });
     }
 
     protected void stopBackgroundThread(){
@@ -285,7 +327,7 @@ public class Camera2Activity extends AppCompatActivity{
             return;
         }
 
-        CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+        final CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
         try{
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
             Size[] jpegSizes = null;
@@ -313,13 +355,40 @@ public class Camera2Activity extends AppCompatActivity{
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener(){
                 @Override
-                public void onImageAvailable(ImageReader reader) {
+                public void onImageAvailable(final ImageReader reader) {
+
                     Image image = reader.acquireLatestImage();
                     ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                    byte[] bytes = new byte[buffer.capacity()];
+                    final byte[] bytes = new byte[buffer.capacity()];
                     buffer.get(bytes);
-                    showPredictions(bytes);
-//                    Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+                    List<Concept> response = clarifai.predictInSync(bytes);
+                    updateUI(response);
+//                    android.os.Message msg = imageHandler.obtainMessage();
+//                    msg.obj = bytes;
+//                    msg.sendToTarget();
+//                    stopBackgroundThread();
+//                    imageHandler.handleState(bytes, ImageHandler.STATE_COMPLETE);
+
+
+//                    showPredictions(bytes);
+
+//                    Handler mHandler = new Handler(mBackgroudnThread.getLooper(), new Handler.Callback() {
+//                        @Override
+//                        public boolean handleMessage(android.os.Message msg) {
+//                            ThreadPool.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    Image image = reader.acquireLatestImage();
+//                                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+//                                    final byte[] bytes = new byte[buffer.capacity()];
+//                                    buffer.get(bytes);
+//
+//                                    showPredictions(bytes);
+//                                }
+//                            });
+//                            return true;
+//                        }
+//                    });
                 }
             };
 
@@ -452,6 +521,7 @@ public class Camera2Activity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        imageHandler = new ImageHandler(this);
         startBackgroundThread();
         if(textureView.isAvailable()){
             openCamera();
@@ -465,5 +535,6 @@ public class Camera2Activity extends AppCompatActivity{
         stopBackgroundThread();
         super.onPause();
     }
+
 
 }

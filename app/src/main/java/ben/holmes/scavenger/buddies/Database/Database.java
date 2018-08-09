@@ -111,7 +111,6 @@ public class Database {
     }
 
     public void getUser(final UserCallback callback, String uid){
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         final Query query = databaseReference.child("userList").child(uid);
 
         query.addValueEventListener(new ValueEventListener() {
@@ -207,8 +206,15 @@ public class Database {
     }
 
 
-    public void getRandomFriend(final UserCallback callback){
-        final Query query = databaseReference.child("userList");
+    public void getRandomFriend(String myHash, final UserCallback callback){
+        Random r = new Random();
+        char myFirstLetter = myHash.charAt(0);
+        char c = myFirstLetter;
+        while(c == myFirstLetter){
+            c = (char)(r.nextInt(26) + 'a');
+        }
+        String item = Character.toString(c);
+        final Query query = databaseReference.child("userList").startAt(item).endAt(item + "\uf8ff").limitToFirst(100);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -242,5 +248,31 @@ public class Database {
         });
     }
 
+
+    public interface NameHashCallback{
+        void onComplete(String hash);
+    }
+    public void createNameHash(final String email, final NameHashCallback callback){
+        final Query query = databaseReference.child("nameHashes");
+
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                query.removeEventListener(this);
+                String emailHash = email.substring(0, email.indexOf("@"));
+
+                while(dataSnapshot.hasChild(emailHash)){
+                    Random rand = new Random();
+                    emailHash = emailHash + rand.nextInt(10);
+                }
+                databaseReference.child("nameHashes").child(emailHash).setValue(emailHash);
+                callback.onComplete(emailHash);
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 }

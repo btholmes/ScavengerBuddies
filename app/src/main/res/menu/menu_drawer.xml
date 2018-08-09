@@ -41,6 +41,11 @@
             android:checkable="true"
             android:title="Invite Friends"/>
 
+        <item
+            android:id="@+id/notifications"
+            android:checkable="true"
+            android:title="Notifications"/>
+
     </group>
 
     <!--<item android:title="Sub items" android:checkableBehavior="none">-->

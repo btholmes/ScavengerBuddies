@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ben.holmes.scavenger.buddies.Database.Database;
+
 /**
  * Created by btholmes on 11/4/17.
  */
@@ -40,12 +42,25 @@ public class User implements Serializable{
 
     }
 
+    public interface CreateUserCallback{
+        void onComplete();
+    }
+
     public User(String uid, String email){
         this.uid = uid;
         this.email = email;
-        String name = "@" + email.substring(0, email.indexOf("@"));
-        this.nameHash = name;
+    }
 
+
+    public void createNameHash(final CreateUserCallback callback){
+        Database database = Database.getInstance();
+        database.createNameHash(email, new Database.NameHashCallback() {
+            @Override
+            public void onComplete(String hash) {
+                nameHash = "@" + hash;
+                callback.onComplete();
+            }
+        });
     }
 
     public String getNameHash() {

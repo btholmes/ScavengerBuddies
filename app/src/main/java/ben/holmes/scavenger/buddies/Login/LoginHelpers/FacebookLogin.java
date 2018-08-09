@@ -113,19 +113,27 @@ public class FacebookLogin {
                                     if(!currentUser.getEmail().equals(email))
                                         return;
 
-
                                     prefs.setFacebookConnected(currentUser.getUid(), true);
-                                    User user = new User(currentUser.getUid(), currentUser.getEmail());
+
+                                    final User user = new User(currentUser.getUid(), currentUser.getEmail());
                                     user.setFirstName(firstName);
                                     user.setLastName(lastName);
                                     user.setPhotoUrl(profileUrl);
                                     user.setDisplayName(firstName + " " + lastName);
-                                    Database.getInstance().addUser(user);
 
-                                    updateFriendsFragment();
+                                    if(user.getNameHash() == null){
+                                        user.createNameHash(new User.CreateUserCallback() {
+                                            @Override
+                                            public void onComplete() {
+                                                Database.getInstance().addUser(user);
 
-                                    if(activity instanceof  LoginActivity)
-                                        ((LoginActivity)activity).goToMain();
+                                                updateFriendsFragment();
+
+                                                if(activity instanceof  LoginActivity)
+                                                    ((LoginActivity)activity).goToMain();
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         } else {

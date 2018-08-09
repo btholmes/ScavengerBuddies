@@ -292,10 +292,11 @@ public class NewGameFragment extends ScavengerFragment {
     }
 
     private void setPlayNowClicks(){
-
+        playNow.setEnabled(true);
         playNow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                playNow.setEnabled(false);
                 playNow.quickClick(new ShadowButton.QuickClick() {
                     @Override
                     public void onSuccess() {

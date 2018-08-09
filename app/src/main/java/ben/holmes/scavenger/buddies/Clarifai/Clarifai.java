@@ -60,7 +60,7 @@ public class Clarifai {
         Model<Concept> generalModel = client.getDefaultModels().generalModel();
 
         PredictRequest<Concept> request = generalModel.predict().withInputs(
-                ClarifaiInput.forImage(ClarifaiImage.of(bitmap))
+                ClarifaiInput.forImage(bitmap)
         );
 
         request.executeAsync(new ClarifaiRequest.Callback<List<ClarifaiOutput<Concept>>>() {
@@ -81,6 +81,7 @@ public class Clarifai {
                 IOException a = e;
             }
         });
+
 
 //
 //        new AsyncTask<byte[], Void, ClarifaiResponse<List<ClarifaiOutput<Concept>>>>() {
@@ -128,6 +129,20 @@ public class Clarifai {
 
 
 //        new ByteArrayAsync().execute(bitmap);
+    }
+
+
+    public List<Concept> predictInSync(byte[] bitmap){
+        Model<Concept> generalModel = client.getDefaultModels().generalModel();
+
+        PredictRequest<Concept> request = generalModel.predict().withInputs(
+                ClarifaiInput.forImage(bitmap)
+        );
+
+        ClarifaiResponse<List<ClarifaiOutput<Concept>>> response = request.executeSync();
+        List<Concept> result = new ArrayList<>(response.get().get(0).data());
+
+        return result;
     }
 
 

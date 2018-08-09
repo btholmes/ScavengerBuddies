@@ -17,6 +17,9 @@ public class Prefs {
     public static final String SELECTED_WHEEL_FRAGMENT = "int stores current state of wheel";
     public static final String FACEBOOK_PROFILE = "FacebookProfile model stores facebook users email name and profile pic";
     public static final String FACEBOOK_CONNECTED = "Boolean stores if facebook is connected";
+    public static final String CHAT_ENABLED = "Boolean stores if chat is still enables.. it is by default";
+    public static final String PUSH_NOTIFICATIONS_ENABLED = "Boolean stores if push notifications are enabled.. are by default";
+    public static final String EMAIL_NOTIFICATIONS_ENABLED = "Boolean stores if email notifications are enabled.. are not by default";
 
     private Context ctx;
     private SharedPreferences prefs;
@@ -80,5 +83,30 @@ public class Prefs {
     public int getSelectedWheel(){
         return prefs.getInt(SELECTED_WHEEL_FRAGMENT, -1);
     }
+
+    public void setPushNotificationsEnabled(boolean enabled){
+        prefs.edit().putBoolean(PUSH_NOTIFICATIONS_ENABLED, enabled).commit();
+    }
+
+    public boolean getPushNotificationsEnabled(){
+        return prefs.getBoolean(PUSH_NOTIFICATIONS_ENABLED, true);
+    }
+
+    public void setChatEnabled(boolean enabled){
+        prefs.edit().putBoolean(CHAT_ENABLED, enabled).commit();
+    }
+
+    public boolean getChatEnabled(){
+        return prefs.getBoolean(CHAT_ENABLED, true);
+    }
+
+    public void setEmailNotificationsEnabled(boolean enabled){
+        prefs.edit().putBoolean(EMAIL_NOTIFICATIONS_ENABLED, enabled).commit();
+    }
+
+    public boolean getEmailNotificationsEnabled(){
+        return prefs.getBoolean(EMAIL_NOTIFICATIONS_ENABLED, false);
+    }
+
 
 }
