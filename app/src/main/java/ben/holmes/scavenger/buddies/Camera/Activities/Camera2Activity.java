@@ -32,11 +32,14 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -59,6 +62,7 @@ import ben.holmes.scavenger.buddies.Model.SearchWord;
 import ben.holmes.scavenger.buddies.R;
 import clarifai2.dto.prediction.Concept;
 import io.realm.Realm;
+import pl.droidsonroids.gif.GifImageView;
 
 public class Camera2Activity extends AppCompatActivity{
 
@@ -76,6 +80,7 @@ public class Camera2Activity extends AppCompatActivity{
 
     private LinearLayout lookingForText;
     private TextView wordText;
+    private GifImageView celebrateGif;
 
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -130,6 +135,7 @@ public class Camera2Activity extends AppCompatActivity{
 
         lookingForText = findViewById(R.id.lookingForText);
         wordText = findViewById(R.id.wordText);
+        celebrateGif = findViewById(R.id.celebrateGIF);
 
         setUpButtons();
 
@@ -166,17 +172,28 @@ public class Camera2Activity extends AppCompatActivity{
         tryAgainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTakePictureButton();
-                updatePreview(false);
+                if(!isFound()){
+                    showTakePictureButton();
+                    updatePreview(false);
+                }else
+                    showCongratulationsScreen();
+
             }
         });
     }
 
+    private void showCongratulationsScreen(){
+        celebrateGif.setVisibility(View.VISIBLE);
+    }
 
     private void hideTakePictureButton(){
         hideLookingForText();
         takePictureButton.setVisibility(View.GONE);
         tryAgainButton.setVisibility(View.VISIBLE);
+        if(isFound())
+            tryAgainButton.setText("CONTINUE");
+        else
+            tryAgainButton.setText("TRY AGAIN");
         predictionBox.setVisibility(View.VISIBLE);
         content.setVisibility(View.VISIBLE);
     }
@@ -194,7 +211,7 @@ public class Camera2Activity extends AppCompatActivity{
         progressBar.setVisibility(View.GONE);
         predictionBox.setVisibility(View.VISIBLE);
         predictionBox.removeAllViews();
-        for(int i = 0; i < 7; i++){
+        for(int i = 0; i < concepts.size(); i++){
             Concept concept = concepts.get(i);
             Prediction prediction = new Prediction(this);
             predictionBox.addView(prediction);
@@ -202,20 +219,48 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
+    public String getSearchWord(){
+        return Realm.getDefaultInstance().where(SearchWord.class).equalTo("id",0).findFirst().getWord();
+    }
+
+    public void setFound(boolean found){
+        Realm realm = Realm.getDefaultInstance();
+        realm.beginTransaction();
+        realm.where(SearchWord.class).equalTo("id", 0).findFirst().setFound(found);
+        realm.commitTransaction();
+        realm.close();
+    }
+
+    public boolean isFound(){
+        return Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst().isFound();
+    }
+
+    /**
+     * Loops through all results, adds top 7, then continues looking for the matching word. If it is found, it is appended
+     * at position 8.
+     *
+     * @param result
+     * @return
+     */
     private List<Concept> filterResult(List<Concept> result){
         ArrayList<Concept> copy = new ArrayList<>();
+
         for(Concept concept : result){
             if(concept.name().equalsIgnoreCase("abstract")
                     || concept.name().equalsIgnoreCase("blur")
                     || concept.name().equalsIgnoreCase("no person")){
                 continue;
-            }else
+            }else if(copy.size() < 7)
                 copy.add(concept);
-
-            if(copy.size() == 7)
-                break;
+            else{
+                if(concept.name().equalsIgnoreCase(getSearchWord())){
+                    copy.add(concept);
+                    break;
+                }
+            }
+            if(concept.name().equalsIgnoreCase(getSearchWord()))
+                setFound(true);
         }
-
         return copy;
     }
 
@@ -258,9 +303,7 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
-    private void showCongratulationsScreen(){
 
-    }
 
 
     private boolean isMatch(List<Concept> concepts){
@@ -377,7 +420,7 @@ public class Camera2Activity extends AppCompatActivity{
         progressBar.setVisibility(View.VISIBLE);
         Bitmap bitmap = textureView.getBitmap();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         final byte[] byteArray = stream.toByteArray();
         bitmap.recycle();
 

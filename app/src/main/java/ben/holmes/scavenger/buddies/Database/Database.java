@@ -184,6 +184,14 @@ public class Database {
         });
     }
 
+    private boolean isValidWord(String word){
+        return !word.equalsIgnoreCase("abstract") &&
+                !word.equalsIgnoreCase("vertical") &&
+                !word.equalsIgnoreCase("blur") &&
+                !word.equalsIgnoreCase("horizontal") &&
+                !word.equalsIgnoreCase("internet");
+    }
+
     private List<String> filterTags(List<String> list, int count){
         List<String> result = new ArrayList<>();
         boolean[] values = new boolean[list.size()];
@@ -191,7 +199,7 @@ public class Database {
         int found = 0;
         while(found < count){
             int value = rand.nextInt(list.size());
-            if(values[value] == false){
+            if(values[value] == false && isValidWord(list.get(value))){
                 result.add(list.get(value));
                 values[value] = true;
                 found++;

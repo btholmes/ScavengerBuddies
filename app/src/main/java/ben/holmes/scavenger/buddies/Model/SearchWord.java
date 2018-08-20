@@ -8,6 +8,7 @@ public class SearchWord extends RealmObject {
     @PrimaryKey
     public int id;
     public String word;
+    public boolean found;
 
     public SearchWord(){
 
@@ -31,5 +32,14 @@ public class SearchWord extends RealmObject {
 
     public void setWord(String word) {
         this.word = word;
+        this.found = false;
+    }
+
+    public boolean isFound() {
+        return found;
+    }
+
+    public void setFound(boolean found) {
+        this.found = found;
     }
 }
