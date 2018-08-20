@@ -32,13 +32,8 @@ public class Database {
     public static Database database;
 
     public static Database getInstance(){
-        if(database == null)
-            return new Database();
-
-        return database;
+        return  database == null ? new Database() : database;
     }
-
-
 
     private Database(){
         databaseReference = FirebaseDatabase.getInstance().getReference();

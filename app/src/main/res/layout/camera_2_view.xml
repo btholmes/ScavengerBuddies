@@ -33,11 +33,10 @@
     <Button
         android:id="@+id/btn_takepicture"
         android:background="@drawable/black_circle"
-        android:backgroundTint="@color/transparent"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="75dp"
+        android:layout_height="75dp" />
 
     <Button
         android:id="@+id/btn_try_again"
@@ -51,6 +50,14 @@
         android:layout_height="wrap_content" />
 
 
+    <!--<include layout="@layout/view_no_internet"-->
+        <!--android:id="@+id/no_internet"-->
+        <!--android:visibility="gone"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
+
+    <!--</include>-->
+
     <ProgressBar
         android:id="@+id/progress_bar"
         android:visibility="gone"
@@ -59,6 +66,36 @@
         android:layout_gravity="center"
         android:indeterminateTint="@color/colorPrimary"
         />
+
+    <LinearLayout
+        android:id="@+id/lookingForText"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/spacing_large"
+        android:layout_gravity="top|left"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Looking For: "
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/wordText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" Enigma"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            />
+
+    </LinearLayout>
 
 
 </FrameLayout>

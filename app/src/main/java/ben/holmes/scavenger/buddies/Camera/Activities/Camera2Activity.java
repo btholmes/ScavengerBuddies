@@ -3,6 +3,7 @@ package ben.holmes.scavenger.buddies.Camera.Activities;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraCaptureSession;
@@ -37,6 +38,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
@@ -44,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
+import ben.holmes.scavenger.buddies.App.Tools.InternetUtil;
 import ben.holmes.scavenger.buddies.Camera.Handlers.ImageHandler;
 import ben.holmes.scavenger.buddies.Camera.Model.Prediction;
 import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
@@ -51,12 +55,15 @@ import ben.holmes.scavenger.buddies.Camera.ThreadPool;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
 import ben.holmes.scavenger.buddies.Model.Message;
+import ben.holmes.scavenger.buddies.Model.SearchWord;
 import ben.holmes.scavenger.buddies.R;
 import clarifai2.dto.prediction.Concept;
+import io.realm.Realm;
 
 public class Camera2Activity extends AppCompatActivity{
 
 //    private ImageHandler imageHandler;
+    private Context ctx;
     private View content;
     private String searchWord;
     private Clarifai clarifai;
@@ -67,14 +74,17 @@ public class Camera2Activity extends AppCompatActivity{
     private Button tryAgainButton;
     private ProgressBar progressBar;
 
+    private LinearLayout lookingForText;
+    private TextView wordText;
+
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+        ORIENTATIONS.append(Surface.ROTATION_90, 90);
+        ORIENTATIONS.append(Surface.ROTATION_180, 180);
+        ORIENTATIONS.append(Surface.ROTATION_270, 270);
     }
 
     private String cameraId;
@@ -100,10 +110,12 @@ public class Camera2Activity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.camera_2_view);
+        this.ctx = this;
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
             searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
         }
+
 
         content = findViewById(R.id.content);
         clarifai = new Clarifai(this);
@@ -115,8 +127,22 @@ public class Camera2Activity extends AppCompatActivity{
         takePictureButton = findViewById(R.id.btn_takepicture);
         tryAgainButton = findViewById(R.id.btn_try_again);
         progressBar = findViewById(R.id.progress_bar);
+
+        lookingForText = findViewById(R.id.lookingForText);
+        wordText = findViewById(R.id.wordText);
+
         setUpButtons();
 
+    }
+
+    private void setLookingForText(){
+        lookingForText.setVisibility(View.VISIBLE);
+        SearchWord word = Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst();
+        wordText.setText(word.getWord());
+    }
+
+    private void hideLookingForText(){
+        lookingForText.setVisibility(View.GONE);
     }
 
     private void setCameraPreviewValues(){
@@ -148,6 +174,7 @@ public class Camera2Activity extends AppCompatActivity{
 
 
     private void hideTakePictureButton(){
+        hideLookingForText();
         takePictureButton.setVisibility(View.GONE);
         tryAgainButton.setVisibility(View.VISIBLE);
         predictionBox.setVisibility(View.VISIBLE);
@@ -155,6 +182,7 @@ public class Camera2Activity extends AppCompatActivity{
     }
 
     private void showTakePictureButton(){
+        setLookingForText();
         takePictureButton.setVisibility(View.VISIBLE);
         predictionBox.setVisibility(View.GONE);
         content.setVisibility(View.GONE);
@@ -322,105 +350,167 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
+    private void showNoInternet(){
+        progressBar.post(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
+        final ScavengerDialog dialog = new ScavengerDialog(this);
+        dialog.hideHeader();
+        dialog.showSingleOkButton();
+        dialog.setBannerText("No Internet");
+        dialog.setMessageText("There is no internet connection. Please " +
+                "turn on mobile data, or connect to wifi in order to retrieve " +
+                "image predictions.");
+        dialog.setSingleOkButtonClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void getClarifaiResults(){
+        progressBar.setVisibility(View.VISIBLE);
+        Bitmap bitmap = textureView.getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream);
+        final byte[] byteArray = stream.toByteArray();
+        bitmap.recycle();
+
+
+        InternetUtil internetUtil = InternetUtil.getInstance(ctx);
+        internetUtil.hasInternet(new InternetUtil.CallComplete() {
+            @Override
+            public void onComplete(Boolean result) {
+                if(result)
+                    showPredictions(byteArray);
+                else{
+                    progressBar.setVisibility(View.GONE);
+                    showNoInternet();
+                }
+            }
+        });
+    }
+
     protected void takePicture(){
         if(cameraDevice == null){
             return;
         }
-
-        final CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
-        try{
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
-            Size[] jpegSizes = null;
-            if(characteristics != null){
-                jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
-            }
-            int width = mCameraPreviewWidth;
-            int height = mCameraPreviewHeight;
-            if(jpegSizes != null && jpegSizes.length > 0){
-                width = jpegSizes[0].getWidth();
-                height = jpegSizes[0].getHeight();
-            }
-
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            List<Surface> outputSurfaces = new ArrayList<>(2);
-            outputSurfaces.add(reader.getSurface());
-            outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
-            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            captureBuilder.addTarget(reader.getSurface());
-//            captureBuilder.addTarget(textureView.getSurfaceTexture());
-            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-
-            //Orientation
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-            ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener(){
-                @Override
-                public void onImageAvailable(final ImageReader reader) {
-
-                    Image image = reader.acquireLatestImage();
-                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                    final byte[] bytes = new byte[buffer.capacity()];
-                    buffer.get(bytes);
-                    List<Concept> response = clarifai.predictInSync(bytes);
-                    updateUI(response);
-//                    android.os.Message msg = imageHandler.obtainMessage();
-//                    msg.obj = bytes;
-//                    msg.sendToTarget();
-//                    stopBackgroundThread();
-//                    imageHandler.handleState(bytes, ImageHandler.STATE_COMPLETE);
+        createCameraPreview(true);
+        getClarifaiResults();
 
 
-//                    showPredictions(bytes);
-
-//                    Handler mHandler = new Handler(mBackgroudnThread.getLooper(), new Handler.Callback() {
-//                        @Override
-//                        public boolean handleMessage(android.os.Message msg) {
-//                            ThreadPool.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    Image image = reader.acquireLatestImage();
-//                                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-//                                    final byte[] bytes = new byte[buffer.capacity()];
-//                                    buffer.get(bytes);
+//        final CameraManager manager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
+//        try{
+//            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
+//            Size[] jpegSizes = null;
+//            if(characteristics != null){
+//                jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
+//            }
+//            int width = mCameraPreviewWidth;
+//            int height = mCameraPreviewHeight;
+//            if(jpegSizes != null && jpegSizes.length > 0){
+//                width = jpegSizes[0].getWidth();
+//                height = jpegSizes[0].getHeight();
+//            }
 //
-//                                    showPredictions(bytes);
-//                                }
-//                            });
-//                            return true;
-//                        }
-//                    });
-                }
-            };
+//            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
+//            List<Surface> outputSurfaces = new ArrayList<>(2);
+//            outputSurfaces.add(reader.getSurface());
+//            outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
+//            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+//            captureBuilder.addTarget(reader.getSurface());
+////            captureBuilder.addTarget(textureView.getSurfaceTexture());
+//            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+//
+//            //Orientation
+//            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+//            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
 
 
-            reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
+//            ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener(){
+//                @Override
+//                public void onImageAvailable(final ImageReader reader) {
+//
+//                    Bitmap bitmap = textureView.getBitmap();
+//                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//                    bitmap.compress(Bitmap.CompressFormat.PNG, 80, stream);
+//                    byte[] byteArray = stream.toByteArray();
+//                    bitmap.recycle();
+//
+//
+//                    InternetUtil internetUtil = InternetUtil.getInstance(ctx);
+//                    if(internetUtil.hasInternet())
+//                        showPredictions(byteArray);
+//                    else
+//                        showNoInternet();
+//
+////                    List<Concept> response = clarifai.predictInSync(bytes);
+////                    updateUI(response);
+//
+//
+////                    android.os.Message msg = imageHandler.obtainMessage();
+////                    msg.obj = bytes;
+////                    msg.sendToTarget();
+////                    stopBackgroundThread();
+////                    imageHandler.handleState(bytes, ImageHandler.STATE_COMPLETE);
+//
+//
+////                    showPredictions(bytes);
+//
+////                    Handler mHandler = new Handler(mBackgroudnThread.getLooper(), new Handler.Callback() {
+////                        @Override
+////                        public boolean handleMessage(android.os.Message msg) {
+////                            ThreadPool.post(new Runnable() {
+////                                @Override
+////                                public void run() {
+////                                    Image image = reader.acquireLatestImage();
+////                                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+////                                    final byte[] bytes = new byte[buffer.capacity()];
+////                                    buffer.get(bytes);
+////
+////                                    showPredictions(bytes);
+////                                }
+////                            });
+////                            return true;
+////                        }
+////                    });
+//                }
+//            };
 
-            final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
-                @Override
-                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                    super.onCaptureCompleted(session, request, result);
-                    createCameraPreview(true);
-                }
-            };
 
-            cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession session) {
-                    try{
-                        session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
-                    }catch (Exception e){
-                    }
-                }
+//            reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
 
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
-                }
-            }, mBackgroundHandler);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+//            final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
+//                @Override
+//                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+//                    super.onCaptureCompleted(session, request, result);
+//                    createCameraPreview(true);
+//                }
+//            };
+//
+//            cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
+//                @Override
+//                public void onConfigured(@NonNull CameraCaptureSession session) {
+//                    try{
+//                        session.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
+//                    }catch (Exception e){
+//                    }
+//                }
+//
+//                @Override
+//                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+//
+//                }
+//            }, mBackgroundHandler);
+//
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
     }
 
     private void stopRepeating(){
@@ -435,7 +525,8 @@ public class Camera2Activity extends AppCompatActivity{
     protected void createCameraPreview(final boolean pause){
         try{
             SurfaceTexture texture = textureView.getSurfaceTexture();
-            texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+//            texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            texture.setDefaultBufferSize(mCameraPreviewWidth, mCameraPreviewHeight);
             Surface surface = new Surface(texture);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
@@ -518,9 +609,15 @@ public class Camera2Activity extends AppCompatActivity{
         }
     }
 
+    private void setSearchWord(){
+        searchWord = Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst().getWord();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        setSearchWord();
+        showTakePictureButton();
         imageHandler = new ImageHandler(this);
         startBackgroundThread();
         if(textureView.isAvailable()){

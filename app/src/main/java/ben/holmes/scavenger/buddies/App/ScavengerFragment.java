@@ -28,6 +28,7 @@ import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
 import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
+import io.realm.Realm;
 
 /**
  * Created by benholmes on 5/7/18.

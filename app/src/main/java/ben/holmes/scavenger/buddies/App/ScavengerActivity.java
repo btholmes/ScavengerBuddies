@@ -35,6 +35,7 @@ import ben.holmes.scavenger.buddies.Login.LoginActivity;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.LoginUtil;
 import ben.holmes.scavenger.buddies.R;
+import io.realm.Realm;
 
 
 /**
@@ -52,6 +53,8 @@ public abstract class ScavengerActivity extends AppCompatActivity implements Com
     private FacebookUtil facebookUtil;
     private FirebaseAuth.AuthStateListener authStateListener;
     private Prefs prefs;
+
+    private Realm realm;
 
     private FrameLayout fragmentLayout;
     private FragmentManager fragmentManager;
@@ -85,6 +88,11 @@ public abstract class ScavengerActivity extends AppCompatActivity implements Com
     protected void onResume() {
         super.onResume();
         setUpToolbar();
+        realm = Realm.getDefaultInstance();
+    }
+
+    public Realm getRealm(){
+        return realm == null ? Realm.getDefaultInstance() : realm;
     }
 
     private void setAuthListener(){
@@ -119,7 +127,7 @@ public abstract class ScavengerActivity extends AppCompatActivity implements Com
 
     public void goToLoginActivity(){
         Intent intent = new Intent(ScavengerActivity.this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
     }

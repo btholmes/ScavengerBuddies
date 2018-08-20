@@ -42,6 +42,7 @@ import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
 import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
 import ben.holmes.scavenger.buddies.LeaderBoard.LeaderBoardFragment;
 import ben.holmes.scavenger.buddies.Login.LoginHelpers.FacebookLogin;
+import ben.holmes.scavenger.buddies.Login.LoginHelpers.LoginUtil;
 import ben.holmes.scavenger.buddies.Main.adapter.PageFragmentAdapter;
 import ben.holmes.scavenger.buddies.Messages.MessagesFragment;
 import ben.holmes.scavenger.buddies.App.ScavengerActivity;
@@ -165,7 +166,11 @@ public class MainActivity extends ScavengerActivity implements DrawerLayout.Draw
                 database.getUser(new Database.UserCallback() {
                     @Override
                     public void onComplete(User user) {
-//                        if(user == null) return;
+                        if(user == null) {
+                            LoginUtil.logOut();
+                            goToLoginActivity();
+                            return;
+                        }
 
                         if(user.getDisplayName() == null || user.getDisplayName().length() <= 0){
                             displayName.setVisibility(View.GONE);

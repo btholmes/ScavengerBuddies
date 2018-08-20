@@ -26,6 +26,8 @@ import clarifai2.dto.model.output.ClarifaiOutput;
 import clarifai2.dto.prediction.Concept;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class Clarifai {
 
@@ -34,19 +36,28 @@ public class Clarifai {
 
     public Clarifai(Context ctx){
         this.ctx = ctx;
-        client = new ClarifaiBuilder(ctx.getResources().getString(R.string.clarifai_api_key)).buildSync();
+//        client = new ClarifaiBuilder(ctx.getResources().getString(R.string.clarifai_api_key)).buildSync();
+        createClientWithCustomHTTP();
     }
 
     private void createClientWithCustomHTTP(){
-//        ClarifaiClient client = new ClarifaiBuilder(ctx.getResources().getString(R.string.clarifai_api_key))
-//                .client(new OkHttpClient().Builder()
-//                        .connectTimeout(60, TimeUnit.SECONDS)
-//                        .readTimeout(60, TimeUnit.SECONDS)
-//                        .writeTimeout(60, TimeUnit.SECONDS)
-//                        .addInterceptor(new Interceptor.Chain(::info).setLevel(Interceptor.Level.BASIC))
-//                        .build()
-//                )
-//                .buildSync();
+        client = new ClarifaiBuilder(ctx.getResources().getString(R.string.clarifai_api_key))
+                .client(new OkHttpClient().newBuilder()
+                        .connectTimeout(60, TimeUnit.SECONDS)
+                        .readTimeout(60, TimeUnit.SECONDS)
+                        .writeTimeout(60, TimeUnit.SECONDS)
+                        .retryOnConnectionFailure(true)
+                        .addInterceptor(new Interceptor() {
+                            @Override
+                            public Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request();
+                                Response response = chain.proceed(request);
+                                return response;
+                            }
+                        })
+                        .build()
+                )
+                .buildSync();
     }
 
 

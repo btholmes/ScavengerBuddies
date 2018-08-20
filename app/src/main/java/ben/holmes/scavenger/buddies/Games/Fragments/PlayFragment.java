@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Random;
 
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
+import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
@@ -39,10 +41,12 @@ import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Model.Game;
+import ben.holmes.scavenger.buddies.Model.SearchWord;
 import ben.holmes.scavenger.buddies.Model.ShadowButton;
 import ben.holmes.scavenger.buddies.Model.SpinWheel;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
+import io.realm.Realm;
 
 public class PlayFragment extends ScavengerFragment {
 
@@ -526,6 +530,25 @@ public class PlayFragment extends ScavengerFragment {
         dialog.show();
     }
 
+    private void addWordToRealm(final String word){
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                Realm realm = ((ScavengerActivity)activity).getRealm();
+                realm.beginTransaction();
+                SearchWord searchWord;
+                if(realm.where(SearchWord.class).equalTo("id", 0).count() == 0)
+                    searchWord = realm.createObject(SearchWord.class, 0);
+                else
+                    searchWord = realm.where(SearchWord.class).equalTo("id", 0).findFirst();
+                searchWord.setWord(word);
+                realm.copyToRealmOrUpdate(searchWord);
+                realm.commitTransaction();
+                realm.close();
+            }
+        });
+    }
+
     private void setTakePictureClick(){
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -537,7 +560,9 @@ public class PlayFragment extends ScavengerFragment {
 //                startActivity(intent);
 
                 Intent intent = new Intent(getContext(), Camera2Activity.class);
-                intent.putExtra(SEARCH_WORD, wordText.getText().toString().trim());
+                String word = wordText.getText().toString().trim();
+                addWordToRealm(word);
+//                intent.putExtra(SEARCH_WORD, word);
                 startActivity(intent);
 
 //                showSelection();
