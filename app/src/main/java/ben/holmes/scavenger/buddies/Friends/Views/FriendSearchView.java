@@ -10,7 +10,9 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -32,6 +34,7 @@ import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.FacebookUtil;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.Activities.FriendDetailsActivity;
+import ben.holmes.scavenger.buddies.Main.MainActivity;
 import ben.holmes.scavenger.buddies.Model.Friend;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
@@ -145,6 +148,7 @@ public class FriendSearchView extends RelativeLayout {
     }
 
 
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -200,6 +204,18 @@ public class FriendSearchView extends RelativeLayout {
                     FriendDetailsActivity.navigate(activity, user);
                 }
             });
+            setChallengeListner(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
+            setMessageListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
         }
 
 
@@ -232,7 +248,7 @@ public class FriendSearchView extends RelativeLayout {
             this.subtitle.setText(subtitle);
         }
 
-        public void setUserContentListener(View.OnClickListener listener){
+        public void setUserContentListener(OnClickListener listener){
             this.userContent.setOnClickListener(listener);
         }
 
@@ -246,4 +262,94 @@ public class FriendSearchView extends RelativeLayout {
 
     }
 
+    /**
+     * On Touch variables
+     */
+    float y1 = 0;
+    float y2 = 0;
+    float startingPosition = -1;
+    float hiddenPosition = -1;
+    float searchHolderHeight = -1;
+    boolean movement = false;
+    float movementThreshold = 10f;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+//        if(gestureDetector.onTouchEvent(event)){
+//            return true;
+//        }
+        gestureDetector.onTouchEvent(event);
+        if(isSingleTap){
+            isSingleTap = false;
+        }else
+            moveView(event);
+
+        return true;
+    }
+
+    public static boolean isSingleTap = false;
+    GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            //do something
+            isSingleTap = true;
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+    });
+
+    public void moveView(MotionEvent event) {
+//        if(startingPosition == -1) return;
+//
+//        if(event.getAction() == MotionEvent.ACTION_DOWN){
+//            y1 = event.getY();
+//        }
+//        else if(event.getAction() == MotionEvent.ACTION_MOVE){
+//            movement = true;
+//            y2 = event.getY();
+//
+//
+//            float difference = y2-y1;
+////            if(Math.abs(difference) <= movementThreshold){
+////                movement = false;
+////            }
+//
+//            if(difference <= 0){
+////                upward swipe
+//                ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
+//
+//                if(mainContent.getY() + difference >= hiddenPosition){
+//                    float newY = mainContent.getY() + difference;
+//                    mainContent.setY(newY);
+//                }else{
+//                    if(mainContent.getY() != hiddenPosition){
+//                        mainContent.setY(hiddenPosition);
+//                    }
+//                }
+//            }else{
+////                Downward swipe
+//                if(mainContent.getY() + difference <= startingPosition){
+//                    float newY = mainContent.getY() + difference;
+//                    mainContent.setY(newY);
+//                }else{
+//                    if(mainContent.getY() != startingPosition){
+//                        mainContent.setY(startingPosition);
+//                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
+//                    }
+//                }
+//            }
+//        }
+//        else if(event.getAction() == MotionEvent.ACTION_UP){
+////            if(movement){
+////                movement = false;
+////                return true;
+////            }else{
+////                return false;
+////            }
+//        }
+    }
 }

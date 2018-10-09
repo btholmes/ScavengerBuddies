@@ -1,13 +1,16 @@
 package ben.holmes.scavenger.buddies.Friends;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.LinearInterpolator;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -51,7 +55,9 @@ import clarifai2.dto.prediction.Frame;
  * Created by benholmes on 5/7/18.
  */
 
-public class FriendsFragment extends ScavengerFragment implements View.OnTouchListener{
+public class FriendsFragment extends ScavengerFragment
+//        implements RecyclerView.OnItemTouchListener, View.OnTouchListener
+{
 
     public static final String TAG_NAME = "Friends";
     public static final int TOOLBAR_COLOR = R.color.colorPrimary;
@@ -77,6 +83,7 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     private FacebookLogin facebookLogin;
 
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,7 +106,9 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
         underLine = view.findViewById(R.id.underline);
         friendSearchView = view.findViewById(R.id.friendSearchView);
         friendSearchView.setActivity(getActivity());
-        friendSearchView.getRecyclerView().setOnTouchListener(this);
+//        customGesture = new CustomGesture(getContext(), gestureListener);
+//        friendSearchView.getRecyclerView().addOnItemTouchListener(this);
+//        friendSearchView.getRecyclerView().
         facebookButtonHolder = view.findViewById(R.id.facebookButtonHolder);
         facebookButton = view.findViewById(R.id.facebookButton);
         facebookButtonImposter = view.findViewById(R.id.facebookButtonImposter);
@@ -411,44 +420,113 @@ public class FriendsFragment extends ScavengerFragment implements View.OnTouchLi
     float startingPosition = -1;
     float hiddenPosition = -1;
     float searchHolderHeight = -1;
+    boolean movement = false;
+    float movementThreshold = 10f;
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if(startingPosition == -1) return false;
+//    @Override
+//    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+////        sendEvent(e);
+//        // true if single tap, so don't consume tap, and send to recycler view
+////        if(isSingleTap){
+////            return false;
+////        }
+////        else{
+////            //consume the tap
+////            onTouchEvent(rv, e);
+////            return true;
+////        }
+//        return false;
+//    }
+//    @Override
+//    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) { }
+//
+//    @Override
+//    public boolean onTouch(View v, MotionEvent e) {
+//        sendEvent(e);
+//        // true if single tap, so don't consume tap, and send to recycler view
+//        if(isSingleTap){
+//            return false;
+//        }
+//        else{
+//            //consume the tap
+//            onTouchEvent(null, e);
+//            return true;
+//        }
+//    }
+//
+//    private boolean sendEvent(MotionEvent e){
+//        isSingleTap = false;
+//        return gestureDetector.onTouchEvent(e);
+//    }
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN){
-            y1 = event.getY();
-        }
-        if(event.getAction() == MotionEvent.ACTION_MOVE){
-            y2 = event.getY();
 
-            float difference = y2-y1;
+//    @Override
+//    public void onTouchEvent(@Nullable RecyclerView rv, MotionEvent event) {
+//        if(startingPosition == -1) return;
+//
+//        if(event.getAction() == MotionEvent.ACTION_DOWN){
+//            y1 = event.getY();
+//        }
+//        else if(event.getAction() == MotionEvent.ACTION_MOVE){
+//            movement = true;
+//            y2 = event.getY();
+//
+//
+//            float difference = y2-y1;
+////            if(Math.abs(difference) <= movementThreshold){
+////                movement = false;
+////            }
+//
+//            if(difference <= 0){
+////                upward swipe
+//                ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
+//
+//                if(mainContent.getY() + difference >= hiddenPosition){
+//                    float newY = mainContent.getY() + difference;
+//                    mainContent.setY(newY);
+//                }else{
+//                    if(mainContent.getY() != hiddenPosition){
+//                        mainContent.setY(hiddenPosition);
+//                    }
+//                }
+//            }else{
+////                Downward swipe
+//                if(mainContent.getY() + difference <= startingPosition){
+//                    float newY = mainContent.getY() + difference;
+//                    mainContent.setY(newY);
+//                }else{
+//                    if(mainContent.getY() != startingPosition){
+//                        mainContent.setY(startingPosition);
+//                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
+//                    }
+//                }
+//            }
+//        }
+//        else if(event.getAction() == MotionEvent.ACTION_UP){
+////            if(movement){
+////                movement = false;
+////                return true;
+////            }else{
+////                return false;
+////            }
+//        }
+//    }
 
-            if(difference < 0){
-//                upward swipe
-                ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
+//    public static boolean isSingleTap = false;
+//    GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+//        @Override
+//        public boolean onSingleTapConfirmed(MotionEvent e) {
+//            //do something
+//            isSingleTap = true;
+//            return false;
+//        }
+//
+//        @Override
+//        public boolean onDown(MotionEvent e) {
+//            return true;
+//        }
+//    });
 
-                if(mainContent.getY() + difference >= hiddenPosition){
-                    float newY = mainContent.getY() + difference;
-                    mainContent.setY(newY);
-                }else{
-                    if(mainContent.getY() != hiddenPosition){
-                        mainContent.setY(hiddenPosition);
-                    }
-                }
-            }else{
-//                Downward swipe
-                if(mainContent.getY() + difference <= startingPosition){
-                    float newY = mainContent.getY() + difference;
-                    mainContent.setY(newY);
-                }else{
-                    if(mainContent.getY() != startingPosition){
-                        mainContent.setY(startingPosition);
-                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
-                    }
-                }
-            }
-        }
-        return false;
-    }
+
+
 }
