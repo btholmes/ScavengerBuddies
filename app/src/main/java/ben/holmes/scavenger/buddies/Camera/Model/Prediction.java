@@ -3,6 +3,7 @@ package ben.holmes.scavenger.buddies.Camera.Model;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,6 +19,7 @@ public class Prediction extends RelativeLayout {
     private TextView text;
     private TextView percent;
     private View progress;
+
 
     public Prediction(Context ctx){
         super(ctx);
@@ -55,10 +57,11 @@ public class Prediction extends RelativeLayout {
         progress.setLayoutParams(params);
     }
 
-    public void setPrediction(Concept concept){
-        setText(concept.name());
-        setPercent(concept.value());
-        setProgress(concept.value());
+    public void setPrediction(Pair<String, Float> concept){
+
+        setText(concept.first);
+        setPercent(concept.second);
+        setProgress(concept.second);
     }
 
 }

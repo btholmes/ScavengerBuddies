@@ -1,6 +1,7 @@
 package ben.holmes.scavenger.buddies.Camera.Activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,6 +28,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -41,6 +43,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -52,11 +58,16 @@ import java.util.List;
 import ben.holmes.scavenger.buddies.App.PopUp.ScavengerDialog;
 import ben.holmes.scavenger.buddies.App.Tools.InternetUtil;
 import ben.holmes.scavenger.buddies.Camera.Handlers.ImageHandler;
+import ben.holmes.scavenger.buddies.Camera.Model.CameraStateModel;
 import ben.holmes.scavenger.buddies.Camera.Model.Prediction;
 import ben.holmes.scavenger.buddies.Camera.TextureMovieEncoder;
 import ben.holmes.scavenger.buddies.Camera.ThreadPool;
 import ben.holmes.scavenger.buddies.Clarifai.Clarifai;
+import ben.holmes.scavenger.buddies.Database.Database;
+import ben.holmes.scavenger.buddies.Games.Activities.NewGameActivity;
 import ben.holmes.scavenger.buddies.Games.Fragments.PlayFragment;
+import ben.holmes.scavenger.buddies.Main.MainActivity;
+import ben.holmes.scavenger.buddies.Model.Game;
 import ben.holmes.scavenger.buddies.Model.Message;
 import ben.holmes.scavenger.buddies.Model.SearchWord;
 import ben.holmes.scavenger.buddies.R;
@@ -70,6 +81,7 @@ public class Camera2Activity extends AppCompatActivity{
     private Context ctx;
     private View content;
     private String searchWord;
+    private Game game;
     private Clarifai clarifai;
     private LinearLayout predictionBox;
     private TextureView textureView;
@@ -82,6 +94,10 @@ public class Camera2Activity extends AppCompatActivity{
     private TextView wordText;
     private GifImageView celebrateGif;
 
+    /**
+     * Used in OnResume and OnPause to restore, and save the current activity state.
+     */
+    private ArrayList<Pair<String, Float>> predictions;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -118,7 +134,9 @@ public class Camera2Activity extends AppCompatActivity{
         this.ctx = this;
         Bundle bundle = getIntent().getExtras();
         if(bundle != null){
-            searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
+            game = (Game)bundle.getSerializable(PlayFragment.GAME_KEY);
+//            searchWord = bundle.getString(PlayFragment.SEARCH_WORD, null);
+            searchWord = game.getCurrentWord();
         }
 
 
@@ -141,10 +159,18 @@ public class Camera2Activity extends AppCompatActivity{
 
     }
 
+    /**f
+     * Sets the text displayed at top of Camera activity. This is the word currently being sought
+     * by the user.
+     */
     private void setLookingForText(){
         lookingForText.setVisibility(View.VISIBLE);
-        SearchWord word = Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst();
-        wordText.setText(word.getWord());
+        String word;
+        if(game != null)
+            word = game.getCurrentWord();
+        else
+            word = Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst().getWord();
+        wordText.setText(word);
     }
 
     private void hideLookingForText(){
@@ -159,27 +185,111 @@ public class Camera2Activity extends AppCompatActivity{
 
     }
 
+    private boolean isLoading;
     private void setUpButtons(){
         takePictureButton.setVisibility(View.VISIBLE);
         tryAgainButton.setVisibility(View.GONE);
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                takePicture();
+                if(!isLoading){
+                    isLoading = true;
+                    progressBar.setVisibility(View.VISIBLE);
+                    takePicture();
+                }
+
             }
         });
         tryAgainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isLoading = false;
                 if(!isFound()){
+                    NotWordFoundOrTryAgainPressed = true;
+                    deleteCameraStateModel();
                     showTakePictureButton();
                     updatePreview(false);
-                }else
-                    showCongratulationsScreen();
+                }else{
+                    /**
+                     * This user just found a word, so update gameObj in firebase, then delete current stored state
+                     * of CameraStateModel
+                     */
 
+                    deleteCameraStateModel();
+                    saveWordFoundToFirebase();
+
+
+//                    realm.executeTransactionAsync(new Realm.Transaction() {
+//                        @Override
+//                        public void execute(Realm realm) {
+//                            realm.where(CameraStateModel.class).findAll().deleteAllFromRealm();
+//                            saveWordFoundToFirebase();
+//                        }
+//                    });
+                }
             }
         });
+    }
+
+    private void deleteCameraStateModel(){
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.where(CameraStateModel.class).findAll().deleteAllFromRealm();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!isFound())
+            NotWordFoundOrTryAgainPressed = true;
+        else
+            NotWordFoundOrTryAgainPressed = false;
+        super.onBackPressed();
+    }
+
+    /**
+     * Updates the current game object notifying firebase that this person's turn is over,
+     * and they have a given word, must also delete current state of CameraStateModel
+     */
+    private boolean NotWordFoundOrTryAgainPressed = false;
+    private void saveWordFoundToFirebase(){
+        NotWordFoundOrTryAgainPressed = true;
+        Database database = Database.getInstance();
+
+        /**
+         * If true, means this user has just won the game, so go to main page
+         */
+        if(database.updateCurrentUserFoundWord(game)){
+//            goToMain();
+        }else{
+            /**
+             * Else user has just found a word, and has not won the game, so go back to PlayFragment, but
+             * update page accordingly
+             */
+//            goToPlay();
+        }
+
+        goToMain();
+
+    }
+
+    private void goToPlay(){
+        Intent intent = new Intent(Camera2Activity.this, NewGameActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        if(game  != null)
+            intent.putExtra(PlayFragment.GAME_KEY, game);
+        startActivity(intent);
+        finish();
+    }
+
+    private void goToMain(){
+        Intent intent = new Intent(Camera2Activity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void showCongratulationsScreen(){
@@ -190,10 +300,13 @@ public class Camera2Activity extends AppCompatActivity{
         hideLookingForText();
         takePictureButton.setVisibility(View.GONE);
         tryAgainButton.setVisibility(View.VISIBLE);
-        if(isFound())
+        if(isFound()){
             tryAgainButton.setText("CONTINUE");
+            showCongratulationsScreen();
+        }
         else
             tryAgainButton.setText("TRY AGAIN");
+
         predictionBox.setVisibility(View.VISIBLE);
         content.setVisibility(View.VISIBLE);
     }
@@ -207,16 +320,32 @@ public class Camera2Activity extends AppCompatActivity{
     }
 
 
-    private void updatePredictions(List<Concept> concepts){
+    /**
+     * Goes through predictions returned from Clarifai api, and
+     * adds them to the Prediction layout, while also adding a copy
+     * to the predictions list.
+     *
+     * @param concepts result returned from Clarifai API call
+     */
+    private void updatePredictions(List<Pair<String, Float>> concepts){
+        if(predictions == null)
+            predictions = new ArrayList<>();
+        predictions.clear();
+
         progressBar.setVisibility(View.GONE);
         predictionBox.setVisibility(View.VISIBLE);
         predictionBox.removeAllViews();
         for(int i = 0; i < concepts.size(); i++){
-            Concept concept = concepts.get(i);
+            String word = concepts.get(i).first;
+            Float value = concepts.get(i).second;
+
             Prediction prediction = new Prediction(this);
+            prediction.setPrediction(new Pair<String, Float>(word, value));
+            predictions.add(new Pair<String, Float>(word, value));
             predictionBox.addView(prediction);
-            prediction.setPrediction(concept);
         }
+
+        hideTakePictureButton();
     }
 
     public String getSearchWord(){
@@ -242,30 +371,31 @@ public class Camera2Activity extends AppCompatActivity{
      * @param result
      * @return
      */
-    private List<Concept> filterResult(List<Concept> result){
-        ArrayList<Concept> copy = new ArrayList<>();
+    private List<Pair<String, Float>> filterResult(List<Pair<String, Float>> result){
+        ArrayList<Pair<String, Float>> copy = new ArrayList<>();
 
-        for(Concept concept : result){
-            if(concept.name().equalsIgnoreCase("abstract")
-                    || concept.name().equalsIgnoreCase("blur")
-                    || concept.name().equalsIgnoreCase("no person")){
+        for(Pair concept : result){
+            if(((String)concept.first).equalsIgnoreCase("abstract")
+                    || ((String)concept.first).equalsIgnoreCase("blur")
+                    || ((String)concept.first).equalsIgnoreCase("no person")){
                 continue;
             }else if(copy.size() < 7)
-                copy.add(concept);
+                copy.add(new Pair<String, Float>(((String)concept.first), ((Float)concept.second)));
             else{
-                if(concept.name().equalsIgnoreCase(getSearchWord())){
-                    copy.add(concept);
+                if(((String)concept.first).equalsIgnoreCase(getSearchWord())){
+                    copy.add(new Pair<String, Float>(((String)concept.first), ((Float)concept.second)));
+                    setFound(true);
                     break;
                 }
             }
-            if(concept.name().equalsIgnoreCase(getSearchWord()))
+            if(((String)concept.first).equalsIgnoreCase(getSearchWord()))
                 setFound(true);
         }
         return copy;
     }
 
-    private void updateUI(final List<Concept> result){
-        final List<Concept> copy = filterResult(result);
+    private void updateUI(final List<Pair<String, Float>> result){
+        final List<Pair<String, Float>> copy = filterResult(result);
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             @Override
@@ -276,7 +406,6 @@ public class Camera2Activity extends AppCompatActivity{
 //                    }else{
 //                        hideTakePictureButton();
 //                    }
-                hideTakePictureButton();
             }
         });
     }
@@ -289,7 +418,15 @@ public class Camera2Activity extends AppCompatActivity{
                 @Override
                 public void onSuccess(List<Concept> result) {
 //                Concept{id=ai_sTjX6dqC, name=abstract, createdAt=null, appID=main, value=0.99462897, language=null}
-                        updateUI(result);
+                    /**
+                     * Have to sort through list and turn them into pairs, to provide consistency with restoring state
+                     * from the onResume method, because updateUI needs to be called with list of Pair<String, Float>
+                     */
+                        List<Pair<String, Float>> items = new ArrayList<>();
+                        for(Concept concept : result){
+                            items.add(new Pair<String, Float>(concept.name(), concept.value()));
+                        }
+                        updateUI(items);
                 }
 
                 @Override
@@ -383,13 +520,15 @@ public class Camera2Activity extends AppCompatActivity{
     }
 
     protected void stopBackgroundThread(){
-        mBackgroudnThread.quitSafely();
-        try{
-            mBackgroudnThread.join();
-            mBackgroudnThread = null;
-            mBackgroundHandler = null;
-        }catch (Exception e){
-            e.printStackTrace();
+        if(mBackgroudnThread != null){
+            mBackgroudnThread.quitSafely();
+            try{
+                mBackgroudnThread.join();
+                mBackgroudnThread = null;
+                mBackgroundHandler = null;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -656,24 +795,118 @@ public class Camera2Activity extends AppCompatActivity{
         searchWord = Realm.getDefaultInstance().where(SearchWord.class).equalTo("id", 0).findFirst().getWord();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setSearchWord();
+
+    /**
+     * This is default method for setting up Camera in Onresume, this method is used when there is
+     * no saved CameraStateModel in realm.
+     */
+    private void normalOnResume(){
         showTakePictureButton();
         imageHandler = new ImageHandler(this);
         startBackgroundThread();
-        if(textureView.isAvailable()){
+        if (textureView.isAvailable()) {
             openCamera();
-        }else {
+        } else {
             textureView.setSurfaceTextureListener(textureListener);
+        }
+    }
+
+    /**
+     * If a previous state exists, that means an attempt has been made to take a picture of the
+     * current word, but user has not clicked continue, or try again buttons.
+     *
+     * In the case of attempting to match a picture, 1 of 2 things happens
+     *
+     * 1.) Picture was matched
+     *      In this case no need to set up camera, so normalOnResume() is not called
+     *
+     * 2.) Picture was not matched
+     *      In this case, user may want to take another attempt, so the camera is set up,
+     *      and normalOnResume() is called
+     *
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        CameraStateModel previousState = getPreviousState();
+        if (previousState != null){
+            if(!previousState.isFoundWord())
+                normalOnResume();
+
+            searchWord = previousState.getCurrentWord();
+            restoreState(previousState);
+        }
+        else{
+            normalOnResume();
+            setSearchWord();
+        }
+    }
+
+    /**
+     * Just restore the state to whatever was on screen before user pressed the overview button
+     * @param model
+     */
+    private void restoreState(CameraStateModel model){
+        List<Pair<String, Float>> predictionsCopy = new ArrayList<>();
+
+        List<String> words = model.getPredictionWords();
+        List<Float> percentages = model.getPredictionPercentages();
+
+        if(words != null && !words.isEmpty()){
+            for(int i = 0; i < words.size(); i++){
+                Pair pair = new Pair(words.get(i), percentages.get(i));
+                predictionsCopy.add(pair);
+            }
+        }
+        if(!predictionsCopy.isEmpty())
+            updatePredictions(predictionsCopy);
+
+        if(model.isFoundWord()){
+            setFound(true);
+            hideTakePictureButton();
+            showCongratulationsScreen();
+            tryAgainButton.setText("Continue");
         }
     }
 
     @Override
     protected void onPause() {
         stopBackgroundThread();
+        if(!NotWordFoundOrTryAgainPressed)
+            savePageState();
+        else
+            deleteCameraStateModel();
         super.onPause();
+    }
+
+    private CameraStateModel getPreviousState(){
+        CameraStateModel cameraStateModel = null;
+        Realm realm = Realm.getDefaultInstance();
+
+        if(realm.where(CameraStateModel.class).equalTo("id", 0).count() > 0)
+            cameraStateModel = realm.where(CameraStateModel.class).equalTo("id", 0).findFirst();
+
+        return cameraStateModel;
+    }
+
+    private void savePageState(){
+        Realm realm = Realm.getDefaultInstance();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                CameraStateModel cameraStateModel;
+                if(realm.where(CameraStateModel.class).equalTo("id", 0).count() <= 0){
+                    cameraStateModel = realm.createObject(CameraStateModel.class, 0);
+                }else
+                    cameraStateModel = realm.where(CameraStateModel.class).equalTo("id", 0).findFirst();
+                if(game != null){
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    cameraStateModel.setData(game, user.getUid(), predictions, isFound());
+                }
+            }
+        });
+
     }
 
 

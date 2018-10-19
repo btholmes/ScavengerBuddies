@@ -317,7 +317,6 @@ public class NewGameFragment extends ScavengerFragment {
         bundle.putInt(SelectFriendFragment.CALLING_FRAGMENT, NewGameFragment.class.hashCode());
         bundle.putBoolean(FRIEND_KEY, friendButton.isChecked());
         bundle.putBoolean(FIVE_WORD_KEY, wordCountFIve.isChecked());
-
         fragment.setArguments(bundle);
         if(friendButton.isChecked()){
             ((NewGameActivity)getActivity())

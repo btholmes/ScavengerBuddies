@@ -28,7 +28,7 @@ import ben.holmes.scavenger.buddies.Train.Tag;
  */
 public class Database {
 
-    public static DatabaseReference databaseReference;
+    private DatabaseReference databaseReference;
     public static Database database;
 
     public static Database getInstance(){
@@ -40,7 +40,7 @@ public class Database {
     }
 
 
-    public static void addUser(final User user){
+    public void addUser(final User user){
         Query query = databaseReference.child("userList").orderByChild("uid").equalTo(user.getUid());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -56,23 +56,116 @@ public class Database {
         });
     }
 
-    public static void updateUserName(String firstName, String lastName){
+    public void updateUserName(String firstName, String lastName){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference.child("userList").child(user.getUid()).child("firstName").setValue(firstName);
         databaseReference.child("userList").child(user.getUid()).child("lastName").setValue(lastName);
         databaseReference.child("userList").child(user.getUid()).child("displayName").setValue(firstName + " " + lastName);
     }
 
-    public static void updateUserPhotoUrl(String url){
+    public void updateUserPhotoUrl(String url){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         databaseReference.child("userList").child(user.getUid()).child("photoUrl").setValue(url);
     }
 
 
-    public static void addGameToFirebase(Game gameObj){
+    /**
+     * Method is called from NewGameFragment after words are retrieved from firebase. Save this gameObj in
+     * both the challener (current user) and opponent's firebase trees.
+     *
+     * @param gameObj
+     */
+    public void addGameToFirebase(Game gameObj){
         databaseReference.child("userList").child(gameObj.getChallenger()).child("games").child(gameObj.getGameID()).setValue(gameObj);
         gameObj.setYourTurn(false);
         databaseReference.child("userList").child(gameObj.getOpponent()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+
+        /**
+         * Set gameObj back to true because this instance of the gameObj gets passed from NewGameFragment to PlayFragment, and currentUser's
+         * turn should not be updated until one of two conditions are met.
+         *
+         * 1.) Current user's turn expires, so opponent is notified of their turn.
+         * 2.) Current user's matches the correct word, so either they win the game, or the opponent again is notified of their turn
+         */
+        gameObj.setYourTurn(true);
+    }
+
+    /**
+     * Method is called from PlayFragment OnSaveInstanceState, just saves the game in Realm in case of an orientation change. The gameObj
+     * only needs to be stored in the currentUser's tree at this point. The next time the opponent's tree will need to be updated is given
+     * in 2 conditions.
+     *
+     * 1.) Current user's turn expires, so opponent is notified of their turn.
+     * 2.) Current user's matches the correct word, so either they win the game, or the opponent again is notified of their turn
+     *
+     * @param gameObj
+     */
+    public void updateGame(Game gameObj){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference.child("userList").child(user.getUid()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+    }
+
+    public void storeWord(String word, Game gameObj){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference.child("userList").child(user.getUid()).child("games").child(gameObj.getGameID()).child("currentWord").setValue(word);
+    }
+
+
+
+    /**
+     * Method is called from Camera2Activity if the current user has matched the word
+     * they were searching for.
+     *
+     * 3 Things must be done
+     *
+     * 1. ) Current Users's turn ends
+     * 2. ) Current User marks this word off their word list
+     * 3. ) if this was the game winning word, update PlayFragment()
+     *
+     *
+     * @param gameObj
+     * @return true if this user just won the game
+     */
+    public boolean updateCurrentUserFoundWord(Game gameObj){
+        boolean result = false;
+        boolean challenger = true;
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String currentWord = gameObj.getCurrentWord();
+
+        gameObj.setCurrentWord(null);
+        gameObj.setYourTurn(false);
+
+        if(user.getUid().equals(gameObj.getChallenger())){
+            gameObj.challengerWordFound(currentWord);
+            if(gameObj.getChallengerWordsLeft().size() == 0){
+                /**
+                 * User has just won the game
+                 */
+                result = true;
+            }
+        }
+        else{
+            challenger = false;
+            gameObj.opponentWordFound(currentWord);
+            if(gameObj.getChallengerWordsLeft().size() == 0){
+                /**
+                 * User has just won the game
+                 */
+                result = true;
+            }
+        }
+
+        databaseReference.child("userList").child(user.getUid()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+        /**
+         * Now save the updated game obj to the opponents GameList also, opponents yourTurn boolean is just
+         * the opposite of whatever the current user's is
+         */
+        gameObj.setYourTurn(true);
+        if(challenger)
+            databaseReference.child("userList").child(gameObj.getOpponent()).child("games").child(gameObj.getGameID()).setValue(gameObj);
+
+        return result;
     }
 
 
@@ -255,6 +348,15 @@ public class Database {
     public interface NameHashCallback{
         void onComplete(String hash);
     }
+
+    /**
+     *
+     * TODO make this faster, and fix the error for random friends
+     *
+     * Function for creating a unique hash to ensure no two people have the same.
+     * @param email
+     * @param callback
+     */
     public void createNameHash(final String email, final NameHashCallback callback){
         final Query query = databaseReference.child("nameHashes");
 

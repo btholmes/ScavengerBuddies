@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
+import ben.holmes.scavenger.buddies.BuildConfig;
 import ben.holmes.scavenger.buddies.Database.Database;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
@@ -37,6 +38,8 @@ public class Game implements Serializable{
 
     private int permittedGameDuration = 3;
 
+
+    private String currentWord;
 
     private String challengerDisplayName;
     private String opponentDisplayName;
@@ -99,6 +102,35 @@ public class Game implements Serializable{
     }
 
 
+
+    public void challengerWordFound(String word){
+        List<String> words = getChallengerWordsLeft();
+        if(BuildConfig.DEBUG){
+            if(words != null && words.size() > 0)
+                words.remove(0);
+        }
+        else{
+            if(words != null && words.size() > 0)
+                getChallengerWordsLeft().remove(word);
+        }
+        if(words.isEmpty())
+            setWinner(getChallenger());
+    }
+
+    public void opponentWordFound(String word){
+        List<String> words = getOpponentWordsLeft();
+
+        if(BuildConfig.DEBUG){
+            if(words != null && words.size() > 0)
+                getOpponentWordsLeft().remove(0);
+        }
+        else{
+            if(words != null && words.size() > 0)
+                words.remove(word);
+        }
+        if(words.isEmpty())
+            setWinner(getOpponent());
+    }
 
 
 
@@ -422,4 +454,11 @@ public class Game implements Serializable{
         this.photo = photo;
     }
 
+    public String getCurrentWord() {
+        return currentWord;
+    }
+
+    public void setCurrentWord(String currentWord) {
+        this.currentWord = currentWord;
+    }
 }

@@ -201,6 +201,15 @@ public class NewGameActivity extends ScavengerActivity {
 
     }
 
+    /**
+     * TODO Create a list of words to be saved in Realm and upon app start, that way creating a
+     * game will no longer have to wait for a Firebase call
+     *
+     *
+     * Creates game, and sends user to PlayFragment
+     * @param friend
+     * @param fiveWordKey
+     */
     private void createGame(final User friend, final boolean fiveWordKey){
         final Database database = getDatabase();
         int wordCount = 5;

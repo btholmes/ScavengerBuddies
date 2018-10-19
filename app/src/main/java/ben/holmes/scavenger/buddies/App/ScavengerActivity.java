@@ -156,6 +156,9 @@ public abstract class ScavengerActivity extends AppCompatActivity implements Com
     }
 
     public Database getDatabase() {
+        if(database == null)
+            database = Database.getInstance();
+
         return database;
     }
 

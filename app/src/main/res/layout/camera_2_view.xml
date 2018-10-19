@@ -5,6 +5,7 @@
     >
 
 
+
     <TextureView
         android:id="@+id/textureView"
         android:layout_width="match_parent"
@@ -19,91 +20,108 @@
         android:alpha="0.4"
         ></View>
 
-    <LinearLayout
-        android:id="@+id/prediciton_box"
-        android:orientation="vertical"
-        android:layout_margin="@dimen/spacing_medium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left|top"
-        >
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/prediciton_box"
+            android:orientation="vertical"
+            android:layout_margin="@dimen/spacing_medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|top"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            >
 
-    <Button
-        android:id="@+id/btn_takepicture"
-        android:background="@drawable/black_circle"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="10dp"
-        android:layout_width="75dp"
-        android:layout_height="75dp" />
+        </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_try_again"
-        android:text="Try Again"
-        android:visibility="gone"
-        android:background="@color/colorPrimary"
-        android:textColor="@color/white"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_takepicture"
+            android:background="@drawable/black_circle"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp" />
+
+        <Button
+            android:id="@+id/btn_try_again"
+            android:text="Try Again"
+            android:visibility="gone"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
 
-    <!--<include layout="@layout/view_no_internet"-->
+        <!--<include layout="@layout/view_no_internet"-->
         <!--android:id="@+id/no_internet"-->
         <!--android:visibility="gone"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent">-->
 
-    <!--</include>-->
+        <!--</include>-->
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:visibility="gone"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:indeterminateTint="@color/colorPrimary"
-        />
-
-    <LinearLayout
-        android:id="@+id/lookingForText"
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_large"
-        android:layout_gravity="top|left"
-        >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Looking For: "
-            android:textStyle="bold"
-            android:textColor="@color/colorAccent"
-            android:textSize="20sp"
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:visibility="gone"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/colorPrimary"
+            android:layout_centerInParent="true"
             />
 
-        <TextView
-            android:id="@+id/wordText"
+        <LinearLayout
+            android:id="@+id/lookingForText"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=" Enigma"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:textSize="20sp"
+            android:layout_margin="@dimen/spacing_large"
+            android:layout_gravity="top|left"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Looking For: "
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:textSize="20sp"
+                />
+
+            <TextView
+                android:id="@+id/wordText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" Enigma"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                />
+
+        </LinearLayout>
+
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/celebrateGIF"
+            android:src="@drawable/dancing_cat"
+            android:layout_width="300dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center"
+            android:layout_below="@+id/prediciton_box"
+            android:layout_margin="@dimen/spacing_large"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
             />
 
-    </LinearLayout>
+    </RelativeLayout>
 
-    <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/celebrateGIF"
-        android:src="@drawable/dancing_cat"
-        android:layout_width="300dp"
-        android:layout_height="250dp"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        />
 
 </FrameLayout>

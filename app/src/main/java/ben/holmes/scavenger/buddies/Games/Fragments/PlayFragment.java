@@ -34,6 +34,7 @@ import ben.holmes.scavenger.buddies.App.ScavengerActivity;
 import ben.holmes.scavenger.buddies.App.ScavengerFragment;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Prefs;
+import ben.holmes.scavenger.buddies.BuildConfig;
 import ben.holmes.scavenger.buddies.Camera.Activities.Camera2Activity;
 import ben.holmes.scavenger.buddies.Camera.Activities.Camera2OpenGL;
 import ben.holmes.scavenger.buddies.Camera.Activities.CameraActivity;
@@ -115,9 +116,17 @@ public class PlayFragment extends ScavengerFragment {
     }
 
 
+    /**
+     * Function called if this game is not new, and has a current state
+     */
     private void setUpGame(){
-        Clarifai clarifai = new Clarifai(getContext());
+//        Clarifai clarifai = new Clarifai(getContext());
+        hideSpinWheel();
+        showPictureButton();
+        if(BuildConfig.DEBUG)
+            game.setCurrentWord("Hotel");
 
+        animateWord(game.getCurrentWord());
     }
 
     @Override
@@ -154,7 +163,16 @@ public class PlayFragment extends ScavengerFragment {
 
         setTakePictureClick();
         setDefaultSelected();
-        setUpWheel();
+
+        /**
+         * If current word isn't null, means this user has already spun, and so instead of showing the
+         * spin wheel, they should see their word, and the take picture button.
+         */
+        if(game.getCurrentWord() != null || BuildConfig.DEBUG){
+            setUpGame();
+        }
+        else
+            setUpWheel();
         return rootView;
     }
 
@@ -285,14 +303,21 @@ public class PlayFragment extends ScavengerFragment {
     }
 
 
-//    TODO Where to save the game before the view is destroyed?
 
+    /**
+     * TODO Where to save the game before the view is destroyed?
+     *
+     * This method is simply guaranteed to be called before onStop(), where exactly
+     * is uncertain.
+     *
+     * @param outState
+     */
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(GAME_KEY, game);
         outState.putInt(ROTATED_STATE, rotatedState);
 
-        Database.getInstance().addGameToFirebase(game);
+        Database.getInstance().updateGame(game);
 
 //        fragment = new PlayFragment();
 //        Bundle bundle = new Bundle();
@@ -369,8 +394,13 @@ public class PlayFragment extends ScavengerFragment {
         storeSelectedWheel(next);
     }
 
+    /**
+     * Come here after the wheel has been spun, store the word
+     */
     private void showTheWord(){
         String word = getWord(getSelectedWheel());
+        ((ScavengerActivity)getActivity()).getDatabase().storeWord(word, game);
+        game.setCurrentWord(word);
         hideSpinWheel();
         animateWord(word);
         showPictureButton();
@@ -549,6 +579,7 @@ public class PlayFragment extends ScavengerFragment {
         });
     }
 
+
     private void setTakePictureClick(){
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -562,7 +593,7 @@ public class PlayFragment extends ScavengerFragment {
                 Intent intent = new Intent(getContext(), Camera2Activity.class);
                 String word = wordText.getText().toString().trim();
                 addWordToRealm(word);
-//                intent.putExtra(SEARCH_WORD, word);
+                intent.putExtra(GAME_KEY, game);
                 startActivity(intent);
 
 //                showSelection();
