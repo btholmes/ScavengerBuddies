@@ -1,5 +1,6 @@
 package ben.holmes.scavenger.buddies.Games.Fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -128,12 +129,36 @@ public class GameFragment extends ScavengerFragment{
         void onComplete(boolean result);
     }
 
+    /**
+     * Get attached activity waits for a listener to notify it after the parent activities,
+     * (AKA: The activity who is currently responsible for this fragment) onAttach method is called.
+     *
+     * @param callback
+     * @return
+     */
     private boolean hasTheirTurnGames(final BasicCallback callback){
         boolean result = false;
         if(!isAdded()) return  false;
 
-        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleTheirTurns(activity, callback);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Helper function for hasTheirTurns. Goes to the currentUser's tree, and find all games where it
+     * is currently the currentUser's turn, then notify the callback.
+     *
+     * @param callback
+     */
+    private void handleTheirTurns(FragmentActivity activity, final BasicCallback callback){
+        DatabaseReference reference = ((ScavengerActivity)activity).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)activity).getFirebaseUser();
 
         Query query = reference.child("userList")
                 .child(user.getUid())
@@ -157,8 +182,6 @@ public class GameFragment extends ScavengerFragment{
 
             }
         });
-
-        return result;
     }
 
 
@@ -166,8 +189,18 @@ public class GameFragment extends ScavengerFragment{
         boolean result = false;
         if(!isAdded()) return  false;
 
-        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleHasMyTurns(callback, activity);
+            }
+        });
+        return result;
+    }
+
+    private void handleHasMyTurns(final BasicCallback callback, FragmentActivity activity){
+        DatabaseReference reference = ((ScavengerActivity)activity).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)activity).getFirebaseUser();
 
         Query query = reference.child("userList")
                 .child(user.getUid())
@@ -191,9 +224,8 @@ public class GameFragment extends ScavengerFragment{
 
             }
         });
-
-        return result;
     }
+
 
     /**
      * Firebase doesn't have a notEqualTo query option, but it can detect the absence of
@@ -202,8 +234,23 @@ public class GameFragment extends ScavengerFragment{
     private void setTheirTurnAdapter(){
         if(!isAdded()) return;
 
-        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleSetTheirTurn(activity);
+            }
+        });
+    }
+
+    /**
+     * One of many handler functions in this class whose sole responsiblity is to clean up code, and to also
+     * ensure that all calls to getActivity() eventually return with a valid FragmentActivity.
+     *
+     * @param activity
+     */
+    private void handleSetTheirTurn(FragmentActivity activity){
+        DatabaseReference reference = ((ScavengerActivity)activity).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)activity).getFirebaseUser();
         if(user == null || reference == null) return;
 
         Query query = reference.child("userList").child(user.getUid())
@@ -236,11 +283,22 @@ public class GameFragment extends ScavengerFragment{
         theirTurnAdapter.startListening();
     }
 
+
     private void setMyTurnAdapter(){
         if(!isAdded()) return;
 
-        DatabaseReference reference = ((ScavengerActivity)getActivity()).getDatabaseReference();
-        FirebaseUser user = ((ScavengerActivity)getActivity()).getFirebaseUser();
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleSetMyTurn(activity);
+            }
+        });
+
+    }
+
+    private void handleSetMyTurn(FragmentActivity activity){
+        DatabaseReference reference = ((ScavengerActivity)activity).getDatabaseReference();
+        FirebaseUser user = ((ScavengerActivity)activity).getFirebaseUser();
         if(user == null || reference == null) return;
 
         Query query = reference.child("userList").child(user.getUid())
@@ -273,7 +331,9 @@ public class GameFragment extends ScavengerFragment{
         yourTurnRecyclerView.addItemDecoration(decoration);
         yourTurnRecyclerView.setAdapter(yourTurnAdapter);
         yourTurnAdapter.startListening();
+
     }
+
 
     private void checkForGamesInMyTurn(){
         hasMyTurnGames(new BasicCallback() {
@@ -310,9 +370,18 @@ public class GameFragment extends ScavengerFragment{
         if(theirTurnCard.getVisibility() == View.GONE) return;
         if(theirTurnAdapter == null) return;
 
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleAdjustTheirSize(activity);
+            }
+        });
+    }
+
+    private void handleAdjustTheirSize(FragmentActivity activity){
         int totalHeight = 0;
         if(isAdded()){
-            int dp = ((ScavengerActivity) getActivity()).convertDpToPixels(90);
+            int dp = ((ScavengerActivity) activity).convertDpToPixels(90);
             totalHeight += theirTurnAdapter.getItemCount() * dp;
         }
 
@@ -320,7 +389,7 @@ public class GameFragment extends ScavengerFragment{
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) theirTurnRecyclerHolder.getLayoutParams();
             int height = 0;
             if(isAdded())
-                height = ((ScavengerActivity)getActivity()).convertDpToPixels(2);
+                height = ((ScavengerActivity)activity).convertDpToPixels(2);
             params.height = totalHeight + (theirTurnRecyclerView.getItemDecorationCount() * height );
             theirTurnRecyclerHolder.setLayoutParams(params);
         }
@@ -335,15 +404,24 @@ public class GameFragment extends ScavengerFragment{
         if(yourTurnCard.getVisibility() == View.GONE) return;
         if(yourTurnAdapter == null) return;
 
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                handleAdjustMyTurnSize(activity);
+            }
+        });
+    }
+
+    private void handleAdjustMyTurnSize(FragmentActivity activity){
         int totalHeight = 0;
         if(isAdded()){
-            int dp = ((ScavengerActivity) getActivity()).convertDpToPixels(90);
+            int dp = ((ScavengerActivity) activity).convertDpToPixels(90);
             totalHeight += yourTurnAdapter.getItemCount() * dp;
         }
 
         if(totalHeight > 0 && isAdded()){
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) yourTurnRecyclerHolder.getLayoutParams();
-            int height = ((ScavengerActivity)getActivity()).convertDpToPixels(2);
+            int height = ((ScavengerActivity)activity).convertDpToPixels(2);
             params.height = totalHeight + (yourTurnRecyclerView.getItemDecorationCount() * height );
             yourTurnRecyclerHolder.setLayoutParams(params);
         }
@@ -393,8 +471,14 @@ public class GameFragment extends ScavengerFragment{
 
     private void goToNewGameActivity(){
         if(!isAdded()) return;
-        Intent intent = new Intent(getActivity(), NewGameActivity.class);
-        startActivity(intent);
+
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                Intent intent = new Intent(activity, NewGameActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override

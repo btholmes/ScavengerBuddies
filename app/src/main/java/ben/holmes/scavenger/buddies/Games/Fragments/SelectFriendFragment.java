@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -129,13 +130,16 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
     private void animateHasFocus(){
         float closeHolderCurrentPosition = closeHolder.getX();
         if(closeHolderCurrentPosition == closeHolderHiddenPosition){
-            closeHolder.animate().x(closeHolderVisiblePosition).setDuration(250).setInterpolator(new LinearInterpolator());
-
-            underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
-            params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(3);
-            underLine.setLayoutParams(params);
-
+            getAttachedActivity(new ActivityAttached() {
+                @Override
+                public void isAttached(FragmentActivity activity) {
+                    closeHolder.animate().x(closeHolderVisiblePosition).setDuration(250).setInterpolator(new LinearInterpolator());
+                    underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+                    params.height = ((ScavengerActivity)activity).convertDpToPixels(3);
+                    underLine.setLayoutParams(params);
+                }
+            });
         }
     }
 
@@ -158,22 +162,32 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
 //        int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(40);
         float closeHolderCurrentPosition = closeHolder.getX();
         if(closeHolderCurrentPosition == closeHolderVisiblePosition){
-            animateClose();
-
-            underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
-            params.height = ((ScavengerActivity)getActivity()).convertDpToPixels(1);
-            underLine.setLayoutParams(params);
-            hideKeyboard();
-            findUsersText.getText().clear();
-            findUsersText.clearFocus();
+            getAttachedActivity(new ActivityAttached() {
+                @Override
+                public void isAttached(FragmentActivity activity) {
+                    animateClose();
+                    underLine.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.black));
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)underLine.getLayoutParams();
+                    params.height = ((ScavengerActivity)activity).convertDpToPixels(1);
+                    underLine.setLayoutParams(params);
+                    hideKeyboard();
+                    findUsersText.getText().clear();
+                    findUsersText.clearFocus();
+                }
+            });
         }
     }
 
 
     public void hideKeyboard(){
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(getContext().INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                InputMethodManager imm = (InputMethodManager) activity.getSystemService(getContext().INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(rootView.getWindowToken(), 0);
+            }
+        });
+
     }
 
     float closeHolderHiddenPosition = -1;
@@ -183,11 +197,16 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
             @Override
             public void onGlobalLayout() {
                 if(closeHolderHiddenPosition == -1){
-                    closeHolderHiddenPosition = closeHolder.getX();
-                    int dp = ((ScavengerActivity)getActivity()).convertDpToPixels(40);
-                    closeHolderVisiblePosition = closeHolderHiddenPosition - dp;
-                    closeHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    getAttachedActivity(new ActivityAttached() {
+                        @Override
+                        public void isAttached(FragmentActivity activity) {
+                            closeHolderHiddenPosition = closeHolder.getX();
+                            int dp = ((ScavengerActivity)activity).convertDpToPixels(40);
+                            closeHolderVisiblePosition = closeHolderHiddenPosition - dp;
+                        }
+                    });
                 }
+                closeHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
     }
@@ -223,11 +242,18 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
 
         adapter.setOnItemClickListener(new CustomFirebaseAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, User obj, int position) {
+            public void onItemClick(View view, final User obj, int position) {
                 if(callingFragment == NewGameFragment.class.hashCode()){
                     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                    if(!obj.getUid().equals(firebaseUser.getUid()))
-                        ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                    if(!obj.getUid().equals(firebaseUser.getUid())){
+                        getAttachedActivity(new ActivityAttached() {
+                            @Override
+                            public void isAttached(FragmentActivity activity) {
+                                ((NewGameActivity)activity).goToGame((User) obj, fiveWordKey);
+
+                            }
+                        });
+                    }
                     else
                         showCantChallengeYourselfDialog();
                 }
@@ -251,11 +277,18 @@ public class SelectFriendFragment extends ScavengerFragment implements View.OnTo
 
         adapter.setOnItemClickListener(new CustomFirebaseAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, User obj, int position) {
+            public void onItemClick(View view, final User obj, int position) {
                 FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if(callingFragment == NewGameFragment.class.hashCode()){
-                    if(!firebaseUser.getUid().equals(obj.getUid()))
-                        ((NewGameActivity)getActivity()).goToGame((User) obj, fiveWordKey);
+                    if(!firebaseUser.getUid().equals(obj.getUid())){
+                        getAttachedActivity(new ActivityAttached() {
+                            @Override
+                            public void isAttached(FragmentActivity activity) {
+                                ((NewGameActivity)activity).goToGame((User) obj, fiveWordKey);
+
+                            }
+                        });
+                    }
                     else
                         showCantChallengeYourselfDialog();
                 }
