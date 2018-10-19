@@ -56,7 +56,8 @@ import clarifai2.dto.prediction.Frame;
  */
 
 public class FriendsFragment extends ScavengerFragment
-//        implements RecyclerView.OnItemTouchListener, View.OnTouchListener
+//        implements RecyclerView.OnItemTouchListener
+//        ,View.OnTouchListener
 {
 
     public static final String TAG_NAME = "Friends";
@@ -98,7 +99,7 @@ public class FriendsFragment extends ScavengerFragment
         searchHolder = view.findViewById(R.id.searchHolder);
 //        hideSearchHelper = new HideSearchHelper(getContext(), searchHolder);
 //        hideSearchHelper.setSearchHolderInitialY();
-        setSearchHolderInitialY();
+//        setSearchHolderInitialY();
         closeHolder = view.findViewById(R.id.closeHolder);
         setCloseHolderInitialPosition();
         findUsersTextView = view.findViewById(R.id.findUsersTextView);
@@ -392,25 +393,25 @@ public class FriendsFragment extends ScavengerFragment
     }
 
 
-    public void setSearchHolderInitialY(){
-        if(startingPosition == -1){
-            searchHolder.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    if(startingPosition == -1){
-                        startingPosition = searchHolder.getY();
-                        hiddenPosition = startingPosition - searchHolder.getMeasuredHeight();
-                        searchHolderHeight = searchHolder.getMeasuredHeight();
-                        RelativeLayout friendView = friendSearchView.getMainContent();
-                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)friendView.getLayoutParams();
-                        params.height += searchHolderHeight;
-                        friendView.setLayoutParams(params);
-                        searchHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    }
-                }
-            });
-        }
-    }
+//    public void setSearchHolderInitialY(){
+//        if(startingPosition == -1){
+//            searchHolder.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//                @Override
+//                public void onGlobalLayout() {
+//                    if(startingPosition == -1){
+//                        startingPosition = searchHolder.getY();
+//                        hiddenPosition = startingPosition - searchHolder.getMeasuredHeight();
+//                        searchHolderHeight = searchHolder.getMeasuredHeight();
+//                        RelativeLayout friendView = friendSearchView.getMainContent();
+//                        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)friendView.getLayoutParams();
+//                        params.height += searchHolderHeight;
+//                        friendView.setLayoutParams(params);
+//                        searchHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//                    }
+//                }
+//            });
+//        }
+//    }
 
     /**
      * On Touch variables
@@ -422,9 +423,9 @@ public class FriendsFragment extends ScavengerFragment
     float searchHolderHeight = -1;
     boolean movement = false;
     float movementThreshold = 10f;
-
+//
 //    @Override
-//    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+//    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
 ////        sendEvent(e);
 //        // true if single tap, so don't consume tap, and send to recycler view
 ////        if(isSingleTap){
@@ -435,33 +436,43 @@ public class FriendsFragment extends ScavengerFragment
 ////            onTouchEvent(rv, e);
 ////            return true;
 ////        }
-//        return false;
+//        adjustParentView(rv, event);
+//
+//        return true;
 //    }
 //    @Override
 //    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) { }
 //
 //    @Override
-//    public boolean onTouch(View v, MotionEvent e) {
-//        sendEvent(e);
-//        // true if single tap, so don't consume tap, and send to recycler view
-//        if(isSingleTap){
+//    public void onTouchEvent(@Nullable RecyclerView rv, MotionEvent event) {
+//        sendEvent(event);
+//
+//    }
+//
+//    public static boolean isSingleTap = false;
+//    GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+//        @Override
+//        public boolean onSingleTapConfirmed(MotionEvent e) {
+//            //do something
+//            isSingleTap = true;
 //            return false;
 //        }
-//        else{
-//            //consume the tap
-//            onTouchEvent(null, e);
+//
+//        @Override
+//        public boolean onDown(MotionEvent e) {
 //            return true;
 //        }
-//    }
+//    });
+//
 //
 //    private boolean sendEvent(MotionEvent e){
 //        isSingleTap = false;
 //        return gestureDetector.onTouchEvent(e);
 //    }
-
-
-//    @Override
-//    public void onTouchEvent(@Nullable RecyclerView rv, MotionEvent event) {
+//
+//
+//
+//    private void adjustParentView(RecyclerView rv, MotionEvent event){
 //        if(startingPosition == -1) return;
 //
 //        if(event.getAction() == MotionEvent.ACTION_DOWN){
@@ -512,21 +523,21 @@ public class FriendsFragment extends ScavengerFragment
 //        }
 //    }
 
-//    public static boolean isSingleTap = false;
-//    GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-//        @Override
-//        public boolean onSingleTapConfirmed(MotionEvent e) {
-//            //do something
-//            isSingleTap = true;
+
+
+//    @Override
+//    public boolean onTouch(View v, MotionEvent e) {
+//        sendEvent(e);
+//        // true if single tap, so don't consume tap, and send to recycler view
+//        if(isSingleTap){
 //            return false;
 //        }
-//
-//        @Override
-//        public boolean onDown(MotionEvent e) {
+//        else{
+//            //consume the tap
+//            onTouchEvent(null, e);
 //            return true;
 //        }
-//    });
-
+//    }
 
 
 }

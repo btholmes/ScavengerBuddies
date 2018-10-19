@@ -14,6 +14,9 @@ import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -38,9 +41,10 @@ import ben.holmes.scavenger.buddies.Main.MainActivity;
 import ben.holmes.scavenger.buddies.Model.Friend;
 import ben.holmes.scavenger.buddies.Model.User;
 import ben.holmes.scavenger.buddies.R;
+import clarifai2.dto.prediction.Frame;
 import io.realm.Realm;
 
-public class FriendSearchView extends RelativeLayout {
+public class FriendSearchView extends RelativeLayout implements RecyclerView.OnItemTouchListener {
 
     private Context ctx;
     private static Activity activity;
@@ -66,6 +70,10 @@ public class FriendSearchView extends RelativeLayout {
         this.activity = activity;
     }
 
+    private Activity getActivity(){
+        return this.activity;
+    }
+
     public RelativeLayout getMainContent(){
         return findViewById(R.id.friendSearchView);
     }
@@ -76,6 +84,7 @@ public class FriendSearchView extends RelativeLayout {
         root = LayoutInflater.from(ctx).inflate(R.layout.friend_search_view, this);
 //        realm = Realm.getDefaultInstance();
         recyclerView = root.findViewById(R.id.recycler_view);
+//        setOnTouchListener(this);
     }
 
     public RecyclerView getRecyclerView() {
@@ -110,21 +119,23 @@ public class FriendSearchView extends RelativeLayout {
         };
 
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()){
-            @Override
-            public boolean canScrollVertically() {
-                return true;
-            }
-
-            @Override
-            public boolean canScrollHorizontally() {
-                return false;
-            }
-        });
+//        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()){
+//            @Override
+//            public boolean canScrollVertically() {
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean canScrollHorizontally() {
+//                return false;
+//            }
+//        });
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
         decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recycler_divider));
         recyclerView.addItemDecoration(decoration);
         recyclerView.setAdapter(adapter);
+        recyclerView.addOnItemTouchListener(this);
         adapter.startListening();
     }
 
@@ -157,6 +168,9 @@ public class FriendSearchView extends RelativeLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        setSearchHolderInitialY(this);
+
     }
 
     public static class FriendHolder extends RecyclerView.ViewHolder{
@@ -262,6 +276,34 @@ public class FriendSearchView extends RelativeLayout {
 
     }
 
+
+    /**
+     * Get the measured layout and position of this RelativeLayoutView so that it may be adjusted dynamically
+     * with the OnItemTouchListener interface attached to the recyclerView implemented in this class
+     * @param searchHolder
+     */
+    public void setSearchHolderInitialY(final View searchHolder){
+        if(startingPosition == -1){
+            searchHolder.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if(startingPosition == -1){
+                        startingPosition = searchHolder.getY();
+                        hiddenPosition = 0;
+                        searchHolderHeight = searchHolder.getMeasuredHeight();
+
+//                        ViewGroup.LayoutParams params = (ViewGroup.LayoutParams)root.getLayoutParams();
+//                        params.height = getMeasuredHeight() + (int)(startingPosition - hiddenPosition);
+//                        root.setLayoutParams(params);
+
+                        searchHolder.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                }
+            });
+        }
+    }
+
+
     /**
      * On Touch variables
      */
@@ -273,19 +315,6 @@ public class FriendSearchView extends RelativeLayout {
     boolean movement = false;
     float movementThreshold = 10f;
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-//        if(gestureDetector.onTouchEvent(event)){
-//            return true;
-//        }
-        gestureDetector.onTouchEvent(event);
-        if(isSingleTap){
-            isSingleTap = false;
-        }else
-            moveView(event);
-
-        return true;
-    }
 
     public static boolean isSingleTap = false;
     GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -302,54 +331,108 @@ public class FriendSearchView extends RelativeLayout {
         }
     });
 
-    public void moveView(MotionEvent event) {
-//        if(startingPosition == -1) return;
-//
-//        if(event.getAction() == MotionEvent.ACTION_DOWN){
-//            y1 = event.getY();
+//    /**
+//     * Attached to this RelativeLayout
+//     * @param v
+//     * @param event
+//     * @return
+//     */
+//    @Override
+//    public boolean onTouch(View v, MotionEvent event) {
+//        gestureDetector.onTouchEvent(event);
+//        if(isSingleTap){
+//            isSingleTap = false;
+//            return false;
+//        }else{
+//            adjustParentView(event);
+//            return true;
 //        }
-//        else if(event.getAction() == MotionEvent.ACTION_MOVE){
-//            movement = true;
-//            y2 = event.getY();
-//
-//
-//            float difference = y2-y1;
-////            if(Math.abs(difference) <= movementThreshold){
-////                movement = false;
-////            }
-//
-//            if(difference <= 0){
-////                upward swipe
-//                ((MainActivity)getActivity()).adjustViewPagerHeight((int)searchHolderHeight);
-//
-//                if(mainContent.getY() + difference >= hiddenPosition){
-//                    float newY = mainContent.getY() + difference;
-//                    mainContent.setY(newY);
-//                }else{
-//                    if(mainContent.getY() != hiddenPosition){
-//                        mainContent.setY(hiddenPosition);
-//                    }
-//                }
-//            }else{
-////                Downward swipe
-//                if(mainContent.getY() + difference <= startingPosition){
-//                    float newY = mainContent.getY() + difference;
-//                    mainContent.setY(newY);
-//                }else{
-//                    if(mainContent.getY() != startingPosition){
-//                        mainContent.setY(startingPosition);
-//                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
-//                    }
-//                }
-//            }
-//        }
-//        else if(event.getAction() == MotionEvent.ACTION_UP){
-////            if(movement){
-////                movement = false;
-////                return true;
-////            }else{
-////                return false;
-////            }
-//        }
+//    }
+
+        @Override
+    public void onTouchEvent(@Nullable RecyclerView rv, MotionEvent event) {
+        gestureDetector.onTouchEvent(event);
+        if(isSingleTap){
+//            return false;
+            int a = 10;
+        }
     }
+
+    /**
+     * Must return true from here for  event to continue to OnTouchEvent method
+     * @param rv
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
+        adjustParentView(event);
+        return true;
+    }
+
+
+    @Override
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) { }
+
+
+    private void adjustParentView( MotionEvent event){
+//        if(startingPosition == -1) return;
+
+        if(event.getAction() == MotionEvent.ACTION_DOWN){
+            y1 = event.getY();
+        }
+        else if(event.getAction() == MotionEvent.ACTION_MOVE){
+            movement = true;
+            y2 = event.getY();
+
+
+            float difference = y2-y1;
+//            if(Math.abs(difference) <= movementThreshold){
+//                movement = false;
+//            }
+
+//            MainActivity mainActivity = ((MainActivity)getActivity());
+//            mainActivity.adjustViewPagerHeight((int)searchHolderHeight);
+//            RelativeLayout mainContent = (FrameLayout)mainActivity.findViewById(R.id.frame_layout);
+            RelativeLayout mainContent = this;
+
+            /**
+             * Going up
+             */
+            if(difference <= 0){
+//                upward swipe
+
+                float projectedHeight = mainContent.getY() + difference;
+                if(projectedHeight >= 0){
+                    mainContent.setY(projectedHeight);
+                }else{
+                    if(mainContent.getY() != 0){
+                        mainContent.setY(0);
+                    }
+                }
+            }else{
+//                Downward swipe
+                if(mainContent.getY() + difference <= startingPosition){
+                    float newY = mainContent.getY() + difference;
+                    mainContent.setY(newY);
+                }else{
+                    if(mainContent.getY() != startingPosition){
+                        mainContent.setY(startingPosition);
+//                        ((MainActivity)getActivity()).setViewPagerHeightNormal();
+                    }
+                }
+            }
+        }
+        else if(event.getAction() == MotionEvent.ACTION_UP){
+//            if(movement){
+//                movement = false;
+//                return true;
+//            }else{
+//                return false;
+//            }
+        }
+    }
+
+
+
 }
