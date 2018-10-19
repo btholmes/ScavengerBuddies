@@ -168,7 +168,7 @@ public class PlayFragment extends ScavengerFragment {
          * If current word isn't null, means this user has already spun, and so instead of showing the
          * spin wheel, they should see their word, and the take picture button.
          */
-        if(game.getCurrentWord() != null || BuildConfig.DEBUG){
+        if(game.getCurrentWord() != null){
             setUpGame();
         }
         else
@@ -399,10 +399,21 @@ public class PlayFragment extends ScavengerFragment {
      */
     private void showTheWord(){
         String word = getWord(getSelectedWheel());
-        ((ScavengerActivity)getActivity()).getDatabase().storeWord(word, game);
-        game.setCurrentWord(word);
+        if(BuildConfig.DEBUG)
+            word = "Hotel";
+
+        final String wordRef = word;
+
+        getAttachedActivity(new ActivityAttached() {
+            @Override
+            public void isAttached(FragmentActivity activity) {
+                ((ScavengerActivity)getActivity()).getDatabase().storeWord(wordRef, game);
+            }
+        });
+
+        game.setCurrentWord(wordRef);
         hideSpinWheel();
-        animateWord(word);
+        animateWord(wordRef);
         showPictureButton();
     }
 
@@ -435,7 +446,7 @@ public class PlayFragment extends ScavengerFragment {
             index = index -1;
 
         String word = game.getWords().get(index);
-        Toast.makeText(getContext(), "Next : " + next + " index: " + index + " " + word , Toast.LENGTH_LONG).show();
+//        Toast.makeText(getContext(), "Next : " + next + " index: " + index + " " + word , Toast.LENGTH_LONG).show();
 
         return word;
 

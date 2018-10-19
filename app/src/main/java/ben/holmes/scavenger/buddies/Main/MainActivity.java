@@ -37,6 +37,7 @@ import ben.holmes.scavenger.buddies.App.Tools.Analytics;
 import ben.holmes.scavenger.buddies.App.Tools.CircleTransform;
 import ben.holmes.scavenger.buddies.App.Tools.Tools;
 import ben.holmes.scavenger.buddies.App.Views.CustomBottomView;
+import ben.holmes.scavenger.buddies.BuildConfig;
 import ben.holmes.scavenger.buddies.Database.Database;
 import ben.holmes.scavenger.buddies.Friends.FriendsFragment;
 import ben.holmes.scavenger.buddies.Games.Fragments.GameFragment;
@@ -151,6 +152,9 @@ public class MainActivity extends ScavengerActivity implements DrawerLayout.Draw
         setUpNavView();
     }
 
+    /**
+     * If in debug, remove Train item selection
+     */
     private void setUpNavView(){
         navigationView.post(new Runnable() {
             @Override
@@ -161,6 +165,13 @@ public class MainActivity extends ScavengerActivity implements DrawerLayout.Draw
                 final TextView nameHash = header.findViewById(R.id.nameHash);
                 final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 if(firebaseUser == null) return;
+
+                if(!BuildConfig.DEBUG){
+                    navigationView.getMenu().removeItem(R.id.train);
+                    navigationView.getMenu().removeItem(R.id.nav_change_display_name);
+                    navigationView.getMenu().removeItem(R.id.nav_change_password);
+                    navigationView.getMenu().removeItem(R.id.nav_change_email);
+                }
 
                 Database database = Database.getInstance();
                 database.getUser(new Database.UserCallback() {

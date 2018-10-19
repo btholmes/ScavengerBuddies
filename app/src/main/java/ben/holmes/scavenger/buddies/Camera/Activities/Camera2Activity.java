@@ -241,12 +241,18 @@ public class Camera2Activity extends AppCompatActivity{
         });
     }
 
+    /**
+     * IF word was found then mimic a continue click to erase the current CameraStateModel, and
+     * update game in Firbase
+     */
     @Override
     public void onBackPressed() {
-        if(!isFound())
-            NotWordFoundOrTryAgainPressed = true;
-        else
-            NotWordFoundOrTryAgainPressed = false;
+        NotWordFoundOrTryAgainPressed = true;
+        if(isFound()){
+            deleteCameraStateModel();
+            saveWordFoundToFirebase();
+        }
+
         super.onBackPressed();
     }
 

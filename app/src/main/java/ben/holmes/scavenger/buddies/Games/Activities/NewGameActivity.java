@@ -245,6 +245,9 @@ public class NewGameActivity extends ScavengerActivity {
     }
 
 
+    /**
+     * Stores the state of the NewGameFragment page, similar the CameraStateModel
+     */
     public void destroyNewGameState(){
         Realm realm = Realm.getDefaultInstance();
         realm.beginTransaction();
